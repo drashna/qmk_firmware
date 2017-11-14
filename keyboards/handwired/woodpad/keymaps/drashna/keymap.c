@@ -132,11 +132,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 #endif
 
 [_MACROS] = KEYMAP( /* Base */
-    KC_OVERWATCH, _______, _______, XXXXXXX,\
-    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,   \
-    XXXXXXX, XXXXXXX, KC_AIM, KC_JUSTGAME,   \
-    KC_SYMM, KC_TORB, XXXXXXX, KC_GOODGAME,   \
-    KC_SALT,  KC_MORESALT, KC_SALTHARD, KC_GLHF   \
+    KC_OVERWATCH, _______,      _______,      XXXXXXX,\
+    KC_JUSTGAME,  XXXXXXX,      XXXXXXX,      KC_C9,   \
+    XXXXXXX,      XXXXXXX,      KC_AIM,       KC_GGEZ,   \
+    KC_SYMM,      KC_TORB,      XXXXXXX,      KC_GOODGAME,   \
+    KC_SALT,      KC_MORESALT,  KC_SALTHARD,  KC_GLHF   \
 ),
 [_MEDIA] = KEYMAP( /* Base */
     KC_RESET, KC_MUTE, KC_VOLD, KC_VOLU,\

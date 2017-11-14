@@ -80,6 +80,8 @@ enum custom_keycodes {
   KC_GLHF,
   KC_TORB,
   KC_AIM,
+  KC_C9,
+  KC_GGEZ,
   KC_MAKE,
   KC_RESET,
   NEWPLACEHOLDER  //use "NEWPLACEHOLDER for keymap specific codes

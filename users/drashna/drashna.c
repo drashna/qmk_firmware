@@ -290,6 +290,28 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     }
     return false;
     break;
+  case KC_C9:
+    if (!record->event.pressed) {
+      register_code(is_overwatch ? KC_BSPC : KC_ENTER);
+      unregister_code(is_overwatch ? KC_BSPC : KC_ENTER);
+      _delay_ms(50);
+      SEND_STRING("OMG!!!  C9!!!");
+      register_code(KC_ENTER);
+      unregister_code(KC_ENTER);
+    }
+    return false;
+    break;
+  case KC_GGEZ:
+    if (!record->event.pressed) {
+      register_code(is_overwatch ? KC_BSPC : KC_ENTER);
+      unregister_code(is_overwatch ? KC_BSPC : KC_ENTER);
+      _delay_ms(50);
+      SEND_STRING("That was a fantastic game, though it was a bit easy. Try harder next time!");
+      register_code(KC_ENTER);
+      unregister_code(KC_ENTER);
+    }
+    return false;
+    break;
 #endif
   case KC_MAKE:
     if (!record->event.pressed) {
