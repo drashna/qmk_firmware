@@ -57,8 +57,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #endif
 
 extern bool is_overwatch;
+extern bool rgb_layer_change;
 
-enum custom_keycodes {
+enum userrpace_custom_keycodes {
   PLACEHOLDER = SAFE_RANGE, // can always be here
   EPRM,
   VRSN,
@@ -84,7 +85,20 @@ enum custom_keycodes {
   KC_GGEZ,
   KC_MAKE,
   KC_RESET,
-  NEWPLACEHOLDER  //use "NEWPLACEHOLDER for keymap specific codes
+  KC_RGB_T,
+  NEW_SAFE_RANGE //use "NEWPLACEHOLDER for keymap specific codes
 };
+
+#ifdef TAP_DANCE_ENABLE
+enum {
+  TD_D3_1 = 0,
+  TD_D3_2,
+  TD_D3_3,
+  TD_D3_4
+};
+#endif
+
+
+
 
 #endif

@@ -24,6 +24,7 @@
 #endif // TAP_DANCE_ENABLE
 
 
+#define B5_AUDIO
 
 
 #ifdef RGBLIGHT_ENABLE
