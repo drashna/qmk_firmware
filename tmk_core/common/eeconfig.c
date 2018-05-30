@@ -5,11 +5,21 @@
 
 
 
+/** \brief eeconfig enable
+ *
+ * FIXME: needs doc
+ */
 __attribute__ ((weak))
-void eeconfig_init_user(void) {}
+void eeconfig_init_user(void) {
+  // Reset user EEPROM value to blank, rather than to a set value
+  eeconfig_update_user(0);
+}
 
 __attribute__ ((weak))
 void eeconfig_init_kb(void) {
+  // Reset Keyboard EEPROM value to blank, rather than to a set value
+  eeconfig_update_kb(0);
+
   eeconfig_init_user();
 }
 
@@ -18,25 +28,30 @@ void eeconfig_init_kb(void) {
  *
  * FIXME: needs doc
  */
-void eeconfig_init(void)
-{
-    eeprom_update_word(EECONFIG_MAGIC,          EECONFIG_MAGIC_NUMBER);
-    eeprom_update_byte(EECONFIG_DEBUG,          0);
-    eeprom_update_byte(EECONFIG_DEFAULT_LAYER,  0);
-    eeprom_update_byte(EECONFIG_KEYMAP,         0);
-    eeprom_update_byte(EECONFIG_MOUSEKEY_ACCEL, 0);
+void eeconfig_init_quantum(void) {
+  eeprom_update_word(EECONFIG_MAGIC,          EECONFIG_MAGIC_NUMBER);
+  eeprom_update_byte(EECONFIG_DEBUG,          0);
+  eeprom_update_byte(EECONFIG_DEFAULT_LAYER,  0);
+  eeprom_update_byte(EECONFIG_KEYMAP,         0);
+  eeprom_update_byte(EECONFIG_MOUSEKEY_ACCEL, 0);
 #ifdef BACKLIGHT_ENABLE
-    eeprom_update_byte(EECONFIG_BACKLIGHT,      0);
+  eeprom_update_byte(EECONFIG_BACKLIGHT,      0);
 #endif
 #ifdef AUDIO_ENABLE
-    eeprom_update_byte(EECONFIG_AUDIO,             0xFF); // On by default
+  eeprom_update_byte(EECONFIG_AUDIO,             0xFF); // On by default
 #endif
 #if defined(RGBLIGHT_ENABLE) || defined(RGB_MATRIX_ENABLE)
-    eeprom_update_dword(EECONFIG_RGBLIGHT,      0);
+  eeprom_update_dword(EECONFIG_RGBLIGHT,      0);
 #endif
 #ifdef STENO_ENABLE
-    eeprom_update_byte(EECONFIG_STENOMODE,      0);
+  eeprom_update_byte(EECONFIG_STENOMODE,      0);
 #endif
+
+  eeconfig_init_kb();
+}
+
+void eeconfig_init(void) {
+  eeconfig_init_quantum();
 }
 
 /** \brief eeconfig enable
@@ -54,7 +69,7 @@ void eeconfig_enable(void)
  */
 void eeconfig_disable(void)
 {
-    eeprom_update_word(EECONFIG_MAGIC, 0xFFFF);
+    eeprom_update_word(EECONFIG_MAGIC, EECONFIG_MAGIC_NUMBER_OFF);
 }
 
 /** \brief eeconfig is enabled
@@ -64,6 +79,15 @@ void eeconfig_disable(void)
 bool eeconfig_is_enabled(void)
 {
     return (eeprom_read_word(EECONFIG_MAGIC) == EECONFIG_MAGIC_NUMBER);
+}
+
+/** \brief eeconfig is disabled
+ *
+ * FIXME: needs doc
+ */
+bool eeconfig_is_disabled(void)
+{
+    return (eeprom_read_word(EECONFIG_MAGIC) == EECONFIG_MAGIC_NUMBER_OFF);
 }
 
 /** \brief eeconfig read debug
@@ -139,3 +163,27 @@ void eeconfig_update_keymap(uint8_t val) { eeprom_update_byte(EECONFIG_KEYMAP, v
 
 
 #endif
+
+/** \brief eeconfig read kb
+ *
+ * FIXME: needs doc
+ */
+uint32_t eeconfig_read_kb(void)      { return eeprom_read_dword(EECONFIG_KEYBOARD); }
+/** \brief eeconfig update kb
+ *
+ * FIXME: needs doc
+ */
+
+void eeconfig_update_kb(uint32_t val) { eeprom_update_dword(EECONFIG_KEYBOARD, val); }
+/** \brief eeconfig read user
+ *
+ * FIXME: needs doc
+ */
+uint32_t eeconfig_read_user(void)      { return eeprom_read_dword(EECONFIG_USER); }
+/** \brief eeconfig update user
+ *
+ * FIXME: needs doc
+ */
+void eeconfig_update_user(uint32_t val) { eeprom_update_dword(EECONFIG_USER, val); }
+
+
