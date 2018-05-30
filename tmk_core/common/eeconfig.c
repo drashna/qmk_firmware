@@ -146,7 +146,7 @@ uint8_t eeconfig_read_audio(void)      { return eeprom_read_byte(EECONFIG_AUDIO)
  * FIXME: needs doc
  */
 void eeconfig_update_audio(uint8_t val) { eeprom_update_byte(EECONFIG_AUDIO, val); }
-
+#endif
 
 /** \brief eeconfig read kb
  *
@@ -171,4 +171,3 @@ uint32_t eeconfig_read_user(void)      { return eeprom_read_dword(EECONFIG_USER)
 void eeconfig_update_user(uint32_t val) { eeprom_update_dword(EECONFIG_USER, val); }
 
 
-#endif
