@@ -3,6 +3,17 @@
 #include "eeprom.h"
 #include "eeconfig.h"
 
+
+
+__attribute__ ((weak))
+void eeconfig_init_user(void) {}
+
+__attribute__ ((weak))
+void eeconfig_init_kb(void) {
+  eeconfig_init_user();
+}
+
+
 /** \brief eeconfig initialization
  *
  * FIXME: needs doc
@@ -112,4 +123,19 @@ uint8_t eeconfig_read_audio(void)      { return eeprom_read_byte(EECONFIG_AUDIO)
  * FIXME: needs doc
  */
 void eeconfig_update_audio(uint8_t val) { eeprom_update_byte(EECONFIG_AUDIO, val); }
+
+
+/** \brief eeconfig read keyboard
+ *
+ * Reads EECONFIG for keyboard settings
+ */
+uint8_t eeconfig_read_keymap(void)      { return eeprom_read_byte(EECONFIG_KEYBOARD); }
+/** \brief eeconfig update keymap
+ *
+ * FIXME: needs doc
+ */
+void eeconfig_update_keymap(uint8_t val) { eeprom_update_byte(EECONFIG_KEYMAP, val); }
+
+
+
 #endif
