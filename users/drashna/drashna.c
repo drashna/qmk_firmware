@@ -193,9 +193,7 @@ void matrix_init_user(void) {
     }
   }
 
-#ifdef AUDIO_CLICKY
-  clicky_enable = userspace_config.clicky_enable;
-#endif
+  userspace_config.raw = eeprom_read_byte(EECONFIG_USERSPACE);
 
 #if ( defined(UNICODE_ENABLE) || defined(UNICODEMAP_ENABLE) || defined(UCIS_ENABLE) )
 	set_unicode_input_mode(UC_WINC);
@@ -410,12 +408,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
       }
     }
     return false;
-    break;
-  case CLICKY_TOGGLE:
-#ifdef AUDIO_CLICKY
-    userspace_config.clicky_enable = clicky_enable;
-    eeprom_update_byte(EECONFIG_USERSPACE, userspace_config.raw);
-#endif
     break;
 #ifdef UNICODE_ENABLE
   case UC_FLIP: // (╯°□°)╯ ︵ ┻━┻
