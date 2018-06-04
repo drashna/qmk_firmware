@@ -25,27 +25,74 @@ uint8_t current_osm;
 
 void set_rgb_indicators(uint8_t this_mod, uint8_t this_led, uint8_t this_osm) {
   if (userspace_config.rgb_layer_change && biton32(layer_state) == 0) {
+
     if (this_mod & MODS_SHIFT_MASK || this_led & (1<<USB_LED_CAPS_LOCK) || this_osm & MODS_SHIFT_MASK) {
-      rgblight_sethsv_at(0, 255, 255, SHFT_LED1);
-      rgblight_sethsv_at(0, 255, 255, SHFT_LED2);
+#ifdef SHFT_LED1
+      rgblight_sethsv_green_at(SHFT_LED1);
+#endif
+#ifdef SHFT_LED2
+      rgblight_sethsv_green_at(SHFT_LED2);
+#endif
     } else {
+#ifdef SHFT_LED1
       rgblight_sethsv_default_helper(SHFT_LED1);
+#endif
+#ifdef SHFT_LED2
       rgblight_sethsv_default_helper(SHFT_LED2);
+#endif
     }
+
     if (this_mod & MODS_CTRL_MASK || this_osm & MODS_CTRL_MASK) {
-      rgblight_sethsv_at(51, 255, 255, CTRL_LED1);
-      rgblight_sethsv_at(51, 255, 255, CTRL_LED2);
+#ifdef CTRL_LED1
+      rgblight_sethsv_red_at(CTRL_LED1);
+#endif
+#ifdef CTRL_LED2
+      rgblight_sethsv_red_at(CTRL_LED2);
+#endif
     } else {
+#ifdef CTRL_LED1
       rgblight_sethsv_default_helper(CTRL_LED1);
+#endif
+#ifdef CTRL_LED2
       rgblight_sethsv_default_helper(CTRL_LED2);
+#endif
     }
+
+#if defined(GUI_LED1) || defined(GUI_LED2)
     if (this_mod & MODS_GUI_MASK || this_osm & MODS_GUI_MASK) {
-      rgblight_sethsv_at(120, 255, 255, GUI_LED1);
-      rgblight_sethsv_at(120, 255, 255, GUI_LED2);
+#ifdef GUI_LED1
+      rgblight_sethsv_yellow_at(GUI_LED1);
+#endif
+#ifdef GUI_LED2
+      rgblight_sethsv_yellow_at(GUI_LED2);
+#endif
     } else {
+#ifdef GUI_LED1
       rgblight_sethsv_default_helper(GUI_LED1);
+#endif
+#ifdef GUI_LED2
       rgblight_sethsv_default_helper(GUI_LED2);
+#endif
     }
+#endif
+
+#if defined(ALT_LED1) || defined(ALT_LED2)
+    if (this_mod & MODS_ALT_MASK || this_osm & MODS_ALT_MASK) {
+#ifdef ALT_LED1
+      rgblight_sethsv_blue_at(ALT_LED1);
+#endif
+#ifdef ALT_LED2
+      rgblight_sethsv_blue_at(ALT_LED2);
+#endif
+    } else {
+#ifdef ALT_LED1
+      rgblight_sethsv_default_helper(ALT_LED1);
+#endif
+#ifdef ALT_LED2
+      rgblight_sethsv_default_helper(ALT_LED2);
+#endif
+    }
+#endif
   }
 }
 
@@ -67,8 +114,42 @@ void matrix_scan_indicator(void) {
 static rgblight_fadeout lights[RGBLED_NUM];
 
 __attribute__ ((weak))
-bool indicator_is_this_led_used(uint8_t index) { return false; }
+bool indicator_is_this_led_used_keyboard(uint8_t index) { return false; }
 
+bool indicator_is_this_led_used(uint8_t index) {
+  switch (index) {
+#ifdef INDICATOR_LIGHTS
+#ifdef SHFT_LED1
+    case SHFT_LED1:
+#endif
+#ifdef SHFT_LED2
+    case SHFT_LED2:
+#endif
+#ifdef CTRL_LED1
+    case CTRL_LED1:
+#endif
+#ifdef CTRL_LED2
+    case CTRL_LED2:
+#endif
+#ifdef GUI_LED1
+    case GUI_LED1:
+#endif
+#ifdef GUI_LED2
+    case GUI_LED2:
+#endif
+#ifdef ALT_LED1
+    case ALT_LED1:
+#endif
+#ifdef ALT_LED2
+    case ALT_LED2:
+#endif
+      return true;
+      break;
+#endif
+    default:
+    return indicator_is_this_led_used_keyboard(index);
+  }
+}
 void scan_rgblight_fadeout(void) { // Don't effing change this function .... rgblight_sethsv is supppppper intensive
   bool litup = false;
   for (uint8_t light_index = 0 ; light_index < RGBLED_NUM ; ++light_index ) {

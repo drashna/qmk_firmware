@@ -84,6 +84,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define CTRL_LED2 9
 
 #define GUI_LED1 7
-#define GUI_LED2 8
+#define ALT_LED1 8
 
 #endif
