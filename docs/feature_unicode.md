@@ -77,7 +77,7 @@ void qk_ucis_symbol_fallback (void) { // falls back to manual unicode entry
 
 ## Input Modes
 
-Unicode input in QMK works by inputting a sequence of characters to the OS, sort of like a macro. Unfortunately, the way this is done differs for each platform. Specifically, each platform has a key sequence that it requires to input Unicode characters. Therefore, a corresponding input mode has to be set in QMK.
+Unicode input in QMK works by inputting a sequence of characters to the OS, sort of like a macro. Unfortunately, the way this is done differs for each platform. Specifically, each platform requires a different combination of keys to trigger Unicode input. Therefore, a corresponding input mode has to be set in QMK.
 
 The following input modes are available:
 
