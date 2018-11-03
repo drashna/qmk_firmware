@@ -46,8 +46,8 @@ bool process_unicode_common(uint16_t keycode, keyrecord_t *record);
 
 #define UC_OSX 0  // Mac OS X
 #define UC_LNX 1  // Linux
-#define UC_WIN 2  // Windows 'HexNumpad'
-#define UC_BSD 3  // BSD (not implemented)
+#define UC_BSD 2  // BSD (not implemented)
+#define UC_WIN 3  // Windows 'HexNumpad'
 #define UC_WINC 4 // WinCompose https://github.com/samhocevar/wincompose
 #define UC_OSX_RALT 5 // Mac OS X using Right Alt key for Unicode Compose
 
