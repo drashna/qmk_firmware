@@ -54,6 +54,8 @@ void unicode_input_start(void) {
     unregister_code(KC_LSFT);
     unregister_code(KC_LCTL);
     break;
+  case UC_BSD:
+    break;
   case UC_WIN:
     register_code(KC_LALT);
     tap_code(KC_PPLS);

@@ -77,15 +77,22 @@ void qk_ucis_symbol_fallback (void) { // falls back to manual unicode entry
 
 ## Input Modes
 
-Unicode input in QMK works by inputting a sequence of characters to the OS, sort of like a macro. Unfortunately, the way this is done differs for each platform, so a corresponding input mode has to be set.
+Unicode input in QMK works by inputting a sequence of characters to the OS, sort of like a macro. Unfortunately, the way this is done differs for each platform. Specifically, each platform has a key sequence that it requires to input Unicode characters. Therefore, a corresponding input mode has to be set in QMK.
 
 The following input modes are available:
 
 * __UC_OSX__: MacOS Unicode Hex Input support. Works only up to 0xFFFF. Disabled by default. To enable: go to System Preferences -> Keyboard -> Input Sources, and enable Unicode Hex.
 * __UC_OSX_RALT__: Same as UC_OSX, but sends the Right Alt key for unicode input
 * __UC_LNX__: Unicode input method under Linux. Works up to 0xFFFFF. Should work almost anywhere on ibus enabled distros. Without ibus, this works under GTK apps, but rarely anywhere else.
+* __UC_BSD__: (non operational) Unicode input method under BSD.
 * __UC_WIN__: (not recommended) Windows built-in Unicode input. To enable: create registry key under `HKEY_CURRENT_USER\Control Panel\Input Method\EnableHexNumpad` of type `REG_SZ` called `EnableHexNumpad`, set its value to 1, and reboot. This method is not recommended because of reliability and compatibility issue, use WinCompose method below instead.
 * __UC_WINC__: Windows Unicode input using WinCompose. Requires [WinCompose](https://github.com/samhocevar/wincompose). Works reliably under many (all?) variations of Windows.
+
+!> There is an input mode option for BSD, but it's not currently implemented. If you use BSD and would like support for this, please [open an issue on GitHub](https://github.com/qmk/qmk_firmware/issues).
+
+### Switching input modes
+
+There are two ways to set the input mode for Unicode: by keycode or by function. Keep in mind that both methods write to persistent storage (EEPROM), and are loaded each time the keyboard starts. So once you've set it once, you don't need to set it again unless you want to change it, or you've reset the EEPROM settings.
 
 You can switch the input mode at any time by using one of the following keycodes. The easiest way is to add the ones you use to your keymap.
 
@@ -97,11 +104,7 @@ You can switch the input mode at any time by using one of the following keycodes
 |`UNICODE_MODE_WINC`    |`UC_M_WC`|`UC_WINC`    |Switch to Windows input using WinCompose.|
 |`UNICODE_MODE_OSX_RALT`|`UC_M_OR`|`UC_OSX_RALT`|Switch to Mac OS X input using Right Alt.|
 
-You can also switch the input mode by calling `set_unicode_input_mode(x)` in your code, and this works the same way as the keycodes above.
-
-?> Keep in mind that both methods write to EEPROM, so the last used mode is loaded every time the keyboard starts; therefore, you only need to do this once.
-
-!> There is an input mode option for BSD, but it's not currently implemented. If you use BSD and would like support for this, please [open an issue on GitHub](https://github.com/qmk/qmk_firmware/issues).
+You can also switch the input mode by calling `set_unicode_input_mode(x)` in your code, and this works the same way as the above keycodes.
 
 ### Audio Feedback
 
