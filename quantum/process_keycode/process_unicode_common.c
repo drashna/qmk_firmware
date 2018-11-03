@@ -144,18 +144,18 @@ bool process_unicode_common(uint16_t keycode, keyrecord_t *record) {
       PLAY_SONG(song_lnx);
 #endif
       break;
-    case UNICODE_MODE_BSD:
-      set_unicode_input_mode(UC_BSD);
-#if defined(AUDIO_ENABLE) && defined(UNICODE_SONG_BSD)
-      static float song_bsd[][2] = UNICODE_SONG_BSD;
-      PLAY_SONG(song_bsd);
-#endif
-      break;
     case UNICODE_MODE_WIN:
       set_unicode_input_mode(UC_WIN);
 #if defined(AUDIO_ENABLE) && defined(UNICODE_SONG_WIN)
       static float song_win[][2] = UNICODE_SONG_WIN;
       PLAY_SONG(song_win);
+#endif
+      break;
+    case UNICODE_MODE_BSD:
+      set_unicode_input_mode(UC_BSD);
+#if defined(AUDIO_ENABLE) && defined(UNICODE_SONG_BSD)
+      static float song_bsd[][2] = UNICODE_SONG_BSD;
+      PLAY_SONG(song_bsd);
 #endif
       break;
     case UNICODE_MODE_WINC:
