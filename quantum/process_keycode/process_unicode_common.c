@@ -148,7 +148,7 @@ void send_unicode_hex_string(const char *str) {
   }
 }
 
-bool process_record_unicode_common(uint16_t keycode, keyrecord_t *record) {
+bool process_unicode_common(uint16_t keycode, keyrecord_t *record) {
   if (record->event.pressed) {
     switch (keycode) {
     case UNICODE_MODE_OSX:
