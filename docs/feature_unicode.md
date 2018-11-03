@@ -90,7 +90,7 @@ The following input modes are available:
 
 !> There is an input mode option for BSD, but it's not currently implemented. If you use BSD and would like support for this, please [open an issue on GitHub](https://github.com/qmk/qmk_firmware/issues).
 
-### Switching input modes
+### Switching Input Modes
 
 There are two ways to set the input mode for Unicode: by keycode or by function. Keep in mind that both methods write to persistent storage (EEPROM), and are loaded each time the keyboard starts. So once you've set it once, you don't need to set it again unless you want to change it, or you've reset the EEPROM settings.
 
