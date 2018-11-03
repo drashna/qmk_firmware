@@ -88,7 +88,7 @@ The following input modes are available:
 * __UC_WIN__: (not recommended) Windows built-in Unicode input. To enable: create registry key under `HKEY_CURRENT_USER\Control Panel\Input Method\EnableHexNumpad` of type `REG_SZ` called `EnableHexNumpad`, set its value to 1, and reboot. This method is not recommended because of reliability and compatibility issue, use WinCompose method below instead.
 * __UC_WINC__: Windows Unicode input using WinCompose. Requires [WinCompose](https://github.com/samhocevar/wincompose). Works reliably under many (all?) variations of Windows.
 
-!> There is an input mode option for BSD, but it's not currently implemented. If you use BSD and would like support for this, please [open an issue on GitHub](https://github.com/qmk/qmk_firmware/issues).
+!> There is an input mode option for BSD, but it's not implemented at this time. If you use BSD and want to help with adding support for it, please [open an issue on GitHub](https://github.com/qmk/qmk_firmware/issues).
 
 ### Switching Input Modes
 
