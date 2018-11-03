@@ -90,16 +90,16 @@ void unicode_input_start(void) {
 __attribute__((weak))
 void unicode_input_finish(void) {
   switch (unicode_config.input_mode) {
-    case UC_OSX:
-    case UC_WIN:
+  case UC_OSX:
+  case UC_WIN:
     unregister_code(KC_LALT);
-      break;
-    case UC_OSX_RALT:
-      unregister_code(KC_RALT);
-      break;
-    case UC_LNX:
-      tap_code(KC_SPC);
-      break;
+    break;
+  case UC_OSX_RALT:
+    unregister_code(KC_RALT);
+    break;
+  case UC_LNX:
+    tap_code(KC_SPC);
+    break;
   }
 
   set_mods(saved_mods); // Reregister previously set mods
@@ -151,42 +151,42 @@ void send_unicode_hex_string(const char *str) {
 bool process_record_unicode_common(uint16_t keycode, keyrecord_t *record) {
   if (record->event.pressed) {
     switch (keycode) {
-      case UNICODE_MODE_OSX:
+    case UNICODE_MODE_OSX:
       set_unicode_input_mode(UC_OSX);
-        #if defined(AUDIO_ENABLE) && defined(UNICODE_SONG_OSX)
-          PLAY_SONG(osx_song);
-        #endif
-        break;
-      case UNICODE_MODE_LNX:
-        set_unicode_input_mode(UC_LNX);
-        #if defined(AUDIO_ENABLE) && defined(UNICODE_SONG_LNX)
-          PLAY_SONG(song_lnx);
-        #endif
-        break;
-      case UNICODE_MODE_BSD:
-        set_unicode_input_mode(UC_BSD);
-        #if defined(AUDIO_ENABLE) && defined(UNICODE_SONG_BSD)
-          PLAY_SONG(song_bsd);
-        #endif
-        break;
-      case UNICODE_MODE_WIN:
-        set_unicode_input_mode(UC_WIN);
-        #if defined(AUDIO_ENABLE) && defined(UNICODE_SONG_WINDOWS)
-          PLAY_SONG(windows_song);
-        #endif
-        break;
-      case UNICODE_MODE_WINC:
-        set_unicode_input_mode(UC_WINC);
-        #if defined(AUDIO_ENABLE) && defined(UNICODE_SONG_WIN_COMPOSE)
-          PLAY_SONG(win_compose_song);
-        #endif
-        break;
-      case UNICODE_MODE_OSX_RALT:
-        set_unicode_input_mode(UC_OSX_RALT);
-        #if defined(AUDIO_ENABLE) && defined(UNICODE_SONG_OSX_RALT)
-          PLAY_SONG(osx_ralt_song);
-        #endif
-        break;
+      #if defined(AUDIO_ENABLE) && defined(UNICODE_SONG_OSX)
+        PLAY_SONG(osx_song);
+      #endif
+      break;
+    case UNICODE_MODE_LNX:
+      set_unicode_input_mode(UC_LNX);
+      #if defined(AUDIO_ENABLE) && defined(UNICODE_SONG_LNX)
+        PLAY_SONG(song_lnx);
+      #endif
+      break;
+    case UNICODE_MODE_BSD:
+      set_unicode_input_mode(UC_BSD);
+      #if defined(AUDIO_ENABLE) && defined(UNICODE_SONG_BSD)
+        PLAY_SONG(song_bsd);
+      #endif
+      break;
+    case UNICODE_MODE_WIN:
+      set_unicode_input_mode(UC_WIN);
+      #if defined(AUDIO_ENABLE) && defined(UNICODE_SONG_WINDOWS)
+        PLAY_SONG(windows_song);
+      #endif
+      break;
+    case UNICODE_MODE_WINC:
+      set_unicode_input_mode(UC_WINC);
+      #if defined(AUDIO_ENABLE) && defined(UNICODE_SONG_WIN_COMPOSE)
+        PLAY_SONG(win_compose_song);
+      #endif
+      break;
+    case UNICODE_MODE_OSX_RALT:
+      set_unicode_input_mode(UC_OSX_RALT);
+      #if defined(AUDIO_ENABLE) && defined(UNICODE_SONG_OSX_RALT)
+        PLAY_SONG(osx_ralt_song);
+      #endif
+      break;
     }
   }
   #ifdef UNICODE_ENABLE
