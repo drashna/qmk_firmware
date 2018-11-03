@@ -115,8 +115,10 @@ For instance, you can add these definitions to your `config.h` file:
 ```c
 #define UNICODE_SONG_OSX  COIN_SOUND
 #define UNICODE_SONG_LNX  UNICODE_LINUX
+#define UNICODE_SONG_BSD  MARIO_GAMEOVER
 #define UNICODE_SONG_WIN  UNICODE_WINDOWS
 #define UNICODE_SONG_WINC UNICODE_WINDOWS
+#define UNICODE_SONG_OSX_RALT COIN_SOUND
 ```
 
 ### Additional Customization
