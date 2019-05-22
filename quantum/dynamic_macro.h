@@ -35,21 +35,15 @@
 #define DYNAMIC_MACRO_SIZE 128
 #endif
 
-/* DYNAMIC_MACRO_RANGE must be set as the last element of user's
- * "planck_keycodes" enum prior to including this header. This allows
- * us to 'extend' it.
+/* DYNAMIC_MACRO_RANGE was the last entry in the enum for custom keycodes.
+ * However, because they are in the system core now, it will cause errors.
+ * So to avoid potential issues, just set it to something past  SAFE_RANGE
  */
-enum dynamic_macro_keycodes {
-    DYN_REC_START1 = DYNAMIC_MACRO_RANGE,
-    DYN_REC_START2,
-    DYN_REC_STOP,
-    DYN_MACRO_PLAY1,
-    DYN_MACRO_PLAY2,
-};
+
+#define DYNAMIC_MACRO_RANGE (SAFE_RANGE + 20)
 
 /* Blink the LEDs to notify the user about some event. */
-void dynamic_macro_led_blink(void)
-{
+void dynamic_macro_led_blink(void) {
 #ifdef BACKLIGHT_ENABLE
     backlight_toggle();
     wait_ms(100);
@@ -72,8 +66,7 @@ void dynamic_macro_led_blink(void)
  * @param[out] macro_pointer The new macro buffer iterator.
  * @param[in]  macro_buffer  The macro buffer used to initialize macro_pointer.
  */
-void dynamic_macro_record_start(
-    keyrecord_t **macro_pointer, keyrecord_t *macro_buffer)
+void dynamic_macro_record_start(keyrecord_t **macro_pointer, keyrecord_t *macro_buffer)
 {
     dprintln("dynamic macro recording: started");
 
