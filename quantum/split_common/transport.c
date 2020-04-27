@@ -21,6 +21,8 @@ static pin_t encoders_pad[] = ENCODERS_PAD_A;
 #    define NUMBER_OF_ENCODERS (sizeof(encoders_pad) / sizeof(pin_t))
 #endif
 
+void set_split_host_leds(uint8_t host_leds);
+
 #if defined(USE_I2C)
 
 #    include "i2c_master.h"
@@ -38,6 +40,7 @@ typedef struct _I2C_slave_buffer_t {
 #    ifdef WPM_ENABLE
     uint8_t current_wpm;
 #    endif
+    uint8_t host_leds;
 } I2C_slave_buffer_t;
 
 static I2C_slave_buffer_t *const i2c_buffer = (I2C_slave_buffer_t *)i2c_slave_reg;
@@ -47,7 +50,7 @@ static I2C_slave_buffer_t *const i2c_buffer = (I2C_slave_buffer_t *)i2c_slave_re
 #    define I2C_KEYMAP_START offsetof(I2C_slave_buffer_t, smatrix)
 #    define I2C_ENCODER_START offsetof(I2C_slave_buffer_t, encoder_state)
 #    define I2C_WPM_START offsetof(I2C_slave_buffer_t, current_wpm)
-
+#    define I2C_HOST_LED_START offsetof(I2C_slave_buffer_t, host_leds)
 #    define TIMEOUT 100
 
 #    ifndef SLAVE_I2C_ADDRESS
@@ -91,6 +94,13 @@ bool transport_master(matrix_row_t matrix[]) {
         }
     }
 #    endif
+
+    uint8_t host_leds = host_keyboard_leds();
+    set_split_host_leds(host_leds);
+    if (i2c_writeReg(SLAVE_I2C_ADDRESS, I2C_HOST_LED_START, (void *)&host_leds, sizeof(host_leds), TIMEOUT) >= 0) {
+        i2c_buffer->host_leds = host_leds;
+    }
+
     return true;
 }
 
@@ -118,6 +128,8 @@ void transport_slave(matrix_row_t matrix[]) {
 #    ifdef WPM_ENABLE
     set_current_wpm(i2c_buffer->current_wpm);
 #    endif
+
+    set_split_host_leds(i2c_buffer->host_leds);
 }
 
 void transport_master_init(void) { i2c_init(); }
@@ -145,6 +157,7 @@ typedef struct _Serial_m2s_buffer_t {
 #    ifdef WPM_ENABLE
     uint8_t current_wpm;
 #    endif
+    uint8_t host_leds;
 } Serial_m2s_buffer_t;
 
 #    if defined(RGBLIGHT_ENABLE) && defined(RGBLIGHT_SPLIT)
@@ -251,6 +264,10 @@ bool transport_master(matrix_row_t matrix[]) {
     // Write wpm to slave
     serial_m2s_buffer.current_wpm = get_current_wpm();
 #    endif
+
+    serial_m2s_buffer.host_leds = host_keyboard_leds_raw();
+    set_split_host_leds(serial_m2s_buffer.host_leds);
+
     return true;
 }
 
@@ -271,6 +288,8 @@ void transport_slave(matrix_row_t matrix[]) {
 #    ifdef WPM_ENABLE
     set_current_wpm(serial_m2s_buffer.current_wpm);
 #    endif
+
+    set_split_host_leds(serial_m2s_buffer.host_leds);
 }
 
 #endif

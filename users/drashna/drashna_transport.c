@@ -36,6 +36,8 @@ static pin_t encoders_pad[] = ENCODERS_PAD_A;
 #    define NUMBER_OF_ENCODERS (sizeof(encoders_pad) / sizeof(pin_t))
 #endif
 
+void set_split_host_leds(uint8_t host_leds);
+
 #ifdef POINTING_DEVICE_ENABLE
 static int8_t split_mouse_x = 0, split_mouse_y = 0;
 #endif
@@ -70,6 +72,7 @@ typedef struct _I2C_slave_buffer_t {
 #    ifdef WPM_ENABLE
     uint8_t current_wpm;
 #    endif
+    uint8_t host_leds;
     int8_t        mouse_x;
     int8_t        mouse_y;
     bool          oled_on;
@@ -88,6 +91,7 @@ static I2C_slave_buffer_t *const i2c_buffer = (I2C_slave_buffer_t *)i2c_slave_re
 #    define I2C_ONESHOT_MODS_START offsetof(I2C_slave_buffer_t, oneshot_mods)
 #    define I2C_ENCODER_START offsetof(I2C_slave_buffer_t, encoder_state)
 #    define I2C_WPM_START offsetof(I2C_slave_buffer_t, current_wpm)
+#    define I2C_HOST_LED_START offsetof(I2C_slave_buffer_t, host_leds)
 #    define I2C_MOUSE_X_START offsetof(I2C_slave_buffer_t, mouse_x)
 #    define I2C_MOUSE_Y_START offsetof(I2C_slave_buffer_t, mouse_y)
 #    define I2C_OLED_ON_START offsetof(I2C_slave_buffer_t, oled_on)
@@ -138,6 +142,13 @@ bool transport_master(matrix_row_t matrix[]) {
         }
     }
 #    endif
+
+
+    uint8_t host_leds = host_keyboard_leds();
+    set_split_host_leds(host_leds);
+    if (i2c_writeReg(SLAVE_I2C_ADDRESS, I2C_HOST_LED_START, (void *)&host_leds, sizeof(host_leds), TIMEOUT) >= 0) {
+        i2c_buffer->host_leds = host_leds;
+    }
 
 #    ifdef POINTING_DEVICE_ENABLE
     if (is_keyboard_left()) {
@@ -233,6 +244,8 @@ void transport_slave(matrix_row_t matrix[]) {
     set_current_wpm(i2c_buffer->current_wpm);
 #    endif
 
+    set_split_host_leds(i2c_buffer->host_leds);
+
 #    ifdef POINTING_DEVICE_ENABLE
     if (!is_keyboard_left()) {
         i2c_buffer->mouse_x = split_mouse_x;
@@ -303,6 +316,7 @@ typedef struct _Serial_m2s_buffer_t {
 #    ifdef WPM_ENABLE
     uint8_t current_wpm;
 #    endif
+    uint8_t host_leds;
     bool          oled_on;
     layer_state_t t_layer_state;
     layer_state_t t_default_layer_state;
@@ -414,6 +428,10 @@ bool transport_master(matrix_row_t matrix[]) {
     serial_m2s_buffer.current_wpm = get_current_wpm();
 #    endif
 
+
+    serial_m2s_buffer.host_leds = host_keyboard_leds_raw();
+    set_split_host_leds(serial_m2s_buffer.host_leds);
+
 #    ifdef SPLIT_MODS_ENABLE
     serial_m2s_buffer.real_mods = get_mods();
     serial_m2s_buffer.weak_mods = get_weak_mods();
@@ -463,6 +481,8 @@ void transport_slave(matrix_row_t matrix[]) {
 #    ifdef WPM_ENABLE
     set_current_wpm(serial_m2s_buffer.current_wpm);
 #    endif
+
+    set_split_host_leds(serial_m2s_buffer.host_leds);
 
 #    ifdef SPLIT_MODS_ENABLE
     set_mods(serial_m2s_buffer.real_mods);
