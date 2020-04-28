@@ -87,14 +87,10 @@ void set_underglow(uint8_t red, uint8_t green, uint8_t blue){
 }
 
 
-void rgblight_set(void) {
+void rgblight_call_driver(LED_TYPE *start_led, uint8_t num_leds) {
 #ifdef RGBLIGHT_ENABLE
     for(uint8_t i = 0; (i < sizeof(rgb_sequence)) && (i < RGBLED_NUM); i++){
-        if(rgblight_config.enable){
-            set_rgb(rgb_sequence[i], led[i].r, led[i].g, led[i].b);
-        }else{
-            set_rgb(rgb_sequence[i], 0, 0, 0);
-        }
+      set_rgb(rgb_sequence[i], led[i].r, led[i].g, led[i].b);
     }
 #endif
 }
