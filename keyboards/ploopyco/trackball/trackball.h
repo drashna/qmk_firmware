@@ -17,21 +17,27 @@
 #pragma once
 
 #include <math.h>
-#include "quantum.h"
-#include <stdint.h>
-#include <avr/pgmspace.h>
-#include <stdbool.h>
-#include <string.h>
 #include <print.h>
-#include <stdio.h>
-#include "spi_master.h"
+#include "quantum.h"
 #include "analog.h"
 #include "pointing_device.h"
+#include "PMW3360.h"
 
-typedef struct {
-    int16_t X;
-    int16_t Y;
-} PMWState;
+// Helpers
+#define degToRad(angleInDegrees) ((angleInDegrees)*M_PI / 180.0)
+#define radToDeg(angleInRadians) ((angleInRadians)*180.0 / M_PI)
+#define constrain(amt, low, high) ((amt) < (low) ? (low) : ((amt) > (high) ? (high) : (amt)))
+
+// Hardware Pin Defs
+#define MOUSE_LEFT_PIN D4
+#define MOUSE_RIGHT_PIN E6
+#define MOUSE_MIDDLE_PIN D2
+#define MOUSE_BACK_PIN B5
+#define MOUSE_FORWARD_PIN D7
+#define SENSOR_CS B0
+#define PMW_SS B0
+#define CPI 1600
+#define SPI_DIVISOR 2
 
 // Sensor defs
 #define OPT_ENC1 F0
@@ -39,7 +45,17 @@ typedef struct {
 #define OPT_ENC1_MUX 0
 #define OPT_ENC2_MUX 4
 
-extern float mouse_multiplier;
+#ifndef OPT_DEBOUNCE
+#    define OPT_DEBOUNCE 5  // (ms) 			Time between scroll events
+#endif
+#ifndef OPT_THRES
+#    define OPT_THRES 150  // (0-1024) 	Threshold for actication
+#endif
+#ifndef OPT_SCALE
+#    define OPT_SCALE 1  // Multiplier for wheel
+#endif
+
+// extern float mouse_multiplier;
 
 // function defs
 void process_wheel(void);

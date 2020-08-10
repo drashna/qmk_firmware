@@ -31,15 +31,15 @@
 #define DEBUGOPTO false  // Slows down scan rate!
 
 // Trackball State
-bool     BurstState   = false;  // init burst state for Trackball module
 uint16_t MotionStart  = 0;      // Timer for accel, 0 is resting state
 uint16_t lastScroll   = 0;      // Previous confirmed wheel event
 uint16_t lastMidClick = 0;      // Stops scrollwheel from being read if it was pressed
 uint8_t  OptLowPin    = OPT_ENC1;
-float    mouse_multiplier = 1.0;
+// float    mouse_multiplier = 1.0; // Can be done by tuning CPI
 // Mouse Processing
-static void process_mouse(bool bMotion, bool* bBurst) {
+static void process_mouse(void) {
     // Read state
+<<<<<<< HEAD:keyboards/ploopyco/trackball/trackball.c
     PMWState d        = point_burst_read(bMotion, bBurst);
     bool     isMoving = (d.X != 0) || (d.Y != 0);
     int16_t  x, y;
@@ -64,30 +64,56 @@ static void process_mouse(bool bMotion, bool* bBurst) {
     }
 
     // Apply any post processing required
+=======
+    struct PMW3360_DATA data = read_burst();    
+    if(data.isOnSurface && data.isMotion)    
+    {    
+        // Reset timer if stopped moving
+        if (!data.isMotion) {
+            if (MotionStart != 0) MotionStart = 0;
+            return;
+        }
+    
+        // Set timer if new motion
+        if ((MotionStart == 0) && data.isMotion) {
+            if (DEBUGMOUSE) dprintf("Starting motion.\n");
+            MotionStart = timer_read();
+        }
+    
+        if (DEBUGMOUSE) {
+            dprintf("Delt] d: %d t: %u\n", abs(data.dx) + abs(data.dy), MotionStart);
+        }
+        if (DEBUGMOUSE) {
+            dprintf("Pre ] X: %d, Y: %d\n", data.dx, data.dy);
+        }
+    
+        // Apply any post processing required
+>>>>>>> c1c533ad2... Update for spi_master:keyboards/mouse/ploopyco_trackball/ploopyco_trackball.c
 #if defined(PROFILE_LINEAR)
-    float scale = float(timer_elaspsed(MotionStart)) / 1000.0;
-    x           *= scale;
-    y           *= scale;
+        float scale = float(timer_elaspsed(MotionStart)) / 1000.0;
+        data.dx *= scale;
+        data.dy *= scale;
 #elif defined(PROFILE_INVERSE)
-// TODO
+        // TODO
 #else
-// no post processing
+        // no post processing
 #endif
-
-    // apply multiplier
-    x *= mouse_multiplier;
-    y *= mouse_multiplier;
-
-    // Wrap to HID size
-    x = constrain(d.X, -127, 127);
-    y = constrain(d.Y, -127, 127);
-    if (DEBUGMOUSE) dprintf("Cons] X: %d, Y: %d\n", x, y);
-    // dprintf("Elapsed:%u, X: %f Y: %\n", i, pgm_read_byte(firmware_data+i));
-
-    report_mouse_t currentReport = pointing_device_get_report();
-    currentReport.x              = (int)x;
-    currentReport.y              = (int)y;
-    pointing_device_set_report(currentReport);
+    
+        // apply multiplier
+        // data.dx *= mouse_multiplier;
+        // data.dy *= mouse_multiplier;
+    
+        // Wrap to HID size
+        data.dx = constrain(data.dx, -127, 127);
+        data.dy = constrain(data.dy, -127, 127);
+        if (DEBUGMOUSE) dprintf("Cons] X: %d, Y: %d\n", data.dx, data.dy);
+        // dprintf("Elapsed:%u, X: %f Y: %\n", i, pgm_read_byte(firmware_data+i));
+    
+        report_mouse_t currentReport = pointing_device_get_report();
+        currentReport.x              = (int)data.dx;
+        currentReport.y              = (int)data.dy;
+        pointing_device_set_report(currentReport);
+    }
 }
 
 void process_wheel(void) {
@@ -235,13 +261,23 @@ void keyboard_pre_init_kb(void) {
     writePinLow(F5);
     setPinOutput(F3);
     writePinLow(F3);
+}
 
+<<<<<<< HEAD:keyboards/ploopyco/trackball/trackball.c
     // Initialize SPI for MCU
     spi_init();
     if (spi_start(SPI_SS_PIN, true, 0,  ))
 
 }
 void matrix_scan_kb(void) {
+=======
+void pointing_device_init(void) {
+  pmw_begin();
+}
+
+void pointing_device_task(void) {
+    process_mouse();
+>>>>>>> c1c533ad2... Update for spi_master:keyboards/mouse/ploopyco_trackball/ploopyco_trackball.c
     process_wheel();
-    matrix_scan_user();
+    pointing_device_send();
 }
