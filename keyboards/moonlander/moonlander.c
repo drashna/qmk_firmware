@@ -39,7 +39,7 @@ void dynamic_macro_record_end_user(int8_t direction) {
 }
 #endif
 
-void moonlander_led_task(void) {
+void __attribute__((optimize("O0"))) moonlander_led_task(void) {
     if (is_launching) {
         ML_LED_1(false);
         ML_LED_2(false);
