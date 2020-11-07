@@ -521,10 +521,10 @@ enum internal_special_keycodes {
 
 enum mouse_keys {
     /* Mouse Buttons */
-    KC_MS_UP = 0xF0,
+    KC_MS_UP = 0xED,
     KC_MS_DOWN,
     KC_MS_LEFT,
-    KC_MS_RIGHT,
+    KC_MS_RIGHT,  // 0xF0
     KC_MS_BTN1,
     KC_MS_BTN2,
     KC_MS_BTN3,
@@ -532,7 +532,7 @@ enum mouse_keys {
     KC_MS_BTN5,
 
     /* Mouse Wheel */
-    KC_MS_WH_UP,
+    KC_MS_WH_UP = 0xF9,
     KC_MS_WH_DOWN,
     KC_MS_WH_LEFT,
     KC_MS_WH_RIGHT,
@@ -540,6 +540,6 @@ enum mouse_keys {
     /* Acceleration */
     KC_MS_ACCEL0,
     KC_MS_ACCEL1,
-    KC_MS_ACCEL2
+    KC_MS_ACCEL2  //0xFF
 };
 #endif
