@@ -81,7 +81,7 @@ void solenoid_check(void) {
 
 void solenoid_setup(void) {
     setPinOutput(SOLENOID_PIN);
-    solenoid_fire();
+    if (is_keyboard_master()) solenoid_fire();
 }
 
 void solenoid_shutdown(void) { writePinLow(SOLENOID_PIN); }
