@@ -53,6 +53,7 @@
 #include "eeconfig.h"
 #include "bootloader.h"
 #include "timer.h"
+#include "sync_timer.h"
 #include "config_common.h"
 #include "gpio.h"
 #include "atomic_util.h"

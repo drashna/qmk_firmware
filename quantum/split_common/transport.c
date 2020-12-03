@@ -1,11 +1,11 @@
 #include <string.h>
 #include <stddef.h>
 
-#include "config.h"
 #include "matrix.h"
 #include "quantum.h"
 
 #define ROWS_PER_HAND (MATRIX_ROWS / 2)
+#define SYNC_TIMER_OFFSET 2
 
 #ifdef RGBLIGHT_ENABLE
 #    include "rgblight.h"
@@ -29,6 +29,9 @@ void set_split_host_leds(uint8_t host_leds);
 #    include "i2c_slave.h"
 
 typedef struct _I2C_slave_buffer_t {
+#    ifndef DISABLE_SYNC_TIMER
+    uint32_t sync_timer;
+#    endif
     matrix_row_t smatrix[ROWS_PER_HAND];
     uint8_t      backlight_level;
 #    if defined(RGBLIGHT_ENABLE) && defined(RGBLIGHT_SPLIT)
@@ -47,6 +50,7 @@ static I2C_slave_buffer_t *const i2c_buffer = (I2C_slave_buffer_t *)i2c_slave_re
 
 #    define I2C_BACKLIGHT_START offsetof(I2C_slave_buffer_t, backlight_level)
 #    define I2C_RGB_START offsetof(I2C_slave_buffer_t, rgblight_sync)
+#    define I2C_SYNC_TIME_START offsetof(I2C_slave_buffer_t, sync_timer)
 #    define I2C_KEYMAP_START offsetof(I2C_slave_buffer_t, smatrix)
 #    define I2C_ENCODER_START offsetof(I2C_slave_buffer_t, encoder_state)
 #    define I2C_WPM_START offsetof(I2C_slave_buffer_t, current_wpm)
@@ -101,10 +105,19 @@ bool transport_master(matrix_row_t matrix[]) {
         i2c_buffer->host_leds = host_leds;
     }
 
+#    ifndef DISABLE_SYNC_TIMER
+    i2c_buffer->sync_timer = sync_timer_read32() + SYNC_TIMER_OFFSET;
+    i2c_writeReg(SLAVE_I2C_ADDRESS, I2C_SYNC_TIME_START, (void *)&i2c_buffer->sync_timer, sizeof(i2c_buffer->sync_timer), TIMEOUT);
+#    endif
+
     return true;
 }
 
 void transport_slave(matrix_row_t matrix[]) {
+#    ifndef DISABLE_SYNC_TIMER
+    sync_timer_update(i2c_buffer->sync_timer);
+#    endif
+
     // Copy matrix to I2C buffer
     memcpy((void *)i2c_buffer->smatrix, (void *)matrix, sizeof(i2c_buffer->smatrix));
 
@@ -151,6 +164,9 @@ typedef struct _Serial_s2m_buffer_t {
 } Serial_s2m_buffer_t;
 
 typedef struct _Serial_m2s_buffer_t {
+#    ifndef DISABLE_SYNC_TIMER
+    uint32_t sync_timer;
+#    endif
 #    ifdef BACKLIGHT_ENABLE
     uint8_t backlight_level;
 #    endif
@@ -268,11 +284,20 @@ bool transport_master(matrix_row_t matrix[]) {
     serial_m2s_buffer.host_leds = host_keyboard_leds_raw();
     set_split_host_leds(serial_m2s_buffer.host_leds);
 
+#    ifndef DISABLE_SYNC_TIMER
+    serial_m2s_buffer.sync_timer = sync_timer_read32() + SYNC_TIMER_OFFSET;
+#    endif
+
     return true;
 }
 
 void transport_slave(matrix_row_t matrix[]) {
     transport_rgblight_slave();
+
+#    ifndef DISABLE_SYNC_TIMER
+    sync_timer_update(serial_m2s_buffer.sync_timer);
+#    endif
+
     // TODO: if MATRIX_COLS > 8 change to pack()
     for (int i = 0; i < ROWS_PER_HAND; ++i) {
         serial_s2m_buffer.smatrix[i] = matrix[i];
