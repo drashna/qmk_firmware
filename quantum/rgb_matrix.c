@@ -131,7 +131,7 @@ last_hit_t g_last_hit_tracker;
 // internals
 static uint8_t         rgb_last_enable   = UINT8_MAX;
 static uint8_t         rgb_last_effect   = UINT8_MAX;
-static effect_params_t rgb_effect_params = {0, 0xFF};
+static effect_params_t rgb_effect_params = {0, LED_FLAG_ALL, false};
 static rgb_task_states rgb_task_state    = SYNCING;
 #if RGB_DISABLE_TIMEOUT > 0
 static uint32_t rgb_anykey_timer;
@@ -143,6 +143,11 @@ static uint32_t rgb_timer_buffer;
 static last_hit_t last_hit_buffer;
 #endif  // RGB_MATRIX_KEYREACTIVE_ENABLED
 
+// split rgb matrix
+#ifdef RGB_MATRIX_SPLIT
+const uint8_t k_rgb_matrix_split[2] = RGB_MATRIX_SPLIT;
+#endif
+
 void eeconfig_read_rgb_matrix(void) { eeprom_read_block(&rgb_matrix_config, EECONFIG_RGB_MATRIX, sizeof(rgb_matrix_config)); }
 
 void eeconfig_update_rgb_matrix(void) { eeprom_update_block(&rgb_matrix_config, EECONFIG_RGB_MATRIX, sizeof(rgb_matrix_config)); }
@@ -153,6 +158,7 @@ void eeconfig_update_rgb_matrix_default(void) {
     rgb_matrix_config.mode   = RGB_MATRIX_STARTUP_MODE;
     rgb_matrix_config.hsv    = (HSV){RGB_MATRIX_STARTUP_HUE, RGB_MATRIX_STARTUP_SAT, RGB_MATRIX_STARTUP_VAL};
     rgb_matrix_config.speed  = RGB_MATRIX_STARTUP_SPD;
+    rgb_matrix_config.flags = LED_FLAG_ALL;
     eeconfig_update_rgb_matrix();
 }
 
@@ -164,6 +170,7 @@ void eeconfig_debug_rgb_matrix(void) {
     dprintf("rgb_matrix_config.hsv.s = %d\n", rgb_matrix_config.hsv.s);
     dprintf("rgb_matrix_config.hsv.v = %d\n", rgb_matrix_config.hsv.v);
     dprintf("rgb_matrix_config.speed = %d\n", rgb_matrix_config.speed);
+    dprintf("rgb_matrix_config.flags = %d\n", rgb_matrix_config.flags);
 }
 
 __attribute__((weak)) uint8_t rgb_matrix_map_row_column_to_led_kb(uint8_t row, uint8_t column, uint8_t *led_i) { return 0; }
@@ -180,15 +187,30 @@ uint8_t rgb_matrix_map_row_column_to_led(uint8_t row, uint8_t column, uint8_t *l
 
 void rgb_matrix_update_pwm_buffers(void) { rgb_matrix_driver.flush(); }
 
-void rgb_matrix_set_color(int index, uint8_t red, uint8_t green, uint8_t blue) { rgb_matrix_driver.set_color(index, red, green, blue); }
+void rgb_matrix_set_color(int index, uint8_t red, uint8_t green, uint8_t blue) {
+#ifdef RGB_MATRIX_SPLIT
+    if (!is_keyboard_left() && index >= k_rgb_matrix_split[0])
+        rgb_matrix_driver.set_color(index - k_rgb_matrix_split[0], red, green, blue);
+    else if (is_keyboard_left() && index < k_rgb_matrix_split[0])
+#endif
+    rgb_matrix_driver.set_color(index, red, green, blue);
+}
 
-void rgb_matrix_set_color_all(uint8_t red, uint8_t green, uint8_t blue) { rgb_matrix_driver.set_color_all(red, green, blue); }
+void rgb_matrix_set_color_all(uint8_t red, uint8_t green, uint8_t blue) {
+#ifdef RGB_MATRIX_SPLIT
+    for (uint8_t i = 0; i < DRIVER_LED_TOTAL; i++)
+        rgb_matrix_set_color(i, red, green, blue);
+#else
+    rgb_matrix_driver.set_color_all(red, green, blue);
+#endif
+}
 
-bool process_rgb_matrix(uint16_t keycode, keyrecord_t *record) {
+void process_rgb_matrix(uint8_t row, uint8_t col, bool pressed) {
+#ifndef RGB_MATRIX_SPLIT
+    if (!is_keyboard_master()) return;
+#endif
 #if RGB_DISABLE_TIMEOUT > 0
-    if (record->event.pressed) {
-        rgb_anykey_timer = 0;
-    }
+    rgb_anykey_timer = 0;
 #endif  // RGB_DISABLE_TIMEOUT > 0
 
 #ifdef RGB_MATRIX_KEYREACTIVE_ENABLED
@@ -196,12 +218,12 @@ bool process_rgb_matrix(uint16_t keycode, keyrecord_t *record) {
     uint8_t led_count = 0;
 
 #    if defined(RGB_MATRIX_KEYRELEASES)
-    if (!record->event.pressed)
+    if (!pressed)
 #    elif defined(RGB_MATRIX_KEYPRESSES)
-    if (record->event.pressed)
+    if (pressed)
 #    endif  // defined(RGB_MATRIX_KEYRELEASES)
     {
-        led_count = rgb_matrix_map_row_column_to_led(record->event.key.row, record->event.key.col, led);
+        led_count = rgb_matrix_map_row_column_to_led(row, col, led);
     }
 
     if (last_hit_buffer.count + led_count > LED_HITS_TO_REMEMBER) {
@@ -224,11 +246,9 @@ bool process_rgb_matrix(uint16_t keycode, keyrecord_t *record) {
 
 #if defined(RGB_MATRIX_FRAMEBUFFER_EFFECTS) && !defined(DISABLE_RGB_MATRIX_TYPING_HEATMAP)
     if (rgb_matrix_config.mode == RGB_MATRIX_TYPING_HEATMAP) {
-        process_rgb_matrix_typing_heatmap(record);
+        process_rgb_matrix_typing_heatmap(row, col);
     }
 #endif  // defined(RGB_MATRIX_FRAMEBUFFER_EFFECTS) && !defined(DISABLE_RGB_MATRIX_TYPING_HEATMAP)
-
-    return true;
 }
 
 void rgb_matrix_test(void) {
@@ -316,6 +336,10 @@ static void rgb_task_start(void) {
 static void rgb_task_render(uint8_t effect) {
     bool rendering         = false;
     rgb_effect_params.init = (effect != rgb_last_effect) || (rgb_matrix_config.enable != rgb_last_enable);
+    if (rgb_effect_params.flags != rgb_matrix_config.flags) {
+        rgb_effect_params.flags = rgb_matrix_config.flags;
+        rgb_matrix_set_color_all(0, 0, 0);
+    }
 
     // each effect can opt to do calculations
     // and/or request PWM buffer updates.
@@ -619,6 +643,6 @@ void rgb_matrix_decrease_speed_helper(bool write_to_eeprom) { rgb_matrix_set_spe
 void rgb_matrix_decrease_speed_noeeprom(void) { rgb_matrix_decrease_speed_helper(false); }
 void rgb_matrix_decrease_speed(void) { rgb_matrix_decrease_speed_helper(true); }
 
-led_flags_t rgb_matrix_get_flags(void) { return rgb_effect_params.flags; }
+led_flags_t rgb_matrix_get_flags(void) { return rgb_matrix_config.flags; }
 
-void rgb_matrix_set_flags(led_flags_t flags) { rgb_effect_params.flags = flags; }
+void rgb_matrix_set_flags(led_flags_t flags) { rgb_matrix_config.flags = flags; }

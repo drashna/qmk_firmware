@@ -39,6 +39,10 @@ static pin_t encoders_pad[] = ENCODERS_PAD_A;
 
 void set_split_host_leds(uint8_t host_leds);
 
+#ifdef RGB_MATRIX_SPLIT
+#    include "rgb_matrix.h"
+#endif
+
 #ifdef POINTING_DEVICE_ENABLE
 static int8_t split_mouse_x = 0, split_mouse_y = 0;
 #endif
@@ -80,6 +84,9 @@ typedef struct _I2C_slave_buffer_t {
     uint8_t current_wpm;
 #    endif
     uint8_t host_leds;
+#    ifdef RGB_MATRIX_SPLIT
+    rgb_config_t rgb_matrix;
+#    endif
     int8_t        mouse_x;
     int8_t        mouse_y;
     bool          oled_on;
@@ -101,6 +108,7 @@ static I2C_slave_buffer_t *const i2c_buffer = (I2C_slave_buffer_t *)i2c_slave_re
 #    define I2C_ENCODER_START offsetof(I2C_slave_buffer_t, encoder_state)
 #    define I2C_WPM_START offsetof(I2C_slave_buffer_t, current_wpm)
 #    define I2C_HOST_LED_START offsetof(I2C_slave_buffer_t, host_leds)
+#    define I2C_RGB_MATRIX_START offsetof(I2C_slave_buffer_t, rgb_matrix)
 #    define I2C_MOUSE_X_START offsetof(I2C_slave_buffer_t, mouse_x)
 #    define I2C_MOUSE_Y_START offsetof(I2C_slave_buffer_t, mouse_y)
 #    define I2C_OLED_ON_START offsetof(I2C_slave_buffer_t, oled_on)
@@ -161,6 +169,10 @@ bool transport_master(matrix_row_t master_matrix[], matrix_row_t slave_matrix[])
     if (i2c_writeReg(SLAVE_I2C_ADDRESS, I2C_HOST_LED_START, (void *)&host_leds, sizeof(host_leds), TIMEOUT) >= 0) {
         i2c_buffer->host_leds = host_leds;
     }
+
+#    ifdef RGB_MATRIX_SPLIT
+    i2c_writeReg(SLAVE_I2C_ADDRESS, I2C_RGB_MATRIX_START, (void *)rgb_matrix_config, sizeof(i2c_buffer->rgb_matrix), TIMEOUT);
+#    endif
 
 #    ifdef POINTING_DEVICE_ENABLE
     if (is_keyboard_left()) {
@@ -269,6 +281,10 @@ void transport_slave(matrix_row_t master_matrix[], matrix_row_t slave_matrix[]) 
 
     set_split_host_leds(i2c_buffer->host_leds);
 
+#    ifdef RGB_MATRIX_SPLIT
+    memcpy((void*)i2c_buffer->rgb_matrix, (void *)rgb_matrix_config, sizeof(i2c_buffer->rgb_matrix));
+#    endif
+
 #    ifdef POINTING_DEVICE_ENABLE
     if (!is_keyboard_left()) {
         i2c_buffer->mouse_x = split_mouse_x;
@@ -346,6 +362,9 @@ typedef struct _Serial_m2s_buffer_t {
     uint8_t current_wpm;
 #    endif
     uint8_t host_leds;
+#    ifdef RGB_MATRIX_SPLIT
+    rgb_config_t rgb_matrix;
+#    endif
     bool          oled_on;
     layer_state_t t_layer_state;
     layer_state_t t_default_layer_state;
@@ -464,6 +483,10 @@ bool transport_master(matrix_row_t master_matrix[], matrix_row_t slave_matrix[])
     serial_m2s_buffer.host_leds = host_keyboard_leds_raw();
     set_split_host_leds(serial_m2s_buffer.host_leds);
 
+#    ifdef RGB_MATRIX_SPLIT
+    serial_m2s_buffer.rgb_matrix = rgb_matrix_config;
+#    endif
+
 #    ifdef SPLIT_MODS_ENABLE
     serial_m2s_buffer.real_mods = get_mods();
     serial_m2s_buffer.weak_mods = get_weak_mods();
@@ -526,6 +549,10 @@ void transport_slave(matrix_row_t master_matrix[], matrix_row_t slave_matrix[]) 
 #    endif
 
     set_split_host_leds(serial_m2s_buffer.host_leds);
+
+#    ifdef RGB_MATRIX_SPLIT
+    rgb_matrix_config = serial_m2s_buffer.rgb_matrix;
+#    endif
 
 #    ifdef SPLIT_MODS_ENABLE
     set_mods(serial_m2s_buffer.real_mods);

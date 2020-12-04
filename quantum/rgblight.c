@@ -705,7 +705,7 @@ static uint16_t       _blink_timer;
 void rgblight_blink_layer(uint8_t layer, uint16_t duration_ms) {
     rgblight_set_layer_state(layer, true);
     _blinked_layer_mask |= (rgblight_layer_mask_t)1 << layer;
-    _blink_timer    = sync_timer_read();
+    _blink_timer    = sync_timer_read() + duration_ms;
 }
 
 void rgblight_unblink_layers(void) {
