@@ -339,7 +339,7 @@ void matrix_init_keymap(void) {
 }
 #endif  // RGB_MATRIX_INIT
 
-#ifdef ENCODER_ENABLE
+#ifndef ENCODER_ENABLE
 void encoder_update(bool clockwise) {
     switch (get_highest_layer(layer_state)) {
         case _RAISE:
@@ -365,6 +365,13 @@ void encoder_update(bool clockwise) {
 #    endif
 }
 #endif  // ENCODER_ENABLE
+
+const uint16_t PROGMEM encoder_map[][1][2] = {
+    [_QWERTY] = { { KC_DOWN, KC_UP   } },
+    [_RAISE]  = { { KC_VOLD, KC_VOLU } },
+    [_LOWER]  = { { RGB_MOD, RGB_RMOD } },
+    [_ADJUST] = { { CK_DOWN, CK_UP   } }
+};
 
 #ifdef KEYBOARD_planck_rev6
 void dip_update(uint8_t index, bool active) {

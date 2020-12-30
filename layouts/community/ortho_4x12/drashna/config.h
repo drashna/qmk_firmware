@@ -80,6 +80,8 @@
 #undef NO_USB_STARTUP_CHECK
 
 
+#define ENCODER_LOCATION { { 0, 3 } }
+
 #define EEPROM_I2C_RM24C512C
 
 #define ENCODER_DIRECTION_FLIP

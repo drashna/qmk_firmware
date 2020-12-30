@@ -38,6 +38,9 @@ ifneq ($(strip $(RGB_MATRIX_ENABLE)), no)
     SRC += rgb_matrix_stuff.c
 endif
 
+ifeq ($(strip $(ENCODER_ENABLE)), yes)
+    SRC += encoder_stuff.c
+endif
 
 ifdef CONSOLE_ENABLE
     ifeq ($(strip $(KEYLOGGER_ENABLE)), yes)
