@@ -115,6 +115,9 @@ void suspend_power_down_user(void) {
 #ifdef OLED_DRIVER_ENABLE
     oled_off();
 #endif
+#ifdef RGB_MATRIX_ENABLE
+    rgb_matrix_task();
+#endif
     suspend_power_down_keymap();
 }
 
