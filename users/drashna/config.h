@@ -66,6 +66,7 @@
 #    define RGB_DISABLE_WHEN_USB_SUSPENDED true  // turn off effects when suspended
 // #   define RGB_MATRIX_MAXIMUM_BRIGHTNESS 200 // limits maximum brightness of LEDs to 200 out of 255. If not defined maximum brightness is set to 255
 // #   define EECONFIG_RGB_MATRIX (uint32_t *)16
+#    define RGB_MATRIX_TYPING_HEATMAP_DECREASE_DELAY_MS 40
 
 #    if defined(__AVR__) && !defined(__AVR_AT90USB1286__) && !defined(KEYBOARD_launchpad)
 #        define DISABLE_RGB_MATRIX_ALPHAS_MODS
