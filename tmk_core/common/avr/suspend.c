@@ -98,7 +98,7 @@ static void power_down(uint8_t wdto) {
 
 #    ifdef AUDIO_ENABLE
     // This sometimes disables the start-up noise, so it's been disabled
-    // stop_all_notes();
+    stop_all_notes();
 #    endif /* AUDIO_ENABLE */
 #    if defined(RGBLIGHT_SLEEP) && defined(RGBLIGHT_ENABLE)
     rgblight_suspend();
