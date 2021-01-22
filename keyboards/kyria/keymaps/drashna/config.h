@@ -34,3 +34,5 @@
 #endif
 
 #define KEYLOGGER_LENGTH 10
+
+#define ENCODER_LOCATION { { 4, 3 }, { 4, 7 } }

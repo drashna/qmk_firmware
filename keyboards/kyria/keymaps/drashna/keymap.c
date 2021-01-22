@@ -171,25 +171,25 @@ void oled_driver_render_logo(void) {
 #    endif
 #endif
 
-#ifdef ENCODER_ENABLE
-void encoder_update_user(uint8_t index, bool clockwise) {
-    if (index == 0) {
-        // Volume control
-        if (clockwise) {
-            tap_code(KC_VOLU);
-        } else {
-            tap_code(KC_VOLD);
-        }
-    } else if (index == 1) {
-        // Page up/Page down
-        if (clockwise) {
-            tap_code(KC_PGDN);
-        } else {
-            tap_code(KC_PGUP);
-        }
-    }
-}
-#endif
+// #ifdef ENCODER_ENABLE
+// void encoder_update_user(uint8_t index, bool clockwise) {
+//     if (index == 0) {
+//         // Volume control
+//         if (clockwise) {
+//             tap_code(KC_VOLU);
+//         } else {
+//             tap_code(KC_VOLD);
+//         }
+//     } else if (index == 1) {
+//         // Page up/Page down
+//         if (clockwise) {
+//             tap_code(KC_PGDN);
+//         } else {
+//             tap_code(KC_PGUP);
+//         }
+//     }
+// }
+// #endif
 
 #ifdef RGBLIGHT_LAYERS
 const rgblight_segment_t PROGMEM shift_layers[] = RGBLIGHT_LAYER_SEGMENTS(
@@ -228,3 +228,10 @@ void matrix_scan_keymap(void) {
         rgblight_set_layer_state(3, mods & MOD_MASK_GUI);
 }
 #endif
+
+const uint16_t PROGMEM encoder_map[][2][2] = {
+    [_QWERTY] = { { KC_VOLD, KC_VOLU  }, {KC_DOWN, KC_UP} },
+    [_RAISE]  = { { KC_VOLD, KC_VOLU },  {KC_PGDN, KC_PGUP } },
+    [_LOWER]  = { { RGB_MOD, RGB_RMOD },  {RGB_HUD, RGB_HUI } },
+    [_ADJUST] = { { CK_DOWN, CK_UP   } , { KC_TRNS, KC_TRNS } }
+};
