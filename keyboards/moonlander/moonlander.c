@@ -489,3 +489,12 @@ void eeconfig_init_kb(void) {  // EEPROM is getting reset!
     eeconfig_update_kb(keyboard_config.raw);
     eeconfig_init_user();
 }
+
+
+#ifdef OPENRGB_ENABLE
+const openrgb_config_t g_openrgb_config = {
+    {"Keyboard", "Modifiers", "Thumb Cluster"},
+    {OPENRGB_ZONE_TYPE_MATRIX, OPENRGB_ZONE_TYPE_LINEAR, OPENRGB_ZONE_TYPE_MATRIX},
+    { 46, 18, 8 },
+};
+#endif
