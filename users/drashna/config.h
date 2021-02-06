@@ -121,6 +121,7 @@
 // #    define OLED_FONT_AZTECH
 // #    define OLED_FONT_BMPLAIN
 // #    define OLED_FONT_SUPER_DIGG
+#    define OLED_FONT_SUPER_DIGG
 // #    define OLED_LOGO_GMK_BAD
 // #    define OLED_LOGO_HUE_MANITEE
 // #    define OLED_LOGO_CORNE
