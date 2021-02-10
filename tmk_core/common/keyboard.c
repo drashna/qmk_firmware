@@ -328,6 +328,18 @@ void keyboard_init(void) {
     keyboard_post_init_kb(); /* Always keep this last */
 }
 
+/** \brief key_event_task
+ *
+ * This function is responsible for calling into other systems when they need to respond to electrical switch press events.
+ * This is differnet than keycode events as no layer processing, or filtering occurs.
+ */
+void switch_events(uint8_t row, uint8_t col, bool pressed) {
+#if defined(RGB_MATRIX_ENABLE)
+    process_rgb_matrix(row, col, pressed);
+#endif
+}
+
+
 /** \brief Keyboard task: Do keyboard routine jobs
  *
  * Do routine keyboard jobs:
@@ -380,7 +392,7 @@ void keyboard_task(void) {
                     matrix_prev[r] ^= col_mask;
 
 #if defined(RGB_MATRIX_ENABLE)
-                    process_rgb_matrix(r, c, (matrix_row & col_mask));
+                    switch_events(r, c, (matrix_row & col_mask));
 #endif
 
 #ifdef QMK_KEYS_PER_SCAN
