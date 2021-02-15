@@ -172,6 +172,8 @@ int soft_serial_transaction(int index) {
     SSTD_t* trans = &Transaction_table[sstd_index];
     msg_t   res   = 0;
 
+    if (!trans->status) return TRANSACTION_TYPE_ERROR;  // not registered
+
     sdClear(&SERIAL_USART_DRIVER);
 
     // First chunk is always transaction id

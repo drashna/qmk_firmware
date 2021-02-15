@@ -4,6 +4,7 @@
 #include "config.h"
 #include "matrix.h"
 #include "quantum.h"
+#include "split_sync.h"
 
 #define ROWS_PER_HAND (MATRIX_ROWS / 2)
 #define SYNC_TIMER_OFFSET 2
@@ -78,6 +79,8 @@ typedef struct _I2C_slave_buffer_t {
 #    endif
 } I2C_slave_buffer_t;
 
+_Static_assert(sizeof(I2C_slave_buffer_t) <= I2C_SLAVE_QMK_REG_COUNT, "I2C_slave_buffer_t too large for I2C_SLAVE_QMK_REG_COUNT");
+
 static I2C_slave_buffer_t *const i2c_buffer = (I2C_slave_buffer_t *)i2c_slave_reg;
 
 #    define I2C_SYNC_TIME_START offsetof(I2C_slave_buffer_t, sync_timer)
@@ -101,6 +104,73 @@ static I2C_slave_buffer_t *const i2c_buffer = (I2C_slave_buffer_t *)i2c_slave_re
 #    ifndef SLAVE_I2C_ADDRESS
 #        define SLAVE_I2C_ADDRESS 0x32
 #    endif
+
+#    ifdef SERIAL_USE_MULTI_TRANSACTION
+struct extra_transaction {
+    enum split_transaction_id id;
+    uint16_t                  offset;
+    uint8_t                   initiator2target_buffer_size;
+    void *                    initiator2target_buffer;
+    uint8_t                   target2initiator_buffer_size;
+    void *                    target2initiator_buffer;
+} extra_transactions[(SPLIT_NUM_TRANSACTIONS_KB) + (SPLIT_NUM_TRANSACTIONS_USER)] = {0};
+
+static uint16_t next_transaction_offset = sizeof(I2C_slave_buffer_t);
+
+void split_sync_register_transaction(enum split_transaction_id id, uint8_t initiator2target_buffer_size, void *initiator2target_buffer, uint8_t target2initiator_buffer_size, void *target2initiator_buffer) {
+    int max_idx = (SPLIT_NUM_TRANSACTIONS_KB) + (SPLIT_NUM_TRANSACTIONS_USER);
+    for (int i = 0; i < max_idx; ++i) {
+        struct extra_transaction *trans = &extra_transactions[i];
+        if (trans->offset == 0) {
+            trans->id                           = id;
+            trans->offset                       = next_transaction_offset;
+            trans->initiator2target_buffer_size = initiator2target_buffer_size;
+            trans->initiator2target_buffer      = initiator2target_buffer;
+            trans->target2initiator_buffer_size = target2initiator_buffer_size;
+            trans->target2initiator_buffer      = target2initiator_buffer;
+
+            next_transaction_offset += initiator2target_buffer_size + target2initiator_buffer_size;
+            break;
+        }
+    }
+}
+
+bool split_sync_execute_transaction(enum split_transaction_id id) {
+    int max_idx = (SPLIT_NUM_TRANSACTIONS_KB) + (SPLIT_NUM_TRANSACTIONS_USER);
+    for (int i = 0; i < max_idx; ++i) {
+        struct extra_transaction *trans = &extra_transactions[i];
+        if (trans->id == id) {
+            if (trans->initiator2target_buffer_size) {
+                uint16_t initiator2target_offset = trans->offset;
+                i2c_writeReg(SLAVE_I2C_ADDRESS, initiator2target_offset, trans->initiator2target_buffer, trans->initiator2target_buffer_size, TIMEOUT);
+            }
+            if (trans->target2initiator_buffer_size) {
+                uint16_t target2initiator_offset = trans->offset + trans->initiator2target_buffer_size;
+                i2c_readReg(SLAVE_I2C_ADDRESS, target2initiator_offset, trans->target2initiator_buffer, trans->target2initiator_buffer_size, TIMEOUT);
+            }
+            return true;
+        }
+    }
+    return false;
+}
+
+static void split_sync_execute_slave(void) {
+    int max_idx = (SPLIT_NUM_TRANSACTIONS_KB) + (SPLIT_NUM_TRANSACTIONS_USER);
+    for (int i = 0; i < max_idx; ++i) {
+        struct extra_transaction *trans = &extra_transactions[i];
+        if (trans->offset != 0) {
+            if (trans->initiator2target_buffer_size) {
+                uint16_t initiator2target_offset = trans->offset;
+                memcpy(trans->initiator2target_buffer, (void *)&i2c_slave_reg[initiator2target_offset], trans->initiator2target_buffer_size);
+            }
+            if (trans->target2initiator_buffer_size) {
+                uint16_t target2initiator_offset = trans->offset + trans->initiator2target_buffer_size;
+                memcpy((void *)&i2c_slave_reg[target2initiator_offset], trans->target2initiator_buffer, trans->target2initiator_buffer_size);
+            }
+        }
+    }
+}
+#    endif  // SERIAL_USE_MULTI_TRANSACTION
 
 // Get rows from other half over i2c
 bool transport_master(matrix_row_t master_matrix[], matrix_row_t slave_matrix[]) {
@@ -246,6 +316,10 @@ void transport_slave(matrix_row_t master_matrix[], matrix_row_t slave_matrix[]) 
     memcpy((void *)i2c_buffer->rgb_matrix, (void *)rgb_matrix_config, sizeof(i2c_buffer->rgb_matrix));
     rgb_matrix_set_suspend_state(i2c_buffer->rgb_suspend_state);
 #    endif
+
+#    ifdef SERIAL_USE_MULTI_TRANSACTION
+    split_sync_execute_slave();
+#    endif  // SERIAL_USE_MULTI_TRANSACTION
 }
 
 void transport_master_init(void) { i2c_init(); }
@@ -323,9 +397,14 @@ enum serial_transaction_id {
 #    if defined(RGBLIGHT_ENABLE) && defined(RGBLIGHT_SPLIT)
     PUT_RGBLIGHT,
 #    endif
+
+    // Totals
+    NUM_SERIAL_TRANSACTIONS,
+    NUM_TOTAL_TRANSACTIONS = NUM_SERIAL_TRANSACTIONS + NUM_SPLIT_TRANSACTIONS
 };
 
-SSTD_t transactions[] = {
+SSTD_t transactions[NUM_TOTAL_TRANSACTIONS] = {
+    [0 ...(NUM_TOTAL_TRANSACTIONS - 1)] = {NULL, 0, NULL, 0, NULL},
     [GET_SLAVE_MATRIX] =
         {
             (uint8_t *)&status0,
@@ -341,6 +420,20 @@ SSTD_t transactions[] = {
         },
 #    endif
 };
+
+#    ifdef SERIAL_USE_MULTI_TRANSACTION
+void split_sync_register_transaction(enum split_transaction_id id, uint8_t initiator2target_buffer_size, void *initiator2target_buffer, uint8_t target2initiator_buffer_size, void *target2initiator_buffer) {
+    static uint8_t dummy;
+    SSTD_t *       trans                = &transactions[NUM_SERIAL_TRANSACTIONS + id];
+    trans->status                       = &dummy;
+    trans->initiator2target_buffer_size = initiator2target_buffer_size;
+    trans->initiator2target_buffer      = (uint8_t *)initiator2target_buffer;
+    trans->target2initiator_buffer_size = target2initiator_buffer_size;
+    trans->target2initiator_buffer      = (uint8_t *)target2initiator_buffer;
+}
+
+bool split_sync_execute_transaction(enum split_transaction_id id) { return soft_serial_transaction(NUM_SERIAL_TRANSACTIONS + id) == TRANSACTION_END; }
+#    endif  // SERIAL_USE_MULTI_TRANSACTION
 
 void transport_master_init(void) { soft_serial_initiator_init(transactions, TID_LIMIT(transactions)); }
 
