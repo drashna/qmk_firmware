@@ -98,16 +98,11 @@ void user_state_sync(void) {
             memcpy(&last_user_state, &user_state, sizeof(user_runtime_config));
         }
         if (memcmp(&user_slave, &last_user_slave, sizeof(user_slave_data))) {
-            needs_sync = true;
             memcpy(&last_user_slave, &user_slave, sizeof(user_slave_data));
         }
 
-        if (has_report_changed) {
-            needs_sync = true;
-        }
-
         // Send to slave every 500ms regardless of state change
-        if (timer_elapsed32(last_sync) > 500) {
+        if (timer_elapsed32(last_sync) > 250) {
             needs_sync = true;
         }
 
@@ -118,6 +113,7 @@ void user_state_sync(void) {
                 dprint("Failed to perform sync data transaction\n");
             }
         }
+        // always sync slave data, since it may contain device reports.
         if (!split_sync_execute_transaction(KB_SLAVE_SYNC)) {
             dprint("Failed to perform slave data transaction\n");
         }
