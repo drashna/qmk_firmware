@@ -215,6 +215,7 @@ int soft_serial_transaction(int sstd_index) {
 
     if (sstd_index > Transaction_table_size) return TRANSACTION_TYPE_ERROR;
     SSTD_t *trans = &Transaction_table[sstd_index];
+    if (!trans->status) return TRANSACTION_TYPE_ERROR;  // not registered
 
     // TODO: remove extra delay between transactions
     serial_delay();

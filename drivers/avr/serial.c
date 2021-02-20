@@ -456,6 +456,9 @@ int soft_serial_transaction(int sstd_index) {
     if (sstd_index > Transaction_table_size) return TRANSACTION_TYPE_ERROR;
     SSTD_t *trans = &Transaction_table[sstd_index];
 #    endif
+
+    if (!trans->status) return TRANSACTION_TYPE_ERROR;  // not registered
+
     cli();
 
     // signal to the target that we want to start a transaction
