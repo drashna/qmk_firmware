@@ -74,9 +74,11 @@
 // #define INIT_EE_HANDS_RIGHT
 #endif
 
-#if defined(AUDIO_ENABLE) && !defined(CONVERT_TO_PROTON_C)
-#    define B6_AUDIO
-#    define NO_MUSIC_MODE
+#ifdef AUDIO_ENABLE
+#    define AUDIO_PIN B6
+#    ifndef CONVERT_TO_PROTON_C
+#        define NO_MUSIC_MODE
+#    endif
 #endif
 
 #ifdef HAPTIC_ENABLE

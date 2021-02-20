@@ -63,9 +63,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #ifdef STENO_ENABLE
 #    include "process_steno.h"
 #endif
-#ifdef FAUXCLICKY_ENABLE
-#    include "fauxclicky.h"
-#endif
 #ifdef SERIAL_LINK_ENABLE
 #    include "serial_link/system/serial_link.h"
 #endif
@@ -102,6 +99,20 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #ifdef SPLIT_KEYBOARD
 #    include "split_util.h"
 #endif
+
+static uint32_t last_input_modification_time = 0;
+uint32_t        last_input_activity_time(void) { return last_input_modification_time; }
+uint32_t        last_input_activity_elapsed(void) { return timer_elapsed32(last_input_modification_time); }
+
+static uint32_t last_matrix_modification_time = 0;
+uint32_t        last_matrix_activity_time(void) { return last_matrix_modification_time; }
+uint32_t        last_matrix_activity_elapsed(void) { return timer_elapsed32(last_matrix_modification_time); }
+void            last_matrix_activity_trigger(void) { last_matrix_modification_time = last_input_modification_time = timer_read32(); }
+
+static uint32_t last_encoder_modification_time = 0;
+uint32_t        last_encoder_activity_time(void) { return last_encoder_modification_time; }
+uint32_t        last_encoder_activity_elapsed(void) { return timer_elapsed32(last_encoder_modification_time); }
+void            last_encoder_activity_trigger(void) { last_encoder_modification_time = last_input_modification_time = timer_read32(); }
 
 // Only enable this if console is enabled to print to
 #if defined(DEBUG_MATRIX_SCAN_RATE)
@@ -224,6 +235,7 @@ void keyboard_setup(void) {
 #ifndef NO_JTAG_DISABLE
     disable_jtag();
 #endif
+    print_set_sendchar(sendchar);
     matrix_setup();
     keyboard_pre_init_kb();
 }
@@ -307,9 +319,6 @@ void keyboard_init(void) {
 #ifdef STENO_ENABLE
     steno_init();
 #endif
-#ifdef FAUXCLICKY_ENABLE
-    fauxclicky_init();
-#endif
 #ifdef POINTING_DEVICE_ENABLE
     pointing_device_init();
 #endif
@@ -339,7 +348,6 @@ void switch_events(uint8_t row, uint8_t col, bool pressed) {
 #endif
 }
 
-
 /** \brief Keyboard task: Do keyboard routine jobs
  *
  * Do routine keyboard jobs:
@@ -360,15 +368,15 @@ void keyboard_task(void) {
 #ifdef QMK_KEYS_PER_SCAN
     uint8_t keys_processed = 0;
 #endif
+#ifdef ENCODER_ENABLE
+    bool encoders_changed = false;
+#endif
 
     housekeeping_task_kb();
     housekeeping_task_user();
 
-#if defined(OLED_DRIVER_ENABLE) && !defined(OLED_DISABLE_TIMEOUT)
-    uint8_t ret = matrix_scan();
-#else
-    matrix_scan();
-#endif
+    uint8_t matrix_changed = matrix_scan();
+    if (matrix_changed) last_matrix_activity_trigger();
 
     for (uint8_t r = 0; r < MATRIX_ROWS; r++) {
         matrix_row    = matrix_get_row(r);
@@ -391,9 +399,8 @@ void keyboard_task(void) {
                     // record a processed key
                     matrix_prev[r] ^= col_mask;
 
-#if defined(RGB_MATRIX_ENABLE)
+
                     switch_events(r, c, (matrix_row & col_mask));
-#endif
 
 #ifdef QMK_KEYS_PER_SCAN
                     // only jump out if we have processed "enough" keys.
@@ -433,7 +440,8 @@ MATRIX_LOOP_END:
 #endif
 
 #ifdef ENCODER_ENABLE
-    encoder_read();
+    encoders_changed = encoder_read();
+    if (encoders_changed) last_encoder_activity_trigger();
 #endif
 
 #ifdef QWIIC_ENABLE
@@ -443,8 +451,12 @@ MATRIX_LOOP_END:
 #ifdef OLED_DRIVER_ENABLE
     oled_task();
 #    ifndef OLED_DISABLE_TIMEOUT
-    // Wake up oled if user is using those fabulous keys!
-    if (ret) oled_on();
+    // Wake up oled if user is using those fabulous keys or spinning those encoders!
+#        ifdef ENCODER_ENABLE
+    if (matrix_changed || encoders_changed) oled_on();
+#        else
+    if (matrix_changed) oled_on();
+#        endif
 #    endif
 #endif
 

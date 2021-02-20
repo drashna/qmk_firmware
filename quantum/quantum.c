@@ -25,10 +25,6 @@
 #    include "backlight.h"
 #endif
 
-#ifdef FAUXCLICKY_ENABLE
-#    include "fauxclicky.h"
-#endif
-
 #ifdef API_ENABLE
 #    include "api.h"
 #endif
@@ -310,17 +306,6 @@ bool process_record_quantum_helper(uint16_t keycode, keyrecord_t *record) {
             case EEPROM_RESET:
                 eeconfig_init();
                 return false;
-#ifdef FAUXCLICKY_ENABLE
-            case FC_TOG:
-                FAUXCLICKY_TOGGLE;
-                return false;
-            case FC_ON:
-                FAUXCLICKY_ON;
-                return false;
-            case FC_OFF:
-                FAUXCLICKY_OFF;
-                return false;
-#endif
 #ifdef VELOCIKEY_ENABLE
             case VLK_TOG:
                 velocikey_toggle();
@@ -383,6 +368,29 @@ __attribute__((weak)) const uint8_t ascii_to_shift_lut[16] PROGMEM = {
  * [AltGr] needs to be sent with the keycode.
  */
 __attribute__((weak)) const uint8_t ascii_to_altgr_lut[16] PROGMEM = {
+    KCLUT_ENTRY(0, 0, 0, 0, 0, 0, 0, 0),
+    KCLUT_ENTRY(0, 0, 0, 0, 0, 0, 0, 0),
+    KCLUT_ENTRY(0, 0, 0, 0, 0, 0, 0, 0),
+    KCLUT_ENTRY(0, 0, 0, 0, 0, 0, 0, 0),
+
+    KCLUT_ENTRY(0, 0, 0, 0, 0, 0, 0, 0),
+    KCLUT_ENTRY(0, 0, 0, 0, 0, 0, 0, 0),
+    KCLUT_ENTRY(0, 0, 0, 0, 0, 0, 0, 0),
+    KCLUT_ENTRY(0, 0, 0, 0, 0, 0, 0, 0),
+    KCLUT_ENTRY(0, 0, 0, 0, 0, 0, 0, 0),
+    KCLUT_ENTRY(0, 0, 0, 0, 0, 0, 0, 0),
+    KCLUT_ENTRY(0, 0, 0, 0, 0, 0, 0, 0),
+    KCLUT_ENTRY(0, 0, 0, 0, 0, 0, 0, 0),
+    KCLUT_ENTRY(0, 0, 0, 0, 0, 0, 0, 0),
+    KCLUT_ENTRY(0, 0, 0, 0, 0, 0, 0, 0),
+    KCLUT_ENTRY(0, 0, 0, 0, 0, 0, 0, 0),
+    KCLUT_ENTRY(0, 0, 0, 0, 0, 0, 0, 0),
+};
+
+/* Bit-Packed look-up table to convert an ASCII character to whether
+ * [Space] needs to be sent after the keycode
+ */
+__attribute__((weak)) const uint8_t ascii_to_dead_lut[16] PROGMEM = {
     KCLUT_ENTRY(0, 0, 0, 0, 0, 0, 0, 0),
     KCLUT_ENTRY(0, 0, 0, 0, 0, 0, 0, 0),
     KCLUT_ENTRY(0, 0, 0, 0, 0, 0, 0, 0),
@@ -542,6 +550,7 @@ void send_char(char ascii_code) {
     uint8_t keycode    = pgm_read_byte(&ascii_to_keycode_lut[(uint8_t)ascii_code]);
     bool    is_shifted = PGM_LOADBIT(ascii_to_shift_lut, (uint8_t)ascii_code);
     bool    is_altgred = PGM_LOADBIT(ascii_to_altgr_lut, (uint8_t)ascii_code);
+    bool    is_dead    = PGM_LOADBIT(ascii_to_dead_lut, (uint8_t)ascii_code);
 
     if (is_shifted) {
         register_code(KC_LSFT);
@@ -555,6 +564,9 @@ void send_char(char ascii_code) {
     }
     if (is_shifted) {
         unregister_code(KC_LSFT);
+    }
+    if (is_dead) {
+        tap_code(KC_SPACE);
     }
 }
 

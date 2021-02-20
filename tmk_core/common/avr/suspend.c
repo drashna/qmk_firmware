@@ -97,7 +97,6 @@ static void power_down(uint8_t wdto) {
     led_set(leds_off);
 
 #    ifdef AUDIO_ENABLE
-    // This sometimes disables the start-up noise, so it's been disabled
     stop_all_notes();
 #    endif /* AUDIO_ENABLE */
 #    if defined(RGBLIGHT_SLEEP) && defined(RGBLIGHT_ENABLE)
@@ -156,6 +155,7 @@ __attribute__((weak)) void suspend_wakeup_init_user(void) {}
  * FIXME: needs doc
  */
 __attribute__((weak)) void suspend_wakeup_init_kb(void) { suspend_wakeup_init_user(); }
+
 /** \brief run immediately after wakeup
  *
  * FIXME: needs doc
