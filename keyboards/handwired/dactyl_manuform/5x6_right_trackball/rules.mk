@@ -24,7 +24,8 @@ SWAP_HANDS_ENABLE = yes
 POINTING_DEVICE_ENABLE = yes
 
 SPLIT_KEYBOARD = yes
-SPLIT_TRANSPORT = custom
+# SPLIT_TRANSPORT = custom
 
 SRC += pmw3360.c
-QUANTUM_LIB_SRC += pointer_transport.c serial.c i2c_master.c i2c_slave.c spi_master.c
+QUANTUM_LIB_SRC += spi_master.c
+# QUANTUM_LIB_SRC += pointer_transport.c serial.c i2c_master.c i2c_slave.c spi_master.c
