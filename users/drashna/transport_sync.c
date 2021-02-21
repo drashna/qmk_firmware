@@ -6,11 +6,12 @@
 enum { KB_STATE_SYNC = SAFE_KB_SPLIT_TRANSACTION_ID, KB_SLAVE_SYNC };
 
 typedef struct user_runtime_config {
-    uint16_t      device_cpi;
-    bool          oled_on;
-    layer_state_t layer_state;
-    layer_state_t default_layer_state;
-    bool          is_rgb_matrix_suspended;
+    uint16_t        device_cpi;
+    bool            oled_on;
+    layer_state_t   layer_state;
+    layer_state_t   default_layer_state;
+    bool            is_rgb_matrix_suspended;
+    keymap_config_t keymap_config;
 } user_runtime_config;
 
 typedef struct user_slave_data {
@@ -20,7 +21,6 @@ typedef struct user_slave_data {
 
 user_runtime_config user_state;
 user_slave_data     user_slave;
-bool has_report_changed;
 
 void keyboard_post_init_keymap(void) {
     // Register keyboard state sync split transaction
@@ -40,7 +40,6 @@ void user_state_update(void) {
 #ifdef POINTING_DEVICE_ENABLE
         if (is_keyboard_left()) {
             report_mouse_t temp_report = pointing_device_get_report();
-            has_report_changed = (temp_report.x != user_slave.mouse_x || temp_report.y != user_slave.mouse_y);
             temp_report.x              = user_slave.mouse_x;
             temp_report.y              = user_slave.mouse_y;
             pointing_device_set_report(temp_report);
@@ -53,6 +52,7 @@ void user_state_update(void) {
 #ifdef RGB_MATRIX_ENABLE
         user_state.is_rgb_matrix_suspended = rgb_matrix_get_suspend_state();
 #endif
+    user_state.keymap_config = keymap_config;
 
     } else {
 #ifdef POINTING_DEVICE_ENABLE
@@ -77,6 +77,9 @@ void user_state_update(void) {
             oled_off();
         }
 #endif
+        if (keymap_config.raw != user_state.keymap_config.raw) {
+            keymap_config = user_state.keymap_config;
+        }
 
 #ifdef RGB_MATRIX_ENABLE
         rgb_matrix_set_suspend_state(user_state.is_rgb_matrix_suspended);
