@@ -41,3 +41,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //#define NO_ACTION_ONESHOT
 #define NO_ACTION_MACRO
 #define NO_ACTION_FUNCTION
+
+#define SERIAL_USE_MULTI_TRANSACTION
+#define SPLIT_NUM_TRANSACTIONS_KB 2
