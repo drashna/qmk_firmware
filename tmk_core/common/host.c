@@ -21,6 +21,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "host.h"
 #include "util.h"
 #include "debug.h"
+#if defined(SPLIT_KEYBOARD) && defined(SPLIT_HOST_SYNC_ENABLE)
+#    include "split_util.h"
+#endif
 
 #ifdef NKRO_ENABLE
 #    include "keycode_config.h"
@@ -35,14 +38,25 @@ void host_set_driver(host_driver_t *d) { driver = d; }
 
 host_driver_t *host_get_driver(void) { return driver; }
 
-uint8_t host_keyboard_leds(void) {
+uint8_t host_keyboard_leds_raw(void) {
     if (!driver) return 0;
     return (*driver->keyboard_leds)();
 }
 
+uint8_t host_keyboard_leds(void) {
+#if defined(SPLIT_KEYBOARD) && defined(SPLIT_HOST_SYNC_ENABLE)
+    return get_split_host_indicators();
+#else
+    return host_keyboard_leds_raw();
+#endif
+}
+
 led_t host_keyboard_led_state(void) {
-    if (!driver) return (led_t){0};
-    return (led_t)((*driver->keyboard_leds)());
+#if defined(SPLIT_KEYBOARD) && defined(SPLIT_HOST_SYNC_ENABLE)
+    return (led_t)get_split_host_indicators();
+#else
+    return (led_t)host_keyboard_leds_raw();
+#endif
 }
 
 /* send report */

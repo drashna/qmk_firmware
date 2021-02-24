@@ -106,6 +106,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #if defined(CRC_ENABLE)
 #    include "crc.h"
 #endif
+#ifdef SPLIT_KEYBOARD
+#    include "split_util.h"
+#endif
 
 static uint32_t last_input_modification_time = 0;
 uint32_t        last_input_activity_time(void) { return last_input_modification_time; }
