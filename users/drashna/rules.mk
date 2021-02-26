@@ -80,7 +80,7 @@ endif
 
 CUSTOM_SPLIT_TRANSPORT ?= yes
 ifeq ($(strip $(SPLIT_KEYBOARD)), yes)
-    SRC += transport_sync.c
+    QUANTUM_LIB_SRC += transport_sync.c
     # ifneq ($(strip $(SPLIT_TRANSPORT)), custom)
     #     ifeq ($(strip $(CUSTOM_SPLIT_TRANSPORT)), yes)
     #         SPLIT_TRANSPORT = custom
