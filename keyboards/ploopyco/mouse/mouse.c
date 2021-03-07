@@ -64,6 +64,7 @@ uint16_t lastMidClick      = 0;      // Stops scrollwheel from being read if it 
 uint8_t  OptLowPin         = OPT_ENC1;
 bool     debug_encoder     = false;
 bool     is_drag_scroll    = false;
+bool     isr_has_moved     = false;
 
 __attribute__((weak)) void process_wheel_user(report_mouse_t* mouse_report, int16_t h, int16_t v) {
     mouse_report->h = h;
@@ -240,11 +241,22 @@ void keyboard_pre_init_kb(void) {
     keyboard_pre_init_user();
 }
 
+#        define EIMSK_BIT _BV(INT3)
+#        define EICRx_BIT (~(_BV(ISC30) | _BV(ISC31)))
+#        define SERIAL_PIN_INTERRUPT INT3_vect
+#        define EICRx EICRA
+
 void pointing_device_init(void) {
     // initialize ball sensor
     pmw_spi_init();
     // initialize the scroll wheel's optical encoder
     opt_encoder_init();
+
+    setPinInputHigh(D3);
+
+    EIMSK |= _BV(INT3);
+    EICRA &= (~(_BV(ISC30) | _BV(ISC31)));
+
 }
 
 bool has_report_changed(report_mouse_t new, report_mouse_t old) { return (new.buttons != old.buttons) || (new.x && new.x != old.x) || (new.y && new.y != old.y) || (new.h && new.h != old.h) || (new.v && new.v != old.v); }
@@ -252,26 +264,43 @@ bool has_report_changed(report_mouse_t new, report_mouse_t old) { return (new.bu
 void pointing_device_task(void) {
     report_mouse_t mouse_report = pointing_device_get_report();
     process_wheel(&mouse_report);
-    process_mouse(&mouse_report);
-
-    if (is_drag_scroll) {
-        mouse_report.h = mouse_report.x;
-        mouse_report.v = mouse_report.y;
-        mouse_report.x = 0;
-        mouse_report.y = 0;
-    }
 
     pointing_device_set_report(mouse_report);
     pointing_device_send();
 }
+
+ISR(INT3_vect) {
+    report_mouse_t mouse_report = pointing_device_get_report();
+
+    // spi_write_adv(REG_Motion, 0x01);
+    // spi_read_adv(REG_Motion);
+
+    process_mouse(&mouse_report);
+    if (is_drag_scroll) {
+        mouse_report.h = mouse_report.x;
+#ifdef PLOOPY_DRAGSCROLL_INVERT
+        // Invert vertical scroll direction
+        mouse_report.v = -mouse_report.y;
+#else
+        mouse_report.v = mouse_report.y;
+#endif
+        mouse_report.x = 0;
+        mouse_report.y = 0;
+    }
+    isr_has_moved = true;
+    pointing_device_set_report(mouse_report);
+    pointing_device_send();
+}
+
 
 void pointing_device_send(void) {
     static report_mouse_t old_report  = {};
     report_mouse_t        mouseReport = pointing_device_get_report();
 
     // If you need to do other things, like debugging, this is the place to do it.
-    if (has_report_changed(mouseReport, old_report)) {
+    if (has_report_changed(mouseReport, old_report) || isr_has_moved) {
         host_mouse_send(&mouseReport);
+        isr_has_moved = false;
     }
 
     // send it and 0 it out except for buttons, so those stay until they are explicity over-ridden using update_pointing_device
