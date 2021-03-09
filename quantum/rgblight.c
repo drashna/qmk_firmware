@@ -104,6 +104,10 @@ static uint8_t mode_base_table[] = {
 #    define RGBLIGHT_DEFAULT_SPD 0
 #endif
 
+#ifndef RGB_DISABLE_TIMEOUT
+#    define RGB_DISABLE_TIMEOUT 0
+#endif
+
 static inline int is_static_effect(uint8_t mode) { return memchr(static_effect_table, mode, sizeof(static_effect_table)) != NULL; }
 
 #ifdef RGBLIGHT_LED_MAP
@@ -122,6 +126,10 @@ bool              is_rgblight_initialized = false;
 static bool is_suspended;
 static bool pre_suspend_enabled;
 #endif
+
+#if RGB_DISABLE_TIMEOUT > 0
+static uint32_t rgb_anykey_timer;
+#endif  // RGB_DISABLE_TIMEOUT > 0
 
 #ifdef RGBLIGHT_USE_TIMER
 animation_status_t animation_status = {};
@@ -781,6 +789,12 @@ void rgblight_wakeup(void) {
 
 #endif
 
+void process_rgb_light(uint8_t row, uint8_t col, bool pressed) {
+#if RGB_DISABLE_TIMEOUT > 0
+    rgb_anykey_timer = sync_timer_read32();
+#endif  // RGB_DISABLE_TIMEOUT > 0
+}
+
 __attribute__((weak)) void rgblight_call_driver(LED_TYPE *start_led, uint8_t num_leds) { ws2812_setleds(start_led, num_leds); }
 
 #ifndef RGBLIGHT_CUSTOM_DRIVER
@@ -789,7 +803,12 @@ void rgblight_set(void) {
     LED_TYPE *start_led;
     uint8_t   num_leds = rgblight_ranges.clipping_num_leds;
 
-    if (!rgblight_config.enable) {
+#if RGB_DISABLE_TIMEOUT > 0
+    if ( (!rgblight_config.enable) || (sync_timer_elapsed32(rgb_anykey_timer) > (uint32_t)RGB_DISABLE_TIMEOUT))
+#else
+    if (!rgblight_config.enable)
+#endif
+    {
         for (uint8_t i = rgblight_ranges.effect_start_pos; i < rgblight_ranges.effect_end_pos; i++) {
             led[i].r = 0;
             led[i].g = 0;

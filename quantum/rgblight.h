@@ -369,6 +369,7 @@ void     eeconfig_update_rgblight(uint32_t val);
 void     eeconfig_update_rgblight_current(void);
 void     eeconfig_update_rgblight_default(void);
 void     eeconfig_debug_rgblight(void);
+void     process_rgb_light(uint8_t row, uint8_t col, bool pressed);
 
 void rgb_matrix_increase(void);
 void rgb_matrix_decrease(void);
