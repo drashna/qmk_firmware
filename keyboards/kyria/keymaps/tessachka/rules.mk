@@ -1,3 +1,11 @@
 OLED_DRIVER_ENABLE = yes   # Enables the use of OLED displays
 RGBLIGHT_ENABLE = yes      # Enable keyboard RGB underglow
 MOUSEKEY_ENABLE = yes
+SPACE_CADET_ENABLE = no
+ENCODER_ENABLE = no
+MAGIC_ENABLE = no
+GRAVE_ESC_ENABLE = no
+KEY_LOCK_ENABLE = no
+NKRO_ENABLE = yes
+WPM_ENABLE = yes
+SPLIT_KEYBOARD = no
