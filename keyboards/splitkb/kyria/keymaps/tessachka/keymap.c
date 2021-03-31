@@ -866,13 +866,13 @@ static void render_status(void) {
     // Logo and version information
     render_tessachka_logo();
     render_anim();
-    oled_set_cursor(5,3);
+    oled_set_cursor(6,3);
     oled_write_P(PSTR("Kyria rev1"), false);
 
-    oled_set_cursor(5,4);
+    oled_set_cursor(6,4);
     // Host Keyboard Layer Status
     oled_write_P(PSTR("Layer: "), false);
-    oled_set_cursor(6,5);
+    oled_set_cursor(7,5);
     switch (get_highest_layer(layer_state)) {
         case QWERTY:
             oled_write_P(PSTR("Default"), false);
@@ -915,7 +915,7 @@ static void render_status(void) {
     }
 
     // Host Keyboard LED Status
-    oled_set_cursor(5,6);
+    oled_set_cursor(6,6);
     uint8_t led_usb_state = host_keyboard_leds();
     oled_write_P(IS_LED_ON(led_usb_state, USB_LED_NUM_LOCK)    ? PSTR("NUMLCK ") : PSTR("       "), false);
     oled_write_P(IS_LED_ON(led_usb_state, USB_LED_CAPS_LOCK)   ? PSTR("CAPLCK ") : PSTR("       "), false);
