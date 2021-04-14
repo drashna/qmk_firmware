@@ -28,7 +28,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 /* key matrix size */
 #define MATRIX_ROWS 1
-#define MATRIX_COLS 1
+#define MATRIX_COLS 3
 
 /*
  * Keyboard Matrix Assignments
@@ -43,6 +43,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define MATRIX_ROW_PINS { D3 }
 #define MATRIX_COL_PINS { D5 }
 #define UNUSED_PINS
+#define MATRIX_MASKED
 
 /* COL2ROW, ROW2COL */
 #define DIODE_DIRECTION COL2ROW
@@ -53,3 +54,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define RGB_DI_PIN B3
 #define RGBLED_NUM 30
 #define RGBLIGHT_ANIMATIONS
+
+#define VIA_ENCODERS 1
+
+
+#define ENCODERS_CW_KEY  { { 0, 1 } }
+#define ENCODERS_CCW_KEY { { 0, 2 } }

@@ -15,21 +15,18 @@
  */
 #include QMK_KEYBOARD_H
 
-
-
-
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     /* Base */
-    [0] = LAYOUT(
-        KC_A
+    [0] = LAYOUT_via(
+        TO(1), KC_DOWN, KC_UP
     ),
-    [1] = LAYOUT(
-        KC_A
+    [1] = LAYOUT_via(
+        TO(2), KC_PGDN, KC_PGUP
     ),
-    [2] = LAYOUT(
-        KC_A
+    [2] = LAYOUT_via(
+        TO(3), _______, _______
     ),
-    [3] = LAYOUT(
-        KC_A
+    [3] = LAYOUT_via(
+        TO(0), KC_VOLD, KC_VOLU
     ),
 };
