@@ -49,14 +49,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define DIODE_DIRECTION COL2ROW
 
 #define ENCODERS_PAD_A { C6 }
-#define ENCODERS_PAD_B { D6 }
+#define ENCODERS_PAD_B { D4 }
 
 #define RGB_DI_PIN B3
 #define RGBLED_NUM 30
 #define RGBLIGHT_ANIMATIONS
 
 #define VIA_ENCODERS 1
-
 
 #define ENCODERS_CW_KEY  { { 0, 1 } }
 #define ENCODERS_CCW_KEY { { 0, 2 } }
