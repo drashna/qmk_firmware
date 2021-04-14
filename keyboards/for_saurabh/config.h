@@ -57,5 +57,5 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #define VIA_ENCODERS 1
 
-#define ENCODERS_CW_KEY  { { 0, 1 } }
-#define ENCODERS_CCW_KEY { { 0, 2 } }
+#define ENCODERS_CW_KEY  { { 1, 0 } }
+#define ENCODERS_CCW_KEY { { 2, 0 } }
