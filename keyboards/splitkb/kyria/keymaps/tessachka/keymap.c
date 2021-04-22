@@ -138,10 +138,10 @@ void matrix_scan_user(void) {
 
 #undef LAYOUT
 #define LAYOUT( \
-    L00, L01, L02, L03, L04, L05,                     R06, R07, R08, R09, R10, R11, \
-    L12, L13, L14, L15, L16, L17,                     R18, R19, R20, R21, R22, R23, \
-    L24, L25, L26, L27, L28, L29, L30, L31, R32, R33, R34, R35, R36, R37, R38, R39, \
-                   L40, L41, L42, L43, L44, R45, R46, R47, R48, R49 \
+    L00, L01, L02, L03, L04, L05,           \
+    L12, L13, L14, L15, L16, L17,           \
+    L24, L25, L26, L27, L28, L29, L30, L31, \
+                   L40, L41, L42, L43, L44  \
 ) \
 { \
     { KC_NO, KC_NO, L05,   L04,   L03,   L02,   L01,   L00   }, \
@@ -152,265 +152,83 @@ void matrix_scan_user(void) {
 
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
-/*
- * Base Layer: QWERTY
- *
- * ,-------------------------------------------.                              ,-------------------------------------------.
- * | ESC    |   Q  |   W  |   E  |   R  |   T  |                              |   Y  |   U  |   I  |   O  |   P  | BSPC   |
- * |--------+------+------+------+------+------|                              |------+------+------+------+------+--------|
- * | TAB/ADJ|   A  |   S  |  D   |   F  |   G  |                              |   H  |   J  |   K  |   L  | ;  : | ENTER  |
- * |--------+------+------+------+------+------+-------------.  ,-------------+------+------+------+------+------+--------|
- * | LSHIFT |   Z  |   X  |   C  |   V  |   B  |      |      |  |      |      |   N  |   M  | ,  < | . >  | /  ? | F16    |
- * `----------------------+------+------+------+------+------|  |------+------+------+------+------+----------------------'
- *                        |      |      |      |      | Space|  | MYCM | Calc | F15  |      |      |
- *                        |      |      | Ctrl | LAlt | Lower|  | Raise|      |      |      |      |
- *                        `----------------------------------'  `----------------------------------'
- */
     [QWERTY] = LAYOUT(
-      KC_ESC,   KC_Z,   KC_Q,   KC_W,   KC_E,   KC_R,                                         KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    KC_BSPC,
-      KC_LCTL,     KC_SPC,   KC_A,   KC_S,   KC_D,   KC_F,                                         KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, KC_ENT,
-      MO(ADJUST),  KC_BTN2,   KC_I,   KC_X,   KC_C,   KC_V,   KC_B,   KC_G, XXXXXXX, XXXXXXX, KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, KC_F16,
-            KC_TAB, KC_LALT, MO(RAISE), MACRO_LMB_RMB, KC_BTN1,   LT(RAISE,KC_MYCM), KC_CALC, KC_F15, XXXXXXX, XXXXXXX
+      KC_ESC,      KC_Z,    KC_Q,    KC_W,    KC_E,    KC_R,
+      KC_LCTL,     KC_SPC,  KC_A,    KC_S,    KC_D,    KC_F,
+      MO(ADJUST),  KC_BTN2, KC_I,    KC_X,    KC_C,    KC_V,    KC_B,    KC_E,
+                                     KC_TAB, KC_LALT, MO(RAISE), MACRO_LMB_RMB, KC_BTN1
     ),
-/*
- * Second Base Layer: QMacros
- *
- * ,-------------------------------------------.                              ,-------------------------------------------.
- * | ESC    |   Q  |   W  |   E  |   R  |   T  |                              |   Y  |   U  |   I  |   O  |   P  | BSPC   |
- * |--------+------+------+------+------+------|                              |------+------+------+------+------+--------|
- * | TAB/ADJ|   A  |   S  |  D   |   F  |   G  |                              |   H  |   J  |   K  |   L  | ;  : | ENTER  |
- * |--------+------+------+------+------+------+-------------.  ,-------------+------+------+------+------+------+--------|
- * | LSHIFT |   Z  |   X  |   C  |   V  |   B  |      |      |  |      |      |   N  |   M  | ,  < | . >  | /  ? | F16    |
- * `----------------------+------+------+------+------+------|  |------+------+------+------+------+----------------------'
- *                        |      |      |      |      | Space|  | MYCM | Calc | F15  |      |      |
- *                        |      |      | Ctrl | LAlt | Lower|  | Raise|      |      |      |      |
- *                        `----------------------------------'  `----------------------------------'
- */
     [TESSWIN] = LAYOUT(
-      KC_ESC,   KC_Z,   KC_Q,   KC_W,   KC_F,   KC_R,                                         KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    KC_BSPC,
-      KC_LCTL,     KC_SPC,   KC_A,   KC_S,   KC_D,   KC_LALT,                                         KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, KC_ENT,
-      MO(ADJUST),  KC_BTN2,   KC_I,   KC_X,   KC_C,   KC_V,   KC_B,   KC_E, XXXXXXX, XXXXXXX, KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, KC_F16,
-            KC_LALT, KC_TAB, MO(RAISE), MACRO_LMB_RMB, KC_BTN1,   LT(RAISE,KC_MYCM), KC_CALC, KC_F15, XXXXXXX, XXXXXXX
+      KC_ESC,     KC_Z,    KC_Q,    KC_W,    KC_F,    KC_R,
+      KC_T,       KC_SPC,  KC_A,    KC_S,    KC_D,    KC_LALT,
+      MO(ADJUST), KC_BTN2, KC_I,    KC_X,    KC_C,    KC_V,    KC_B,    KC_E,
+                                    KC_LALT, KC_TAB, MO(RAISE), MACRO_LMB_RMB, KC_BTN1
     ),
-/*
- * Second Base Layer: QMacros
- *
- * ,-------------------------------------------.                              ,-------------------------------------------.
- * | ESC    |   Q  |   W  |   E  |   R  |   T  |                              |   Y  |   U  |   I  |   O  |   P  | BSPC   |
- * |--------+------+------+------+------+------|                              |------+------+------+------+------+--------|
- * | TAB/ADJ|   A  |   S  |  D   |   F  |   G  |                              |   H  |   J  |   K  |   L  | ;  : | ENTER  |
- * |--------+------+------+------+------+------+-------------.  ,-------------+------+------+------+------+------+--------|
- * | LSHIFT |   Z  |   X  |   C  |   V  |   B  |      |      |  |      |      |   N  |   M  | ,  < | . >  | /  ? | F16    |
- * `----------------------+------+------+------+------+------|  |------+------+------+------+------+----------------------'
- *                        |      |      |      |      | Space|  | MYCM | Calc | F15  |      |      |
- *                        |      |      | Ctrl | LAlt | Lower|  | Raise|      |      |      |      |
- *                        `----------------------------------'  `----------------------------------'
- */
     [QMACROS] = LAYOUT(
-      KC_ESC,   KC_I,   KC_Q,   KC_W,   KC_E,   KC_R,                                         KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    KC_BSPC,
-      KC_T,     KC_U,   KC_A,   KC_S,   KC_D,   KC_F,                                         KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, KC_ENT,
-      MO(ADJUST),  KC_LCTL,   KC_Z,   KC_X,   KC_C,   KC_V,   KC_B,   KC_G, XXXXXXX, XXXXXXX, KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, KC_F16,
-            KC_TAB, KC_LALT, MO(RAISE), C_S_T(KC_LSFT), KEEP_FIRING,   LT(RAISE,KC_MYCM), KC_CALC, KC_F15, XXXXXXX, XXXXXXX
+      KC_ESC,     KC_I,    KC_Q,    KC_W,    KC_E,    KC_R,
+      KC_T,       KC_U,    KC_A,    KC_S,    KC_D,    KC_F,
+      MO(ADJUST), KC_LCTL, KC_Z,    KC_X,    KC_C,    KC_V,   KC_B,   KC_G,
+                                    KC_TAB, KC_LALT, MO(RAISE), C_S_T(KC_LSFT), KEEP_FIRING
     ),
-/*
- * Lower Layer: Numbers and symbols
- *
- * ,-------------------------------------------.                              ,-------------------------------------------.
- * | `      | 1 !  | 2 @  | 3 #  | 4 $  | 5 %  |                              | 6 ^  | 7 &  | 8 *  | 9 (  | 0 )  | DEL    |
- * |--------+------+------+------+------+------|                              |------+------+------+------+------+--------|
- * | CAPS   | - _  | = +  | [ {  | ] }  |      |                              |      |      |      |      | ' "  |        |
- * |--------+------+------+------+------+------+-------------.  ,-------------+------+------+------+------+------+--------|
- * | LSHIFT | TAB  |      |      |      |      |      |      |  |      |      | Home | PgDn | PgUp | End  | \ |  |        |
- * `----------------------+------+------+------+------+------|  |------+------+------+------+------+----------------------'
- *                        |      |      |      |      | Space|  | Space|      |      |      |      |
- *                        |      |      | Ctrl | LAlt | Lower|  |      |      |      |      |      |
- *                        `----------------------------------'  `----------------------------------'
- */
     [LOWER] = LAYOUT(
-      KC_ESC,   KC_Z,   KC_Q,   KC_W,   KC_E,   KC_R,                                     KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,
-      KC_LCTL,   KC_SPC,   KC_A,   KC_S,   KC_D,   KC_F,                                     KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,
-      MO(ADJUST),  KC_BTN2,   KC_I,   KC_X,   KC_C,   KC_V,   KC_B,   KC_G, _______, _______, KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,
-                                KC_TAB, KC_LALT, MO(RAISE), KC_BTN1, KC_U, _______, _______, _______, _______, _______
+      KC_LCTL,    KC_SPC,  KC_A,    KC_S,    KC_D,    KC_F,
+      KC_ESC,     KC_Z,    KC_Q,    KC_W,    KC_E,    KC_R,
+      MO(ADJUST), KC_BTN2, KC_I,    KC_X,    KC_C,    KC_V,    KC_B,    KC_G,
+                                    KC_TAB, KC_LALT, MO(RAISE), KC_BTN1, KC_U
     ),
-/*
- * Lower Layer: Numbers and symbols
- *
- * ,-------------------------------------------.                              ,-------------------------------------------.
- * | `      | 1 !  | 2 @  | 3 #  | 4 $  | 5 %  |                              | 6 ^  | 7 &  | 8 *  | 9 (  | 0 )  | DEL    |
- * |--------+------+------+------+------+------|                              |------+------+------+------+------+--------|
- * | CAPS   | - _  | = +  | [ {  | ] }  |      |                              |      |      |      |      | ' "  |        |
- * |--------+------+------+------+------+------+-------------.  ,-------------+------+------+------+------+------+--------|
- * | LSHIFT | TAB  |      |      |      |      |      |      |  |      |      | Home | PgDn | PgUp | End  | \ |  |        |
- * `----------------------+------+------+------+------+------|  |------+------+------+------+------+----------------------'
- *                        |      |      |      |      | Space|  | Space|      |      |      |      |
- *                        |      |      | Ctrl | LAlt | Lower|  |      |      |      |      |      |
- *                        `----------------------------------'  `----------------------------------'
- */
     [GDFL] = LAYOUT(
-      KC_ESC,   KC_Z,   KC_Q,   KC_W,   KC_E,   KC_R,                                     KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,
-      KC_LCTL,   KC_SPC,   KC_A,   KC_S,   KC_D,   KC_F,                                     KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,
-      MO(ADJUST),  KC_BTN2,   KC_I,   KC_X,   KC_C,   KC_V,   KC_B,   KC_G, _______, _______, KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,
-                                KC_TAB, KC_LALT, MO(RAISE), KC_BTN1, KC_BTN2, _______, _______, _______, _______, _______
+      KC_ESC,     KC_Z,    KC_Q,   KC_W,   KC_E,   KC_R,
+      KC_LCTL,    KC_SPC,  KC_A,   KC_S,   KC_D,   KC_F,
+      MO(ADJUST), KC_BTN2, KC_I,   KC_X,   KC_C,   KC_V,   KC_B,   KC_G,
+                                   KC_TAB, KC_LALT, MO(RAISE), KC_BTN1, KC_BTN2
     ),
-/*
- * Lower Layer: Numbers and symbols
- *
- * ,-------------------------------------------.                              ,-------------------------------------------.
- * | `      | 1 !  | 2 @  | 3 #  | 4 $  | 5 %  |                              | 6 ^  | 7 &  | 8 *  | 9 (  | 0 )  | DEL    |
- * |--------+------+------+------+------+------|                              |------+------+------+------+------+--------|
- * | CAPS   | - _  | = +  | [ {  | ] }  |      |                              |      |      |      |      | ' "  |        |
- * |--------+------+------+------+------+------+-------------.  ,-------------+------+------+------+------+------+--------|
- * | LSHIFT | TAB  |      |      |      |      |      |      |  |      |      | Home | PgDn | PgUp | End  | \ |  |        |
- * `----------------------+------+------+------+------+------|  |------+------+------+------+------+----------------------'
- *                        |      |      |      |      | Space|  | Space|      |      |      |      |
- *                        |      |      | Ctrl | LAlt | Lower|  |      |      |      |      |      |
- *                        `----------------------------------'  `----------------------------------'
- */
     [GNS] = LAYOUT(
-      KC_ESC,   KC_LALT,   KC_V,   KC_W,   KC_F,   KC_R,                                     KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,
-      KC_BTN3,   KC_BTN1,   KC_A,   KC_S,   KC_D,   KC_Y,                                     KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,
-      MO(ADJUST),  KC_J,   KC_B,   KC_LCTL,   KC_Q,   KC_E,   KC_G,   KC_BTN3, _______, _______, KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,
-                                KC_TAB, KC_LALT, MO(RAISE), KC_BTN2, KC_SPC, _______, _______, _______, _______, _______
+      KC_ESC,     KC_LALT, KC_V,    KC_W,    KC_F,    KC_R,
+      KC_BTN3,    KC_BTN1, KC_A,    KC_S,    KC_D,    KC_Y,
+      MO(ADJUST), KC_J,    KC_B,    KC_LCTL, KC_Q,    KC_E,    KC_G,   KC_BTN3,
+                                    KC_TAB,  KC_LALT, MO(RAISE), KC_BTN2, KC_SPC
     ),
-/*
- * Edit Layer: Edit things
- *
- * ,-------------------------------------------.                              ,-------------------------------------------.
- * | `      | 1 !  | 2 @  | 3 #  | 4 $  | 5 %  |                              | 6 ^  | 7 &  | 8 *  | 9 (  | 0 )  | DEL    |
- * |--------+------+------+------+------+------|                              |------+------+------+------+------+--------|
- * | CAPS   | - _  | = +  | [ {  | ] }  |      |                              |      |      |      |      | ' "  |        |
- * |--------+------+------+------+------+------+-------------.  ,-------------+------+------+------+------+------+--------|
- * | LSHIFT | TAB  |      |      |      |      |      |      |  |      |      | Home | PgDn | PgUp | End  | \ |  |        |
- * `----------------------+------+------+------+------+------|  |------+------+------+------+------+----------------------'
- *                        |      |      |      |      | Space|  | Space|      |      |      |      |
- *                        |      |      | Ctrl | LAlt | Lower|  |      |      |      |      |      |
- *                        `----------------------------------'  `----------------------------------'
- */
     [HZD] = LAYOUT(
-      KC_ESC,   KC_I,   KC_Q,   KC_W,   KC_E,   KC_R,                                     KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,
-      KC_Y,   KC_U,   KC_A,   KC_S,   KC_D,   KC_F,                                     KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,
-      MO(ADJUST),  HOLD_LCTL,   KC_Z,   KC_X,   KC_C,   KC_V,   MACRO_B_T,   KC_G, _______, _______, KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,
-                                KC_TAB, KC_LALT, MO(RAISE), KC_T, KC_LSFT, _______, _______, _______, _______, _______
+      KC_ESC,     KC_I,    KC_Q,    KC_W,    KC_E,    KC_R,
+      KC_Y,       KC_U,    KC_A,    KC_S,    KC_D,    KC_F,
+      MO(ADJUST), HOLD_LCTL, KC_Z,  KC_X,    KC_C,    KC_V,   MACRO_B_T, KC_G,
+                                    KC_TAB, KC_LALT, MO(RAISE), KC_T, KC_LSFT
     ),
-/*
- * Edit Layer: Edit things
- *
- * ,-------------------------------------------.                              ,-------------------------------------------.
- * | `      | 1 !  | 2 @  | 3 #  | 4 $  | 5 %  |                              | 6 ^  | 7 &  | 8 *  | 9 (  | 0 )  | DEL    |
- * |--------+------+------+------+------+------|                              |------+------+------+------+------+--------|
- * | CAPS   | - _  | = +  | [ {  | ] }  |      |                              |      |      |      |      | ' "  |        |
- * |--------+------+------+------+------+------+-------------.  ,-------------+------+------+------+------+------+--------|
- * | LSHIFT | TAB  |      |      |      |      |      |      |  |      |      | Home | PgDn | PgUp | End  | \ |  |        |
- * `----------------------+------+------+------+------+------|  |------+------+------+------+------+----------------------'
- *                        |      |      |      |      | Space|  | Space|      |      |      |      |
- *                        |      |      | Ctrl | LAlt | Lower|  |      |      |      |      |      |
- *                        `----------------------------------'  `----------------------------------'
- */
     [EDIT] = LAYOUT(
-      KC_ESC,   KC_I,   KC_O,   KC_UP,   KC_C,   KC_DEL,                                     KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,
-      KC_LSFT,   KC_SPC,   KC_LEFT,   KC_DOWN,   KC_RIGHT,   KC_M,                                     KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,
-      MO(ADJUST),  KC_LCTL,   KC_Z,   KC_H,   KC_MINS,   KC_EQL,   MACRO_CD,   KC_S, _______, _______, KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,
-                                KC_TAB, KC_LALT, KC_V, KC_BTN1, KC_BTN2, _______, _______, _______, _______, _______
+      KC_ESC,     KC_I,    KC_O,    KC_UP,   KC_C,    KC_DEL,
+      KC_LSFT,    KC_SPC,  KC_LEFT, KC_DOWN, KC_RIGHT,KC_M,
+      MO(ADJUST), KC_LCTL, KC_Z,    KC_H,    KC_MINS, KC_EQL,   MACRO_CD, KC_S,
+                                    KC_TAB, KC_LALT, KC_V, KC_BTN1, KC_BTN2
     ),
-/*
- * Edit Layer: Edit things
- *
- * ,-------------------------------------------.                              ,-------------------------------------------.
- * | `      | 1 !  | 2 @  | 3 #  | 4 $  | 5 %  |                              | 6 ^  | 7 &  | 8 *  | 9 (  | 0 )  | DEL    |
- * |--------+------+------+------+------+------|                              |------+------+------+------+------+--------|
- * | CAPS   | - _  | = +  | [ {  | ] }  |      |                              |      |      |      |      | ' "  |        |
- * |--------+------+------+------+------+------+-------------.  ,-------------+------+------+------+------+------+--------|
- * | LSHIFT | TAB  |      |      |      |      |      |      |  |      |      | Home | PgDn | PgUp | End  | \ |  |        |
- * `----------------------+------+------+------+------+------|  |------+------+------+------+------+----------------------'
- *                        |      |      |      |      | Space|  | Space|      |      |      |      |
- *                        |      |      | Ctrl | LAlt | Lower|  |      |      |      |      |      |
- *                        `----------------------------------'  `----------------------------------'
- */
     [AU] = LAYOUT(
-      KC_ESC,   KC_I,   KC_O,   KC_UP,   KC_E,   KC_R,                                     KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,
-      KC_LSFT,   KC_TAB,   KC_LEFT,   KC_DOWN,   KC_RIGHT,   KC_M,                                     KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,
-      MO(ADJUST),  KC_LCTL,   KC_Z,   KC_X,   KC_C,   KC_V,   KC_H,   KC_S, _______, _______, KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,
-                                KC_SPC, KC_LALT, MO(RAISE), KC_BTN2, KC_BTN1, _______, _______, _______, _______, _______
+      KC_ESC,   KC_I,   KC_O,   KC_UP,   KC_E,   KC_R,
+      KC_LSFT,   KC_TAB,   KC_LEFT,   KC_DOWN,   KC_RIGHT,   KC_M,
+      MO(ADJUST),  KC_LCTL,   KC_Z,   KC_X,   KC_C,   KC_V,   KC_H,   KC_S,
+                                KC_SPC, KC_LALT, MO(RAISE), KC_BTN2, KC_BTN1
     ),
-/*
- * Mortal Layer: Mortal Shell Game
- *
- * ,-------------------------------------------.                              ,-------------------------------------------.
- * |        | F1   | F2   | F3   | F4   | F5   |                              | F6   | F7   | F8   | F9   | F10  | F11    |
- * |--------+------+------+------+------+------|                              |------+------+------+------+------+--------|
- * |        |      |EEPRST|      |      |      |                              |      |      |      |      |      | F12    |
- * |--------+------+------+------+------+------+-------------.  ,-------------+------+------+------+------+------+--------|
- * | LSHIFT | TAB  | RESET|      |      |      |      |      |  |      |      | Play |      |      |      |      |        |
- * `----------------------+------+------+------+------+------|  |------+------+------+------+------+----------------------'
- *                        |      |      |      |      | Space|  | MYCM | Prev | Next  |      |      |
- *                        |      |      | Ctrl | LAlt |      |  | Raise|      |      |      |      |
- *                        `----------------------------------'  `----------------------------------'
- */
     [MORTAL] = LAYOUT(
-      KC_ESC,   KC_WH_D,   KC_WH_U,   KC_W,   KC_TAB,   KC_Z,                                     KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,
-      KC_LSFT,   KC_SPC,   KC_A,   KC_S,   KC_D,   KC_E,                                     KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,
-      MO(ADJUST),  KC_LCTL,   KC_I,   KC_R,   KC_Q,   KC_X,   KC_BTN1,   KC_CAPS, _______, _______, KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,
-                                KC_TAB, KC_LALT, MO(RAISE), KC_BTN2, KC_F, _______, _______, _______, _______, _______
+      KC_ESC,     KC_WH_D, KC_WH_U, KC_W,    KC_TAB,  KC_Z,
+      KC_LSFT,    KC_SPC,  KC_A,    KC_S,    KC_D,    KC_E,
+      MO(ADJUST), KC_LCTL, KC_I,    KC_R,    KC_Q,    KC_X,    KC_BTN1, KC_CAPS,
+                                    KC_TAB, KC_LALT, MO(RAISE), KC_BTN2, KC_F
     ),
-/*
- * Raise Layer: Function Keys
- *
- * ,-------------------------------------------.                              ,-------------------------------------------.
- * |        | F1   | F2   | F3   | F4   | F5   |                              | F6   | F7   | F8   | F9   | F10  | F11    |
- * |--------+------+------+------+------+------|                              |------+------+------+------+------+--------|
- * |        |      |EEPRST|      |      |      |                              |      |      |      |      |      | F12    |
- * |--------+------+------+------+------+------+-------------.  ,-------------+------+------+------+------+------+--------|
- * | LSHIFT | TAB  | QK_BOOT|      |      |      |      |      |  |      |      | Play |      |      |      |      |        |
- * `----------------------+------+------+------+------+------|  |------+------+------+------+------+----------------------'
- *                        |      |      |      |      | Space|  | MYCM | Prev | Next  |      |      |
- *                        |      |      | Ctrl | LAlt |      |  | Raise|      |      |      |      |
- *                        `----------------------------------'  `----------------------------------'
- */
     [RAISE] = LAYOUT(
-      KC_TAB,   KC_P,   KC_O,   KC_UP,   KC_BTN3,   KC_BSPC,                                       KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11,
-      KC_LSFT,   KC_T,   KC_LEFT, KC_DOWN,   KC_RIGHT,   KC_F5,                                       KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_F12,
-      KC_M, KC_N,  KC_J,   KC_K,   KC_L,   KC_ENT,  TG(AU), TG(GDFL), _______, _______, KC_MPLY, KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,
-                                 KC_F6, KC_F1, _______, TG(GNS), TG(HZD),     KC_MPRV, KC_MNXT, _______, _______, _______
+      KC_TAB,  KC_P,    KC_O,    KC_UP,   KC_BTN3, KC_BSPC,
+      KC_LSFT, KC_T,    KC_LEFT, KC_DOWN, KC_RIGHT, KC_F5,
+      KC_M,    KC_N,    KC_J,    KC_K,    KC_L,    KC_ENT,  TG(AU), TG(GDFL),
+                                 KC_F6,   KC_F1,   _______, TG(GNS), TG(HZD)
     ),
-/*
- * Adjust Layer: Arrow keys, RGB
- *
- * ,-------------------------------------------.                              ,-------------------------------------------.
- * |        | BTN2 | Up   | BTN1 |RGBMOD|RGBTOG|                              |      |      |      |      |      |        |
- * |--------+------+------+------+------+------|                              |------+------+------+------+------+--------|
- * |        | Left | Down | Right|RGBSAI|RGBHUI|                              |      |      |      |      |      |        |
- * |--------+------+------+------+------+------+-------------.  ,-------------+------+------+------+------+------+--------|
- * | RGBRST |      |RGBVAI|RGBVAD|RGBSAD|RGBHUD|      |      |  |      |      |      |      |      |      |      |        |
- * `----------------------+------+------+------+------+------|  |------+------+------+------+------+----------------------'
- *                        |      |      | WBAK | BTN3 | WFWD |  | MYCM | Calc | F15  |      |      |
- *                        |      |      |      |      |      |  | Raise|      |      |      |      |
- *                        `----------------------------------'  `----------------------------------'
- */
     [ADJUST] = LAYOUT(
-      TG(LOWER),  TG(EDIT),    KC_Y,    KC_W,    KC_7,    KC_8,                                        KC_6,    KC_7,    KC_8,    KC_9,   KC_0,    KC_DEL,
-      TG(QMACROS), TG(TESSWIN), KC_A,  KC_S, KC_D, KC_H,                                       KC_NO,   KC_NO,   KC_NO,   KC_NO,  KC_QUOT, KC_NO,
-      KC_NO, RGB_HUI,  RGB_HUD,   RGB_VAI,   KC_1,   KC_2,   KC_3, KC_5, _______, _______, KC_HOME, KC_PGDN, KC_PGUP, KC_END, KC_BSLS, KC_NO,
-                                 _______, _______, KC_6, KC_4, KC_MUTE, KC_SPC,  KC_NO,   KC_NO, _______, _______
+      TG(LOWER),   TG(EDIT),    KC_Y,    KC_W,    KC_7,    KC_8,
+      TG(QMACROS), TG(TESSWIN), KC_A,    KC_S,    KC_D,    KC_H,
+      KC_NO,       RGB_HUI,     RGB_HUD, RGB_VAI, KC_1,    KC_2,    KC_3,    KC_5,
+                                         _______, _______, KC_6,    KC_4,    KC_MUTE
     ),
-// /*
-//  * Layer template
-//  *
-//  * ,-------------------------------------------.                              ,-------------------------------------------.
-//  * |        |      |      |      |      |      |                              |      |      |      |      |      |        |
-//  * |--------+------+------+------+------+------|                              |------+------+------+------+------+--------|
-//  * |        |      |      |      |      |      |                              |      |      |      |      |      |        |
-//  * |--------+------+------+------+------+------+-------------.  ,-------------+------+------+------+------+------+--------|
-//  * |        |      |      |      |      |      |      |      |  |      |      |      |      |      |      |      |        |
-//  * `----------------------+------+------+------+------+------|  |------+------+------+------+------+----------------------'
-//  *                        |      |      |      |      |      |  |      |      |      |      |      |
-//  *                        |      |      |      |      |      |  |      |      |      |      |      |
-//  *                        `----------------------------------'  `----------------------------------'
-//  */
 //     [LAYERINDEX] = LAYOUT(
-//       _______, _______, _______, _______, _______, _______,                                     _______, _______, _______, _______, _______, _______,
-//       _______, _______, _______, _______, _______, _______,                                     _______, _______, _______, _______, _______, _______,
-//       _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
-//                                  _______, _______, _______, _______, _______, _______, _______, _______, _______, _______
+//       _______, _______, _______, _______, _______, _______,
+//       _______, _______, _______, _______, _______, _______,
+//       _______, _______, _______, _______, _______, _______, _______, _______,
+//                                  _______, _______, _______, _______, _______,
 //     ),
 };
 
@@ -875,43 +693,43 @@ static void render_status(void) {
     oled_set_cursor(7,5);
     switch (get_highest_layer(layer_state)) {
         case QWERTY:
-            oled_write_P(PSTR("Default"), false);
+            oled_write_ln_P(PSTR("Default"), false);
             break;
         case TESSWIN:
-            oled_write_P(PSTR("TessWin"), false);
+            oled_write_ln_P(PSTR("TessWin"), false);
             break;
         case LOWER:
-            oled_write_P(PSTR("Lower"), false);
+            oled_write_ln_P(PSTR("Lower"), false);
             break;
         case GDFL:
-            oled_write_P(PSTR("Gdfl"), false);
+            oled_write_ln_P(PSTR("Gdfl"), false);
             break;
         case HZD:
-            oled_write_P(PSTR("HZD"), false);
+            oled_write_ln_P(PSTR("HZD"), false);
             break;
         case RAISE:
-            oled_write_P(PSTR("Raise"), false);
+            oled_write_ln_P(PSTR("Raise"), false);
             break;
         case ADJUST:
-            oled_write_P(PSTR("Adjust"), false);
+            oled_write_ln_P(PSTR("Adjust"), false);
             break;
         case EDIT:
-            oled_write_P(PSTR("Edit"), false);
+            oled_write_ln_P(PSTR("Edit"), false);
             break;
         case AU:
-            oled_write_P(PSTR("AU"), false);
+            oled_write_ln_P(PSTR("AU"), false);
             break;
         case QMACROS:
-            oled_write_P(PSTR("QMacros"), false);
+            oled_write_ln_P(PSTR("QMacros"), false);
             break;
         case MORTAL:
-            oled_write_P(PSTR("Mortal"), false);
+            oled_write_ln_P(PSTR("Mortal"), false);
             break;
         case GNS:
-            oled_write_P(PSTR("Genshin"), false);
+            oled_write_ln_P(PSTR("Genshin"), false);
             break;
         default:
-            oled_write_P(PSTR("Undef"), false);
+            oled_write_ln_P(PSTR("Undef"), false);
     }
 
     // Host Keyboard LED Status
