@@ -23,5 +23,6 @@ RGB_MATRIX_DRIVER = IS31FL3733
 
 BLUETOOTH_ENABLE = no       # Enable Bluetooth
 AUDIO_ENABLE = no           # Audio output
+LTO_ENABLE = yes
 
 LAYOUTS = 64_ansi
