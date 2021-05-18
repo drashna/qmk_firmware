@@ -172,4 +172,25 @@ const rgb_matrix_driver_t rgb_matrix_driver = {
     .set_color     = setled,
     .set_color_all = setled_all,
 };
+
+#elif defined(AW20216S)
+
+static void init(void) {
+    spi_init();
+    AW20216S_init();
+}
+
+static void flush(void) {
+    // Assumes use of RGB_DI_PIN
+    AW20216S_update_pwm_buffers(DRIVER_ADDR_1, 0);
+    AW20216S_update_pwm_buffers(DRIVER_ADDR_2, 1);
+}
+
+const rgb_matrix_driver_t rgb_matrix_driver = {
+    .init          = init,
+    .flush         = flush,
+    .set_color     = AW20216S_set_color,
+    .set_color_all = AW20216S_set_color_all,
+};
+
 #endif
