@@ -218,7 +218,6 @@ void pointing_device_task(void) {
                     last_sync = timer_read32();
                 }
             }
-            transaction_rpc_recv(KEYBOARD_POINTER_SYNC, sizeof(pointer_data_sync), &pointer_data_sync);
         }
     }
 
