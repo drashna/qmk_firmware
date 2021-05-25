@@ -70,3 +70,5 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 /* serial.c configuration for split keyboard */
 #undef SOFT_SERIAL_PIN
 #define SOFT_SERIAL_PIN D2
+
+#define SPLIT_TRANSACTION_IDS_KB KEYBOARD_POINTER_SYNC

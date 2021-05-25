@@ -15,6 +15,9 @@
  */
 
 #include "5x6_right_trackball.h"
+#ifdef SPLIT_TRANSACTION_IDS_KB
+#    include "transactions.h"
+#endif
 
 #ifndef TRACKBALL_DPI_OPTIONS
 #    define TRACKBALL_DPI_OPTIONS { 1200, 1600, 2400 }
@@ -81,6 +84,24 @@ __attribute__((weak)) void process_mouse(report_mouse_t* mouse_report) {
 }
 
 bool process_record_kb(uint16_t keycode, keyrecord_t* record) {
+#ifndef MOUSEKEY_ENABLE
+    /* If Mousekeys is disabled, then use handle the mouse button
+     * keycodes.  This makes things simpler, and allows usage of
+     * the keycodes in a consistent manner.  But only do this if
+     * Mousekeys is not enable, so it's not handled twice.
+     */
+    if (IS_MOUSEKEY_BUTTON(keycode)) {
+        report_mouse_t currentReport = pointing_device_get_report();
+        if (record->event.pressed) {
+            currentReport.buttons |= 1 << (keycode - KC_MS_BTN1);
+        } else {
+            currentReport.buttons &= ~(1 << (keycode - KC_MS_BTN1));
+        }
+        pointing_device_set_report(currentReport);
+        pointing_device_send();
+    }
+#endif
+
     if (!process_record_user(keycode, record)) { return false; }
 
 #ifdef POINTING_DEVICE_ENABLE
@@ -92,24 +113,6 @@ bool process_record_kb(uint16_t keycode, keyrecord_t* record) {
         }
         eeconfig_update_kb(keyboard_config.raw);
         trackball_set_cpi(dpi_array[keyboard_config.dpi_config]);
-    }
-#endif
-
-/* If Mousekeys is disabled, then use handle the mouse button
- * keycodes.  This makes things simpler, and allows usage of
- * the keycodes in a consistent manner.  But only do this if
- * Mousekeys is not enable, so it's not handled twice.
- */
-#ifndef MOUSEKEY_ENABLE
-    if (IS_MOUSEKEY_BUTTON(keycode)) {
-        report_mouse_t currentReport = pointing_device_get_report();
-        if (record->event.pressed) {
-            currentReport.buttons |= 1 << (keycode - KC_MS_BTN1);
-        } else {
-            currentReport.buttons &= ~(1 << (keycode - KC_MS_BTN1));
-        }
-        pointing_device_set_report(currentReport);
-        pointing_device_send();
     }
 #endif
 
@@ -137,6 +140,37 @@ void keyboard_pre_init_kb(void) {
     keyboard_pre_init_user();
 }
 
+pointer_sync_t pointer_data_sync;
+
+#if defined(SPLIT_TRANSACTION_IDS_KB)
+void pointer_data_sync_handler (uint8_t initiator2target_buffer_size, const void* initiator2target_buffer, uint8_t target2initiator_buffer_size, void* target2initiator_buffer) {
+    if (target2initiator_buffer_size == sizeof(pointer_data_sync)) {
+        memcpy(target2initiator_buffer, &pointer_data_sync, sizeof(pointer_data_sync));
+        if (pointer_data_sync.x > 127) {
+            pointer_data_sync.x -= 127;
+        } else if (pointer_data_sync.x < -127) {
+            pointer_data_sync.x += 127;
+        } else {
+            pointer_data_sync.x = 0;
+        }
+
+        if (pointer_data_sync.y > 127) {
+            pointer_data_sync.y -= 127;
+        } else if (pointer_data_sync.y < -127) {
+            pointer_data_sync.y += 127;
+        } else {
+            pointer_data_sync.y = 0;
+        }
+    }
+}
+
+void keyboard_post_init_kb(void) {
+    transaction_register_rpc(KEYBOARD_POINTER_SYNC, pointer_data_sync_handler);
+
+    keyboard_post_init_user();
+}
+#endif
+
 #ifdef POINTING_DEVICE_ENABLE
 void pointing_device_init(void) {
     if (!is_keyboard_left()) {
@@ -144,14 +178,6 @@ void pointing_device_init(void) {
         pmw_spi_init();
     }
     trackball_set_cpi(dpi_array[keyboard_config.dpi_config]);
-}
-
-static bool has_report_changed(report_mouse_t new, report_mouse_t old) {
-    return (new.buttons != old.buttons) ||
-           (new.x && new.x != old.x) ||
-           (new.y && new.y != old.y) ||
-           (new.h && new.h != old.h) ||
-           (new.v && new.v != old.v);
 }
 
 void pointing_device_task(void) {
@@ -189,15 +215,26 @@ void pointing_device_send(void) {
     static report_mouse_t old_report = {};
     report_mouse_t mouseReport = pointing_device_get_report();
     if (is_keyboard_master()) {
-        int8_t x = mouseReport.x, y = mouseReport.y;
+        int8_t x,y;
+        if (!is_keyboard_left()) {
+            x = mouseReport.x;
+            y = mouseReport.y;
+        } else {
+            x = pointer_data_sync.x;
+            y = pointer_data_sync.y;
+        }
         mouseReport.x = 0;
         mouseReport.y = 0;
         process_mouse_user(&mouseReport, x, y);
-        if (has_report_changed(mouseReport, old_report)) {
+        if (has_mouse_report_changed(mouseReport, old_report)) {
             host_mouse_send(&mouseReport);
         }
+#if defined(SPLIT_TRANSACTION_IDS_KB)
     } else {
-        master_mouse_send(mouseReport.x, mouseReport.y);
+        pointer_data_sync.x += mouseReport.x;
+        pointer_data_sync.y += mouseReport.y;
+        transaction_rpc_recv(KEYBOARD_POINTER_SYNC, sizeof(pointer_data_sync), &pointer_data_sync);
+#endif
     }
     mouseReport.x = 0;
     mouseReport.y = 0;
@@ -205,6 +242,14 @@ void pointing_device_send(void) {
     mouseReport.h = 0;
     old_report = mouseReport;
     pointing_device_set_report(mouseReport);
+}
+
+void trackball_set_cpi(uint16_t cpi) {
+    if (!is_keyboard_left()) {
+        pmw_set_cpi(cpi);
+    } else {
+        // device_cpi = cpi;
+    }
 }
 #endif
 
