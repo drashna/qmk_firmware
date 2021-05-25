@@ -141,6 +141,7 @@ void keyboard_pre_init_kb(void) {
 }
 
 pointer_sync_t pointer_data_sync;
+device_sync_t device_data_sync;
 
 #if defined(SPLIT_TRANSACTION_IDS_KB)
 void pointer_data_sync_handler (uint8_t initiator2target_buffer_size, const void* initiator2target_buffer, uint8_t target2initiator_buffer_size, void* target2initiator_buffer) {
@@ -163,9 +164,15 @@ void pointer_data_sync_handler (uint8_t initiator2target_buffer_size, const void
         }
     }
 }
+void device_data_sync_handler(uint8_t initiator2target_buffer_size, const void* initiator2target_buffer, uint8_t target2initiator_buffer_size, void* target2initiator_buffer) {
+    if (initiator2target_buffer_size == sizeof(device_data_sync)) {
+        memcpy(&device_data_sync, initiator2target_buffer, sizeof(device_data_sync));
+    }
+}
 
 void keyboard_post_init_kb(void) {
     transaction_register_rpc(KEYBOARD_POINTER_SYNC, pointer_data_sync_handler);
+    transaction_register_rpc(KEYBOARD_DEVICE_SYNC,  device_data_sync_handler);
 
     keyboard_post_init_user();
 }
@@ -185,6 +192,36 @@ void pointing_device_task(void) {
     if (!is_keyboard_left()) {
         process_mouse(&mouse_report);
     }
+    if (is_keyboard_master()) {
+        if (!is_keyboard_left()) {
+            static uint16_t cpi = 0, cpi_timer = 0;
+            if (cpi != device_data_sync.dpi || timer_elapsed(cpi_timer) > 500) {
+                cpi = device_data_sync.dpi;
+                pmw_set_cpi(cpi);
+                cpi_timer = timer_read();
+            }
+        } else {
+            static device_sync_t       last_state;
+            static uint32_t            last_sync        = 0;
+            bool                       needs_sync       = false;
+
+            if (memcmp(&device_data_sync, &last_state, sizeof(device_data_sync))) {
+                needs_sync = true;
+                memcpy(&last_state, &device_data_sync, sizeof(device_data_sync));
+            }
+            if (timer_elapsed32(last_sync) > 500) {
+                needs_sync = true;
+            }
+
+            if (needs_sync) {
+                if (transaction_rpc_send(KEYBOARD_DEVICE_SYNC, sizeof(device_data_sync), &device_data_sync)) {
+                    last_sync = timer_read32();
+                }
+            }
+            transaction_rpc_recv(KEYBOARD_POINTER_SYNC, sizeof(pointer_data_sync), &pointer_data_sync);
+        }
+    }
+
 
     pointing_device_set_report(mouse_report);
     pointing_device_send();
@@ -248,7 +285,7 @@ void trackball_set_cpi(uint16_t cpi) {
     if (!is_keyboard_left()) {
         pmw_set_cpi(cpi);
     } else {
-        // device_cpi = cpi;
+        device_data_sync.dpi = cpi;
     }
 }
 #endif
