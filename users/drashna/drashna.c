@@ -15,6 +15,9 @@
  */
 
 #include "drashna.h"
+#ifdef SPLIT_KEYBOARD
+#    include "drashna_sync.h"
+#endif
 
 userspace_config_t userspace_config;
 
@@ -85,6 +88,9 @@ void keyboard_post_init_user(void) {
 #endif
 #if defined(RGB_MATRIX_ENABLE)
     keyboard_post_init_rgb_matrix();
+#endif
+#ifdef SPLIT_KEYBOARD
+    keyboard_post_init_transport_sync();
 #endif
     keyboard_post_init_keymap();
 }
@@ -225,4 +231,13 @@ bool hasAllBitsInMask(uint8_t value, uint8_t mask) {
     mask &= 0xF;
 
     return (value & mask) == mask;
+}
+
+__attribute__((weak)) void housekeeping_task_keymap(void){}
+
+void housekeeping_task_user(void) {
+    housekeeping_task_keymap();
+#ifdef SPLIT_KEYBOARD
+    housekeeping_task_transport_sync();
+#endif
 }
