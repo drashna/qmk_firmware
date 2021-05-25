@@ -15,9 +15,7 @@
  */
 
 #include "5x6_right_trackball.h"
-#ifdef SPLIT_TRANSACTION_IDS_KB
-#    include "transactions.h"
-#endif
+
 
 #ifndef TRACKBALL_DPI_OPTIONS
 #    define TRACKBALL_DPI_OPTIONS { 1200, 1600, 2400 }
@@ -140,44 +138,6 @@ void keyboard_pre_init_kb(void) {
     keyboard_pre_init_user();
 }
 
-pointer_sync_t pointer_data_sync;
-device_sync_t device_data_sync;
-
-#if defined(SPLIT_TRANSACTION_IDS_KB)
-void pointer_data_sync_handler (uint8_t initiator2target_buffer_size, const void* initiator2target_buffer, uint8_t target2initiator_buffer_size, void* target2initiator_buffer) {
-    if (target2initiator_buffer_size == sizeof(pointer_data_sync)) {
-        memcpy(target2initiator_buffer, &pointer_data_sync, sizeof(pointer_data_sync));
-        if (pointer_data_sync.x > 127) {
-            pointer_data_sync.x -= 127;
-        } else if (pointer_data_sync.x < -127) {
-            pointer_data_sync.x += 127;
-        } else {
-            pointer_data_sync.x = 0;
-        }
-
-        if (pointer_data_sync.y > 127) {
-            pointer_data_sync.y -= 127;
-        } else if (pointer_data_sync.y < -127) {
-            pointer_data_sync.y += 127;
-        } else {
-            pointer_data_sync.y = 0;
-        }
-    }
-}
-void device_data_sync_handler(uint8_t initiator2target_buffer_size, const void* initiator2target_buffer, uint8_t target2initiator_buffer_size, void* target2initiator_buffer) {
-    if (initiator2target_buffer_size == sizeof(device_data_sync)) {
-        memcpy(&device_data_sync, initiator2target_buffer, sizeof(device_data_sync));
-    }
-}
-
-void keyboard_post_init_kb(void) {
-    transaction_register_rpc(KEYBOARD_POINTER_SYNC, pointer_data_sync_handler);
-    transaction_register_rpc(KEYBOARD_DEVICE_SYNC,  device_data_sync_handler);
-
-    keyboard_post_init_user();
-}
-#endif
-
 #ifdef POINTING_DEVICE_ENABLE
 void pointing_device_init(void) {
     if (!is_keyboard_left()) {
@@ -192,35 +152,6 @@ void pointing_device_task(void) {
     if (!is_keyboard_left()) {
         process_mouse(&mouse_report);
     }
-    if (is_keyboard_master()) {
-        if (!is_keyboard_left()) {
-            static uint16_t cpi = 0, cpi_timer = 0;
-            if (cpi != device_data_sync.dpi || timer_elapsed(cpi_timer) > 500) {
-                cpi = device_data_sync.dpi;
-                pmw_set_cpi(cpi);
-                cpi_timer = timer_read();
-            }
-        } else {
-            static device_sync_t       last_state;
-            static uint32_t            last_sync        = 0;
-            bool                       needs_sync       = false;
-
-            if (memcmp(&device_data_sync, &last_state, sizeof(device_data_sync))) {
-                needs_sync = true;
-                memcpy(&last_state, &device_data_sync, sizeof(device_data_sync));
-            }
-            if (timer_elapsed32(last_sync) > 500) {
-                needs_sync = true;
-            }
-
-            if (needs_sync) {
-                if (transaction_rpc_send(KEYBOARD_DEVICE_SYNC, sizeof(device_data_sync), &device_data_sync)) {
-                    last_sync = timer_read32();
-                }
-            }
-        }
-    }
-
 
     pointing_device_set_report(mouse_report);
     pointing_device_send();
@@ -251,26 +182,15 @@ void pointing_device_send(void) {
     static report_mouse_t old_report = {};
     report_mouse_t mouseReport = pointing_device_get_report();
     if (is_keyboard_master()) {
-        int8_t x,y;
-        if (!is_keyboard_left()) {
+        int8_t x, y;
             x = mouseReport.x;
             y = mouseReport.y;
-        } else {
-            x = pointer_data_sync.x;
-            y = pointer_data_sync.y;
-        }
         mouseReport.x = 0;
         mouseReport.y = 0;
         process_mouse_user(&mouseReport, x, y);
         if (has_mouse_report_changed(mouseReport, old_report)) {
             host_mouse_send(&mouseReport);
         }
-#if defined(SPLIT_TRANSACTION_IDS_KB)
-    } else {
-        pointer_data_sync.x += mouseReport.x;
-        pointer_data_sync.y += mouseReport.y;
-        transaction_rpc_recv(KEYBOARD_POINTER_SYNC, sizeof(pointer_data_sync), &pointer_data_sync);
-#endif
     }
     mouseReport.x = 0;
     mouseReport.y = 0;
@@ -283,8 +203,6 @@ void pointing_device_send(void) {
 void trackball_set_cpi(uint16_t cpi) {
     if (!is_keyboard_left()) {
         pmw_set_cpi(cpi);
-    } else {
-        device_data_sync.dpi = cpi;
     }
 }
 #endif

@@ -64,18 +64,6 @@ typedef union {
 
 extern keyboard_config_t keyboard_config;
 
-typedef struct {
-    int16_t x;
-    int16_t y;
-} pointer_sync_t;
-
-typedef struct {
-    uint16_t dpi;
-} device_sync_t;
-
-extern pointer_sync_t pointer_data_sync;
-extern device_sync_t device_data_sync;
-
 enum ploopy_keycodes {
     DPI_CONFIG = SAFE_RANGE,
     KEYMAP_SAFE_RANGE,
