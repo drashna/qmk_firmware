@@ -83,20 +83,6 @@ __attribute__((weak)) void process_mouse(report_mouse_t* mouse_report) {
 }
 
 bool process_record_kb(uint16_t keycode, keyrecord_t* record) {
-    if (!process_record_user(keycode, record)) { return false; }
-
-#ifdef POINTING_DEVICE_ENABLE
-    if (keycode == DPI_CONFIG && record->event.pressed) {
-        if ((get_mods() | get_oneshot_mods()) & MOD_MASK_SHIFT) {
-            keyboard_config.dpi_config = (keyboard_config.dpi_config - 1) % DPI_OPTION_SIZE;
-        } else {
-            keyboard_config.dpi_config = (keyboard_config.dpi_config + 1) % DPI_OPTION_SIZE;
-        }
-        eeconfig_update_kb(keyboard_config.raw);
-        trackball_set_cpi(dpi_array[keyboard_config.dpi_config]);
-    }
-#endif
-
 /* If Mousekeys is disabled, then use handle the mouse button
  * keycodes.  This makes things simpler, and allows usage of
  * the keycodes in a consistent manner.  But only do this if
@@ -112,6 +98,20 @@ bool process_record_kb(uint16_t keycode, keyrecord_t* record) {
         }
         pointing_device_set_report(currentReport);
         pointing_device_send();
+    }
+#endif
+
+    if (!process_record_user(keycode, record)) { return false; }
+
+#ifdef POINTING_DEVICE_ENABLE
+    if (keycode == DPI_CONFIG && record->event.pressed) {
+        if ((get_mods()|get_oneshot_mods()) & MOD_MASK_SHIFT) {
+            keyboard_config.dpi_config = (keyboard_config.dpi_config - 1) % DPI_OPTION_SIZE;
+        } else {
+            keyboard_config.dpi_config = (keyboard_config.dpi_config + 1) % DPI_OPTION_SIZE;
+        }
+        eeconfig_update_kb(keyboard_config.raw);
+        trackball_set_cpi(dpi_array[keyboard_config.dpi_config]);
     }
 #endif
 
