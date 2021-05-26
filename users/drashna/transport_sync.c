@@ -89,7 +89,7 @@ void user_state_sync(void) {
     }
 }
 
-void housekeeping_task_user(void) {
+void housekeeping_task_transport_sync(void) {
     // Update kb_state so we can send to slave
     user_state_update();
 

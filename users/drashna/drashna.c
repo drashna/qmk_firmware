@@ -229,3 +229,12 @@ bool hasAllBitsInMask(uint8_t value, uint8_t mask) {
 
     return (value & mask) == mask;
 }
+
+__attribute__((weak)) void housekeeping_task_keymap(void){}
+
+void housekeeping_task_user(void) {
+#if defined(SPLIT_KEYBOARD) && defined(SERIAL_USE_MULTI_TRANSACTION) && defined(SPLIT_NUM_TRANSACTIONS_USER)
+    housekeeping_task_transport_sync();
+#endif
+    housekeeping_task_keymap();
+}
