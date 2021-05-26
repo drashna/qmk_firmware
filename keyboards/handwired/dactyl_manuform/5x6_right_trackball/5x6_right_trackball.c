@@ -35,8 +35,8 @@ uint16_t          dpi_array[] = TRACKBALL_DPI_OPTIONS;
 #define DPI_OPTION_SIZE (sizeof(dpi_array) / sizeof(uint16_t))
 
 typedef struct {
-    int8_t x;
-    int8_t y;
+    int16_t x;
+    int16_t y;
 } pointer_sync_t;
 
 typedef struct {
@@ -166,7 +166,7 @@ device_sync_t  device_data_sync;
 void pointer_data_sync_handler(uint8_t initiator2target_buffer_size, const void* initiator2target_buffer, uint8_t target2initiator_buffer_size, void* target2initiator_buffer) {
     if (target2initiator_buffer_size == sizeof(pointer_data_sync)) {
         memcpy(target2initiator_buffer, &pointer_data_sync, sizeof(pointer_data_sync));
-#        if 0
+#        if 1
         if (pointer_data_sync.x > 127) {
             pointer_data_sync.x -= 127;
         } else if (pointer_data_sync.x < -127) {
@@ -211,21 +211,18 @@ void pointing_device_task(void) {
     if (!is_keyboard_left()) {
         process_mouse(&mouse_report);
         if (!is_keyboard_master()) {
-            pointer_data_sync.x = mouse_report.x;
-            pointer_data_sync.y = mouse_report.y;
-            mouse_report.x      = 0;
-            mouse_report.y      = 0;
+            pointer_data_sync.x += mouse_report.x;
+            pointer_data_sync.y += mouse_report.y;
+
+            if (keyboard_config.dpi_config != device_data_sync.dpi) {
+                pmw_set_cpi(device_data_sync.dpi);
+                keyboard_config.dpi_config = device_data_sync.dpi;6
+            }
         }
     }
-    pointing_device_set_report(mouse_report);
-    pointing_device_send();
 
     if (is_keyboard_master()) {
         if (!is_keyboard_left()) {
-            if (keyboard_config.dpi_config != device_data_sync.dpi) {
-                // trackball_set_cpi(device_data_sync.dpi);
-            }
-        } else {
             static device_sync_t last_state;
             static uint32_t      last_sync  = 0;
             bool                 needs_sync = false;
@@ -243,10 +240,15 @@ void pointing_device_task(void) {
                     last_sync = timer_read32();
                 }
             }
-            transaction_rpc_recv(KEYBOARD_POINTER_SYNC, sizeof(pointer_data_sync), &pointer_data_sync);
+        } else {
+            if (transaction_rpc_recv(KEYBOARD_POINTER_SYNC, sizeof(pointer_data_sync), &pointer_data_sync)) {
+                mouse_report.x = pointer_data_sync.x;
+                mouse_report.y = pointer_data_sync.y;
+            }
         }
     }
-
+    pointing_device_set_report(mouse_report);
+    pointing_device_send();
 }
 #endif
 
@@ -298,24 +300,22 @@ void trackball_set_cpi(uint16_t cpi) {
     } else {
         device_data_sync.dpi = cpi;
     }
-    keyboard_config.dpi_config = cpi;
 }
 #endif
 
 #ifdef SWAP_HANDS_ENABLE
-const keypos_t PROGMEM hand_swap_config[MATRIX_ROWS][MATRIX_COLS] = {
-    /* Left hand, matrix positions */
-    {{5, 6}, {4, 6}, {3, 6}, {2, 6}, {1, 6}, {0, 6}},
-    {{5, 7}, {4, 7}, {3, 7}, {2, 7}, {1, 7}, {0, 7}},
-    {{5, 8}, {4, 8}, {3, 8}, {2, 8}, {1, 8}, {0, 8}},
-    {{5, 9}, {4, 9}, {3, 9}, {2, 9}, {1, 9}, {0, 9}},
-    {{5, 10}, {4, 10}, {3, 10}, {2, 10}, {1, 10}, {0, 10}},
-    {{5, 11}, {4, 11}, {3, 11}, {2, 11}, {1, 11}, {0, 11}},
-    /* Right hand, matrix positions */
-    {{5, 0}, {4, 0}, {3, 0}, {2, 0}, {1, 0}, {0, 0}},
-    {{5, 1}, {4, 1}, {3, 1}, {2, 1}, {1, 1}, {0, 1}},
-    {{5, 2}, {4, 2}, {3, 2}, {2, 2}, {1, 2}, {0, 2}},
-    {{5, 3}, {4, 3}, {3, 3}, {2, 3}, {1, 3}, {0, 3}},
-    {{5, 4}, {4, 4}, {3, 4}, {2, 4}, {1, 4}, {0, 4}},
-    {{5, 5}, {4, 5}, {3, 5}, {2, 5}, {1, 5}, {0, 5}}};
+const keypos_t PROGMEM hand_swap_config[MATRIX_ROWS][MATRIX_COLS] = {/* Left hand, matrix positions */
+                                                                     {{5, 6}, {4, 6}, {3, 6}, {2, 6}, {1, 6}, {0, 6}},
+                                                                     {{5, 7}, {4, 7}, {3, 7}, {2, 7}, {1, 7}, {0, 7}},
+                                                                     {{5, 8}, {4, 8}, {3, 8}, {2, 8}, {1, 8}, {0, 8}},
+                                                                     {{5, 9}, {4, 9}, {3, 9}, {2, 9}, {1, 9}, {0, 9}},
+                                                                     {{5, 10}, {4, 10}, {3, 10}, {2, 10}, {1, 10}, {0, 10}},
+                                                                     {{5, 11}, {4, 11}, {3, 11}, {2, 11}, {1, 11}, {0, 11}},
+                                                                     /* Right hand, matrix positions */
+                                                                     {{5, 0}, {4, 0}, {3, 0}, {2, 0}, {1, 0}, {0, 0}},
+                                                                     {{5, 1}, {4, 1}, {3, 1}, {2, 1}, {1, 1}, {0, 1}},
+                                                                     {{5, 2}, {4, 2}, {3, 2}, {2, 2}, {1, 2}, {0, 2}},
+                                                                     {{5, 3}, {4, 3}, {3, 3}, {2, 3}, {1, 3}, {0, 3}},
+                                                                     {{5, 4}, {4, 4}, {3, 4}, {2, 4}, {1, 4}, {0, 4}},
+                                                                     {{5, 5}, {4, 5}, {3, 5}, {2, 5}, {1, 5}, {0, 5}}};
 #endif
