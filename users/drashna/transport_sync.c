@@ -1,4 +1,4 @@
-
+#if defined(SERIAL_USE_MULTI_TRANSACTION) && defined(SPLIT_NUM_TRANSACTIONS_USER)
 #include "transport_sync.h"
 #include <split_sync.h>
 #include <string.h>
@@ -37,7 +37,6 @@ void user_state_update(void) {
         user_state.is_rgb_matrix_suspended = rgb_matrix_get_suspend_state();
 #endif
         user_state.keymap_config = keymap_config;
-
     } else {
         if (layer_state != user_state.layer_state) {
             layer_state = user_state.layer_state;
@@ -97,3 +96,4 @@ void housekeeping_task_user(void) {
     // Data sync from master to slave
     user_state_sync();
 }
+#endif
