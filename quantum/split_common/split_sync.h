@@ -38,7 +38,7 @@ enum split_transaction_id {
     NUM_SPLIT_TRANSACTIONS = SAFE_USER_SPLIT_TRANSACTION_ID + (SPLIT_NUM_TRANSACTIONS_USER),
 };
 
-#ifdef SERIAL_USE_MULTI_TRANSACTION
+#if defined(SERIAL_USE_MULTI_TRANSACTION) && ( defined(SPLIT_NUM_TRANSACTIONS_KB) || defined(SPLIT_NUM_TRANSACTIONS_USER))
 void split_sync_register_transaction(enum split_transaction_id id, uint8_t initiator2target_buffer_size, void *initiator2target_buffer, uint8_t target2initiator_buffer_size, void *target2initiator_buffer);
 #    define split_sync_register_m2s_transaction(id, buffer_size, buffer) split_sync_register_transaction(id, buffer_size, buffer, 0, NULL)
 #    define split_sync_register_s2m_transaction(id, buffer_size, buffer) split_sync_register_transaction(id, 0, NULL, buffer_size, buffer)

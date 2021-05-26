@@ -421,7 +421,7 @@ SSTD_t transactions[NUM_TOTAL_TRANSACTIONS] = {
 #    endif
 };
 
-#    ifdef SERIAL_USE_MULTI_TRANSACTION
+#if defined(SERIAL_USE_MULTI_TRANSACTION) && ( defined(SPLIT_NUM_TRANSACTIONS_KB) || defined(SPLIT_NUM_TRANSACTIONS_USER))
 void split_sync_register_transaction(enum split_transaction_id id, uint8_t initiator2target_buffer_size, void *initiator2target_buffer, uint8_t target2initiator_buffer_size, void *target2initiator_buffer) {
     static uint8_t dummy;
     SSTD_t *       trans                = &transactions[NUM_SERIAL_TRANSACTIONS + id];
