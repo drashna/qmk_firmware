@@ -15,7 +15,9 @@
  */
 
 #include "5x6_right_trackball.h"
-
+#ifdef SPLIT_TRANSACTION_IDS_KB
+#    include "transactions.h"
+#endif
 
 #ifndef TRACKBALL_DPI_OPTIONS
 #    define TRACKBALL_DPI_OPTIONS { 1200, 1600, 2400 }
@@ -28,11 +30,26 @@
 #endif
 
 keyboard_config_t keyboard_config;
-uint16_t dpi_array[] = TRACKBALL_DPI_OPTIONS;
+uint16_t          dpi_array[] = TRACKBALL_DPI_OPTIONS;
 #define DPI_OPTION_SIZE (sizeof(dpi_array) / sizeof(uint16_t))
 
-bool     BurstState        = false;  // init burst state for Trackball module
-uint16_t MotionStart       = 0;      // Timer for accel, 0 is resting state
+typedef struct {
+    int8_t x;
+    int8_t y;
+} pointer_sync_t;
+
+typedef struct {
+    uint16_t dpi;
+} device_sync_t;
+
+extern pointer_sync_t pointer_data_sync;
+extern device_sync_t  device_data_sync;
+
+pointer_sync_t pointer_data_sync;
+device_sync_t  device_data_sync;
+
+bool     BurstState  = false;  // init burst state for Trackball module
+uint16_t MotionStart = 0;      // Timer for accel, 0 is resting state
 
 __attribute__((weak)) void process_mouse_user(report_mouse_t* mouse_report, int16_t x, int16_t y) {
     mouse_report->x = x;
@@ -100,11 +117,13 @@ bool process_record_kb(uint16_t keycode, keyrecord_t* record) {
     }
 #endif
 
-    if (!process_record_user(keycode, record)) { return false; }
+    if (!process_record_user(keycode, record)) {
+        return false;
+    }
 
 #ifdef POINTING_DEVICE_ENABLE
     if (keycode == DPI_CONFIG && record->event.pressed) {
-        if ((get_mods()|get_oneshot_mods()) & MOD_MASK_SHIFT) {
+        if ((get_mods() | get_oneshot_mods()) & MOD_MASK_SHIFT) {
             keyboard_config.dpi_config = (keyboard_config.dpi_config - 1) % DPI_OPTION_SIZE;
         } else {
             keyboard_config.dpi_config = (keyboard_config.dpi_config + 1) % DPI_OPTION_SIZE;
@@ -138,12 +157,30 @@ void keyboard_pre_init_kb(void) {
     keyboard_pre_init_user();
 }
 
+#if defined(SPLIT_TRANSACTION_IDS_KB)
+void pointer_data_sync_handler(uint8_t initiator2target_buffer_size, const void* initiator2target_buffer, uint8_t target2initiator_buffer_size, void* target2initiator_buffer) {
+    if (target2initiator_buffer_size == sizeof(pointer_data_sync)) {
+        memcpy(target2initiator_buffer, &pointer_data_sync, sizeof(pointer_data_sync));
+    }
+}
+void device_data_sync_handler(uint8_t initiator2target_buffer_size, const void* initiator2target_buffer, uint8_t target2initiator_buffer_size, void* target2initiator_buffer) {
+    if (initiator2target_buffer_size == sizeof(device_data_sync)) {
+        memcpy(&device_data_sync, initiator2target_buffer, sizeof(device_data_sync));
+    }
+}
+#endif
+
 #ifdef POINTING_DEVICE_ENABLE
 void pointing_device_init(void) {
     if (!is_keyboard_left()) {
         // initialize ball sensor
         pmw_spi_init();
     }
+#    if defined(SPLIT_TRANSACTION_IDS_KB)
+    transaction_register_rpc(KEYBOARD_POINTER_SYNC, pointer_data_sync_handler);
+    transaction_register_rpc(KEYBOARD_DEVICE_SYNC, device_data_sync_handler);
+#    endif
+
     trackball_set_cpi(dpi_array[keyboard_config.dpi_config]);
 }
 
@@ -152,7 +189,6 @@ void pointing_device_task(void) {
     if (!is_keyboard_left()) {
         process_mouse(&mouse_report);
     }
-
     pointing_device_set_report(mouse_report);
     pointing_device_send();
 }
@@ -179,25 +215,37 @@ void matrix_init_kb(void) {
 
 #ifdef POINTING_DEVICE_ENABLE
 void pointing_device_send(void) {
-    static report_mouse_t old_report = {};
-    report_mouse_t mouseReport = pointing_device_get_report();
+    static report_mouse_t old_report  = {};
+    report_mouse_t        mouse_report = pointing_device_get_report();
     if (is_keyboard_master()) {
-        int8_t x, y;
-            x = mouseReport.x;
-            y = mouseReport.y;
-        mouseReport.x = 0;
-        mouseReport.y = 0;
-        process_mouse_user(&mouseReport, x, y);
-        if (has_mouse_report_changed(mouseReport, old_report)) {
-            host_mouse_send(&mouseReport);
+        int8_t x = 0, y = 0;
+        if (!is_keyboard_left()) {
+            x = mouse_report.x;
+            y = mouse_report.y;
+#ifdef SPLIT_TRANSACTION_IDS_KB
+        } else {
+            x = pointer_data_sync.x;
+            y = pointer_data_sync.y;
+#endif
         }
+        mouse_report.x = 0;
+        mouse_report.y = 0;
+        process_mouse_user(&mouse_report, x, y);
+        if (has_mouse_report_changed(mouse_report, old_report)) {
+            host_mouse_send(&mouse_report);
+        }
+#ifdef SPLIT_TRANSACTION_IDS_KB
+    } else if (!is_keyboard_left()) {
+        pointer_data_sync.x = mouse_report.x;
+        pointer_data_sync.y = mouse_report.y;
+#endif
     }
-    mouseReport.x = 0;
-    mouseReport.y = 0;
-    mouseReport.v = 0;
-    mouseReport.h = 0;
-    old_report = mouseReport;
-    pointing_device_set_report(mouseReport);
+    mouse_report.x = 0;
+    mouse_report.y = 0;
+    mouse_report.v = 0;
+    mouse_report.h = 0;
+    memcpy(&old_report, &mouse_report, sizeof(mouse_report));
+    pointing_device_set_report(mouse_report);
 }
 
 void trackball_set_cpi(uint16_t cpi) {
@@ -222,6 +270,5 @@ const keypos_t PROGMEM hand_swap_config[MATRIX_ROWS][MATRIX_COLS] = {
     {{5, 2}, {4, 2}, {3, 2}, {2, 2}, {1, 2}, {0, 2}},
     {{5, 3}, {4, 3}, {3, 3}, {2, 3}, {1, 3}, {0, 3}},
     {{5, 4}, {4, 4}, {3, 4}, {2, 4}, {1, 4}, {0, 4}},
-    {{5, 5}, {4, 5}, {3, 5}, {2, 5}, {1, 5}, {0, 5}}
-};
+    {{5, 5}, {4, 5}, {3, 5}, {2, 5}, {1, 5}, {0, 5}}};
 #endif
