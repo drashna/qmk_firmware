@@ -167,7 +167,7 @@ bool transport_master(matrix_row_t master_matrix[], matrix_row_t slave_matrix[])
 #    endif
 #    if defined(RGB_MATRIX_ENABLE) && defined(RGB_MATRIX_SPLIT)
     i2c_writeReg(SLAVE_I2C_ADDRESS, I2C_RGB_MATRIX_START, (void *)rgb_matrix_config, sizeof(i2c_buffer->rgb_matrix), TIMEOUT);
-    bool suspend_state = rgb_matrix_get_suspend_state();
+    bool suspend_state = get_rgb_matrix_suspend_state();
     i2c_writeReg(SLAVE_I2C_ADDRESS, I2C_RGB_SUSPEND_START, (void *)suspend_state, sizeof(i2c_buffer->rgb_suspend_state), TIMEOUT);
 #    endif
 
@@ -397,7 +397,7 @@ bool transport_master(matrix_row_t master_matrix[], matrix_row_t slave_matrix[])
 #    endif
 #    if defined(RGB_MATRIX_ENABLE) && defined(RGB_MATRIX_SPLIT)
     serial_m2s_buffer.rgb_matrix        = rgb_matrix_config;
-    serial_m2s_buffer.rgb_suspend_state = rgb_matrix_get_suspend_state();
+    serial_m2s_buffer.rgb_suspend_state = get_rgb_matrix_suspend_state();
 #    endif
 
 #    ifndef DISABLE_SYNC_TIMER

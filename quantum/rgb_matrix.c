@@ -146,6 +146,7 @@ static last_hit_t last_hit_buffer;
 // split rgb matrix
 #if defined(RGB_MATRIX_ENABLE) && defined(RGB_MATRIX_SPLIT)
 const uint8_t k_rgb_matrix_split[2] = RGB_MATRIX_SPLIT;
+static bool l_suspend_backlight = false;
 #endif
 
 void eeconfig_read_rgb_matrix(void) { eeprom_read_block(&rgb_matrix_config, EECONFIG_RGB_MATRIX, sizeof(rgb_matrix_config)); }
@@ -414,7 +415,7 @@ void rgb_matrix_task(void) {
                              (rgb_anykey_timer > (uint32_t)RGB_DISABLE_TIMEOUT) ||
 #endif  // RGB_DISABLE_TIMEOUT > 0
                              false;
-
+    l_suspend_backlight = suspend_backlight;
     uint8_t effect = suspend_backlight || !rgb_matrix_config.enable ? 0 : rgb_matrix_config.mode;
 
     switch (rgb_task_state) {
@@ -644,3 +645,11 @@ void rgb_matrix_decrease_speed(void) { rgb_matrix_decrease_speed_helper(true); }
 led_flags_t rgb_matrix_get_flags(void) { return rgb_matrix_config.flags; }
 
 void rgb_matrix_set_flags(led_flags_t flags) { rgb_matrix_config.flags = flags; }
+
+bool        get_rgb_matrix_suspend_state(void) {
+#if defined(RGB_MATRIX_ENABLE) && defined(RGB_MATRIX_SPLIT)
+    return l_suspend_backlight;
+#else
+    return false;
+#endif
+}
