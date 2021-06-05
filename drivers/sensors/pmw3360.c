@@ -57,9 +57,7 @@ void spi_stop_adv(void) {
 }
 
 spi_status_t spi_write_adv(uint8_t reg_addr, uint8_t data) {
-    if (reg_addr != REG_Motion_Burst) {
-        _inBurst = false;
-    }
+    if (reg_addr != REG_Motion_Burst) { _inBurst = false; }
 
     spi_start_adv();
     // send address of the register, with MSBit = 1 to indicate it's a write
@@ -183,7 +181,7 @@ bool pmw_check_signature(void) {
     uint8_t pid      = spi_read_adv(REG_Product_ID);
     uint8_t iv_pid   = spi_read_adv(REG_Inverse_Product_ID);
     uint8_t SROM_ver = spi_read_adv(REG_SROM_ID);
-    return (pid == 0x42 && iv_pid == 0xBD && SROM_ver == 0x04);  // signature for SROM 0x04
+    return (pid == 0x42 && iv_pid == 0xBD && SROM_ver == 0x04); // signature for SROM 0x04
 }
 
 report_pmw_t pmw_read_burst(void) {
@@ -195,7 +193,7 @@ report_pmw_t pmw_read_burst(void) {
 
     spi_start_adv();
     spi_write(REG_Motion_Burst);
-    wait_us(35);  // waits for tSRAD
+    wait_us(35); // waits for tSRAD
 
     report_pmw_t data;
     data.motion = 0;
@@ -205,7 +203,7 @@ report_pmw_t pmw_read_burst(void) {
     data.mdx    = 0;
 
     data.motion = spi_read();
-    spi_write(0x00);  // skip Observation
+    spi_write(0x00); // skip Observation
     data.dx  = spi_read();
     data.mdx = spi_read();
     data.dy  = spi_read();
@@ -229,7 +227,7 @@ report_pmw_t pmw_read_burst(void) {
 
     spi_stop();
 
-    if (data.motion & 0b111) {  // panic recovery, sometimes burst mode works weird.
+    if (data.motion & 0b111) { // panic recovery, sometimes burst mode works weird.
         _inBurst = false;
     }
 
