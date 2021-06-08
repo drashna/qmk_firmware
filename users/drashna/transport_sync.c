@@ -10,7 +10,7 @@ typedef struct {
     layer_state_t   layer_state;
     layer_state_t   default_layer_state;
     bool            is_rgb_matrix_suspended;
-    keymap_config_t keymap_config;
+    uint16_t         keymap_config;
 } user_runtime_config_t;
 
 user_runtime_config_t user_state;
@@ -36,7 +36,7 @@ void user_state_update(void) {
 #ifdef RGB_MATRIX_ENABLE
         user_state.is_rgb_matrix_suspended = rgb_matrix_get_suspend_state();
 #endif
-        user_state.keymap_config = keymap_config;
+        user_state.keymap_config = keymap_config.raw;
     } else {
         if (layer_state != user_state.layer_state) {
             layer_state = user_state.layer_state;
@@ -51,8 +51,8 @@ void user_state_update(void) {
             oled_off();
         }
 #endif
-        if (keymap_config.raw != user_state.keymap_config.raw) {
-            keymap_config = user_state.keymap_config;
+        if (keymap_config.raw != user_state.keymap_config) {
+            keymap_config.raw = user_state.keymap_config;
         }
 
 #ifdef RGB_MATRIX_ENABLE
