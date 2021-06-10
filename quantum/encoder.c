@@ -39,10 +39,10 @@ static uint8_t encoder_resolutions[] = ENCODER_RESOLUTIONS;
 #endif
 
 #ifndef ENCODER_DIRECTION_FLIP
-#    define ENCODER_CLOCKWISE true
+#    define ENCODER_CLOCKWISE         true
 #    define ENCODER_COUNTER_CLOCKWISE false
 #else
-#    define ENCODER_CLOCKWISE false
+#    define ENCODER_CLOCKWISE         false
 #    define ENCODER_COUNTER_CLOCKWISE true
 #endif
 static int8_t encoder_LUT[] = {0, -1, 1, 0, 1, 0, 0, -1, -1, 0, 0, 1, 0, 1, -1, 0};
@@ -62,6 +62,19 @@ static uint8_t encoder_value[NUMBER_OF_ENCODERS] = {0};
 __attribute__((weak)) bool encoder_update_user(uint8_t index, bool clockwise) { return true; }
 
 __attribute__((weak)) bool encoder_update_kb(uint8_t index, bool clockwise) { return encoder_update_user(index, clockwise); }
+
+static void encoder_update_handler(uint8_t index, bool clockwise) {
+#ifdef ENCODER_MAP
+#    ifdef ENCODER_MAP_PROCESS_CALLBACKS
+    if (encoder_update_kb(index, clockwise))
+#    endif
+    {
+        encoder_update_mapping(index, clockwise);
+    }
+#else
+    encoder_update_kb(index, clockwise);
+#endif
+}
 
 void encoder_init(void) {
 #if defined(SPLIT_KEYBOARD) && defined(ENCODERS_PAD_A_RIGHT) && defined(ENCODERS_PAD_B_RIGHT)
@@ -111,12 +124,12 @@ static bool encoder_update(uint8_t index, uint8_t state) {
     if (encoder_pulses[i] >= resolution) {
         encoder_value[index]++;
         changed = true;
-        encoder_update_kb(index, ENCODER_COUNTER_CLOCKWISE);
+        encoder_update_handler(index, ENCODER_COUNTER_CLOCKWISE);
     }
-    if (encoder_pulses[i] <= -resolution) {  // direction is arbitrary here, but this clockwise
+    if (encoder_pulses[i] <= -resolution) { // direction is arbitrary here, but this clockwise
         encoder_value[index]--;
         changed = true;
-        encoder_update_kb(index, ENCODER_CLOCKWISE);
+        encoder_update_handler(index, ENCODER_CLOCKWISE);
     }
     encoder_pulses[i] %= resolution;
     return changed;
@@ -158,5 +171,41 @@ void encoder_update_raw(uint8_t* slave_state) {
 
     // Update the last encoder input time -- handled external to encoder_read() when we're running a split
     if (changed) last_encoder_activity_trigger();
+}
+#endif
+
+#ifdef ENCODER_MAP
+#    ifndef ENCODER_MAP_LOCATION
+#        error ENCODER_MAP_LOCATION array not defined
+#    else
+#        ifdef SPLIT_KEYBOARD
+#            define NUM_ENCODERS (NUMBER_OF_ENCODERS * 2)
+#        else
+#            define NUM_ENCODERS (NUMBER_OF_ENCODERS)
+#        endif
+static keypos_t encoder_location[NUM_ENCODERS] = ENCODER_LOCATION;
+#    endif
+
+extern const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][2];
+
+bool encoder_update_mapping(uint8_t index, bool clockwise) {
+    uint8_t  layer   = get_highest_layer(layer_state | default_layer_state);
+    uint16_t keycode = pgm_read_word(&encoder_map[layer][index][clockwise]);
+
+    keyevent_t  encoder_event = (keyevent_t){.key = encoder_location[index], .pressed = true, .time = (timer_read() | 1)};
+    keyrecord_t record        = {.event = encoder_event};
+
+    while (keycode == KC_TRANSPARENT && layer > 0) {
+        if (layer_state_is(layer--)) { keycode = pgm_read_word(&encoder_map[layer][index][clockwise]); }
+    }
+    if (keycode != KC_TRANSPARENT && keycode != KC_NO) {
+        if (process_record_quantum_helper(keycode, &record)) {
+            record.event.pressed = false;
+            if (process_record_quantum_helper(keycode, &record)) {
+                if (keycode <= QK_MODS_MAX) tap_code16(keycode);
+            }
+        }
+    }
+    return false;
 }
 #endif
