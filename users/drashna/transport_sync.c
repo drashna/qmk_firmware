@@ -1,16 +1,16 @@
 #if defined(SERIAL_USE_MULTI_TRANSACTION) && defined(SPLIT_NUM_TRANSACTIONS_USER)
-#include "transport_sync.h"
-#include <split_sync.h>
-#include <string.h>
+#    include "transport_sync.h"
+#    include <split_sync.h>
+#    include <string.h>
 
 enum { USER_STATE_SYNC = SAFE_USER_SPLIT_TRANSACTION_ID };
 
 typedef struct {
-    bool            oled_on;
-    layer_state_t   layer_state;
-    layer_state_t   default_layer_state;
-    bool            is_rgb_matrix_suspended;
-    uint16_t         keymap_config;
+    bool          oled_on;
+    layer_state_t layer_state;
+    layer_state_t default_layer_state;
+    bool          is_rgb_matrix_suspended;
+    uint16_t      keymap_config;
 } user_runtime_config_t;
 
 user_runtime_config_t user_state;
@@ -29,35 +29,29 @@ void user_state_update(void) {
         user_state.layer_state         = layer_state;
         user_state.default_layer_state = default_layer_state;
 
-#ifdef OLED_DRIVER_ENABLE
+#    ifdef OLED_DRIVER_ENABLE
         user_state.oled_on = is_oled_on();
-#endif
+#    endif
 
-#ifdef RGB_MATRIX_ENABLE
+#    ifdef RGB_MATRIX_ENABLE
         user_state.is_rgb_matrix_suspended = rgb_matrix_get_suspend_state();
-#endif
+#    endif
         user_state.keymap_config = keymap_config.raw;
     } else {
-        if (layer_state != user_state.layer_state) {
-            layer_state = user_state.layer_state;
-        }
-        if (default_layer_state != user_state.default_layer_state) {
-            default_layer_state = user_state.default_layer_state;
-        }
-#ifdef OLED_DRIVER_ENABLE
+        if (layer_state != user_state.layer_state) { layer_state = user_state.layer_state; }
+        if (default_layer_state != user_state.default_layer_state) { default_layer_state = user_state.default_layer_state; }
+#    ifdef OLED_DRIVER_ENABLE
         if (user_state.oled_on) {
             oled_on();
         } else {
             oled_off();
         }
-#endif
-        if (keymap_config.raw != user_state.keymap_config) {
-            keymap_config.raw = user_state.keymap_config;
-        }
+#    endif
+        if (keymap_config.raw != user_state.keymap_config) { keymap_config.raw = user_state.keymap_config; }
 
-#ifdef RGB_MATRIX_ENABLE
+#    ifdef RGB_MATRIX_ENABLE
         rgb_matrix_set_suspend_state(user_state.is_rgb_matrix_suspended);
-#endif
+#    endif
     }
 }
 
@@ -75,16 +69,12 @@ void user_state_sync(void) {
         }
 
         // Send to slave every 500ms regardless of state change
-        if (timer_elapsed32(last_sync) > 250) {
-            needs_sync = true;
-        }
+        if (timer_elapsed32(last_sync) > 250) { needs_sync = true; }
 
         // Perform the sync if requested
         if (needs_sync) {
             last_sync = timer_read32();
-            if (!split_sync_execute_transaction(USER_STATE_SYNC)) {
-                dprint("Failed to perform sync data transaction\n");
-            }
+            if (!split_sync_execute_transaction(USER_STATE_SYNC)) { dprint("Failed to perform sync data transaction\n"); }
         }
     }
 }
