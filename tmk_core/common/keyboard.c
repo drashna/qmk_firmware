@@ -384,7 +384,15 @@ void keyboard_task(void) {
 #endif
 
     uint8_t matrix_changed = matrix_scan();
+#ifdef ENCODER_ENABLE
+    encoders_changed = encoder_read();
+#    ifdef ENCODER_KEYMAPPING
+    matrix_changed |= encoders_changed;
+#    endif
+    if (encoders_changed) last_encoder_activity_trigger();
+#endif
     if (matrix_changed) last_matrix_activity_trigger();
+
 
     for (uint8_t r = 0; r < MATRIX_ROWS; r++) {
         matrix_row    = matrix_get_row(r);
@@ -447,11 +455,6 @@ MATRIX_LOOP_END:
 #    if defined(BACKLIGHT_PIN) || defined(BACKLIGHT_PINS)
     backlight_task();
 #    endif
-#endif
-
-#ifdef ENCODER_ENABLE
-    encoders_changed = encoder_read();
-    if (encoders_changed) last_encoder_activity_trigger();
 #endif
 
 #ifdef QWIIC_ENABLE
