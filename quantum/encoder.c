@@ -39,10 +39,10 @@ static uint8_t encoder_resolutions[] = ENCODER_RESOLUTIONS;
 #endif
 
 #ifndef ENCODER_DIRECTION_FLIP
-#    define ENCODER_CLOCKWISE         true
+#    define ENCODER_CLOCKWISE true
 #    define ENCODER_COUNTER_CLOCKWISE false
 #else
-#    define ENCODER_CLOCKWISE         false
+#    define ENCODER_CLOCKWISE false
 #    define ENCODER_COUNTER_CLOCKWISE true
 #endif
 static int8_t encoder_LUT[] = {0, -1, 1, 0, 1, 0, 0, -1, -1, 0, 0, 1, 0, 1, -1, 0};
@@ -65,9 +65,14 @@ __attribute__((weak)) bool encoder_update_kb(uint8_t index, bool clockwise) { re
 
 static void encoder_update_handler(uint8_t index, bool clockwise) {
 #ifdef ENCODER_KEYMAPPING
-
+#    ifdef ENCODER_PROCESS_CALLBACKS
+    if (encoder_update_kb(index, clockwise))
+#    endif
+    {
         encoder_update_keymapping(index, clockwise);
-
+    }
+#else
+    encoder_update_kb(index, clockwise);
 #endif
 }
 
@@ -123,7 +128,7 @@ static bool encoder_update(uint8_t index, uint8_t state) {
         changed = true;
         encoder_update_handler(index, ENCODER_COUNTER_CLOCKWISE);
     }
-    if (encoder_pulses[i] <= -resolution) { // direction is arbitrary here, but this clockwise
+    if (encoder_pulses[i] <= -resolution) {  // direction is arbitrary here, but this clockwise
         encoder_value[index]--;
         changed = true;
         encoder_update_handler(index, ENCODER_CLOCKWISE);
@@ -178,25 +183,24 @@ void encoder_update_raw(uint8_t* slave_state) {
 #    else
 #        define NUM_ENCODERS (NUMBER_OF_ENCODERS)
 #    endif
-uint8_t encoder_keypos[NUM_ENCODERS][2][2] = { ENCODER_KEYMAPPING };
+uint8_t             encoder_keypos[NUM_ENCODERS][2][2] = {ENCODER_KEYMAPPING};
 extern matrix_row_t matrix[MATRIX_ROWS];
 
-
-#    define ENCODER_MATRIX_ROW_CW(encoder_id)  (((int[][2][2]){ENCODER_KEYMAPPING})[encoder_id][0][0])
-#    define ENCODER_MATRIX_COL_CW(encoder_id)  (((int[][2][2]){ENCODER_KEYMAPPING})[encoder_id][0][1])
+#    define ENCODER_MATRIX_ROW_CW(encoder_id) (((int[][2][2]){ENCODER_KEYMAPPING})[encoder_id][0][0])
+#    define ENCODER_MATRIX_COL_CW(encoder_id) (((int[][2][2]){ENCODER_KEYMAPPING})[encoder_id][0][1])
 #    define ENCODER_MATRIX_ROW_CCW(encoder_id) (((int[][2][2]){ENCODER_KEYMAPPING})[encoder_id][1][0])
 #    define ENCODER_MATRIX_COL_CCW(encoder_id) (((int[][2][2]){ENCODER_KEYMAPPING})[encoder_id][1][1])
 
 void encoder_init_keymapping(void) {
     for (uint8_t index = 0; index < NUM_ENCODERS; index++) {
-        matrix[ENCODER_MATRIX_ROW_CW(index)]  &= ~(1 << ENCODER_MATRIX_COL_CW(index));
+        matrix[ENCODER_MATRIX_ROW_CW(index)] &= ~(1 << ENCODER_MATRIX_COL_CW(index));
         matrix[ENCODER_MATRIX_ROW_CCW(index)] &= ~(1 << ENCODER_MATRIX_COL_CCW(index));
     }
 }
 
 void encoder_map_cleanup(void) {
     for (uint8_t index = 0; index < NUM_ENCODERS; index++) {
-        matrix[ENCODER_MATRIX_ROW_CW(index)]  &= ~(1 << ENCODER_MATRIX_COL_CW(index));
+        matrix[ENCODER_MATRIX_ROW_CW(index)] &= ~(1 << ENCODER_MATRIX_COL_CW(index));
         matrix[ENCODER_MATRIX_ROW_CCW(index)] &= ~(1 << ENCODER_MATRIX_COL_CCW(index));
     }
 }
