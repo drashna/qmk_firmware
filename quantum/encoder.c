@@ -65,14 +65,9 @@ __attribute__((weak)) bool encoder_update_kb(uint8_t index, bool clockwise) { re
 
 static void encoder_update_handler(uint8_t index, bool clockwise) {
 #ifdef ENCODER_KEYMAPPING
-#    ifdef ENCODER_PROCESS_CALLBACKS
-    if (encoder_update_kb(index, clockwise))
-#    endif
-    {
+
         encoder_update_keymapping(index, clockwise);
-    }
-#else
-    encoder_update_kb(index, clockwise);
+
 #endif
 }
 
@@ -186,32 +181,35 @@ void encoder_update_raw(uint8_t* slave_state) {
 #        define NUM_ENCODERS (NUMBER_OF_ENCODERS)
 #    endif
 uint8_t encoder_keypos[NUM_ENCODERS][2][2] = { ENCODER_KEYMAPPING };
-extern matrix_row_t raw_matrix[MATRIX_ROWS];
+extern matrix_row_t matrix[MATRIX_ROWS];
 
-#    define ENCODER_MATRIX_ROW_CW(encoder_id)  (((int[][2][2])(ENCODER_KEYMAPPING))[encoder_id][0][0])
-#    define ENCODER_MATRIX_COL_CW(encoder_id)  (((int[][2][2])(ENCODER_KEYMAPPING))[encoder_id][0][1])
-#    define ENCODER_MATRIX_ROW_CCW(encoder_id) (((int[][2][2])(ENCODER_KEYMAPPING))[encoder_id][1][0])
-#    define ENCODER_MATRIX_COL_CCW(encoder_id) (((int[][2][2])(ENCODER_KEYMAPPING))[encoder_id][1][1])
+
+#    define ENCODER_MATRIX_ROW_CW(encoder_id)  (((int[][2][2]){ENCODER_KEYMAPPING})[encoder_id][0][0])
+#    define ENCODER_MATRIX_COL_CW(encoder_id)  (((int[][2][2]){ENCODER_KEYMAPPING})[encoder_id][0][1])
+#    define ENCODER_MATRIX_ROW_CCW(encoder_id) (((int[][2][2]){ENCODER_KEYMAPPING})[encoder_id][1][0])
+#    define ENCODER_MATRIX_COL_CCW(encoder_id) (((int[][2][2]){ENCODER_KEYMAPPING})[encoder_id][1][1])
 
 void encoder_init_keymapping(void) {
     for (uint8_t index = 0; index < NUM_ENCODERS; index++) {
-        raw_matrix[ENCODER_MATRIX_ROW_CW(index)]  &= ~(1 << ENCODER_MATRIX_COL_CW(index));
-        raw_matrix[ENCODER_MATRIX_ROW_CCW(index)] &= ~(1 << ENCODER_MATRIX_COL_CCW(index));
+        matrix[ENCODER_MATRIX_ROW_CW(index)]  &= ~(1 << ENCODER_MATRIX_COL_CW(index));
+        matrix[ENCODER_MATRIX_ROW_CCW(index)] &= ~(1 << ENCODER_MATRIX_COL_CCW(index));
     }
 }
 
 void encoder_map_cleanup(void) {
     for (uint8_t index = 0; index < NUM_ENCODERS; index++) {
-        raw_matrix[ENCODER_MATRIX_ROW_CW(index)]  &= ~(1 << ENCODER_MATRIX_COL_CW(index));
-        raw_matrix[ENCODER_MATRIX_ROW_CCW(index)] &= ~(1 << ENCODER_MATRIX_COL_CCW(index));
+        matrix[ENCODER_MATRIX_ROW_CW(index)]  &= ~(1 << ENCODER_MATRIX_COL_CW(index));
+        matrix[ENCODER_MATRIX_ROW_CCW(index)] &= ~(1 << ENCODER_MATRIX_COL_CCW(index));
     }
 }
 
 bool encoder_update_keymapping(uint8_t index, bool clockwise) {
     if (clockwise) {
-        raw_matrix[ENCODER_MATRIX_ROW_CW(index)] |= (1 << ENCODER_MATRIX_COL_CW(index));
+        matrix[ENCODER_MATRIX_ROW_CW(index)] |= (1 << ENCODER_MATRIX_COL_CW(index));
+        xprintf("ENCODER[CW] : Row: %2u Col %2u\n", ENCODER_MATRIX_ROW_CW(index), ENCODER_MATRIX_COL_CW(index));
     } else {
-        raw_matrix[ENCODER_MATRIX_ROW_CCW(index)] |= (1 << ENCODER_MATRIX_COL_CCW(index));
+        matrix[ENCODER_MATRIX_ROW_CCW(index)] |= (1 << ENCODER_MATRIX_COL_CCW(index));
+        xprintf("ENCODER[CCW]: Row: %2u Col %2u\n", ENCODER_MATRIX_ROW_CCW(index), ENCODER_MATRIX_COL_CCW(index));
     }
     return true;
 }

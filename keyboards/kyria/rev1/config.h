@@ -40,7 +40,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define ENCODERS_PAD_A_RIGHT { B5 }
 #define ENCODERS_PAD_B_RIGHT { C6 }
 
-#define ENCODER_KEYMAPPING { {0,0}, {0,1} }, { { 4, 0 } , { 4. 1 } }
+#define ENCODER_KEYMAPPING { {0,0}, {0,1} }, { { 4, 0 } , { 4, 1 } }
 
 /* COL2ROW, ROW2COL*/
 #define DIODE_DIRECTION COL2ROW
