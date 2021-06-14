@@ -204,10 +204,8 @@ void encoder_map_cleanup(void) {
 bool encoder_update_keymapping(uint8_t index, bool clockwise) {
     if (clockwise) {
         matrix[ENCODER_MATRIX_ROW_CW(index)] |= (1 << ENCODER_MATRIX_COL_CW(index));
-        xprintf("ENCODER[CW] : Row: %2u Col %2u\n", ENCODER_MATRIX_ROW_CW(index), ENCODER_MATRIX_COL_CW(index));
     } else {
         matrix[ENCODER_MATRIX_ROW_CCW(index)] |= (1 << ENCODER_MATRIX_COL_CCW(index));
-        xprintf("ENCODER[CCW]: Row: %2u Col %2u\n", ENCODER_MATRIX_ROW_CCW(index), ENCODER_MATRIX_COL_CCW(index));
     }
     return true;
 }
