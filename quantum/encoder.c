@@ -183,7 +183,6 @@ void encoder_update_raw(uint8_t* slave_state) {
 #    else
 #        define NUM_ENCODERS (NUMBER_OF_ENCODERS)
 #    endif
-uint8_t             encoder_keypos[NUM_ENCODERS][2][2] = {ENCODER_KEYMAPPING};
 extern matrix_row_t matrix[MATRIX_ROWS];
 
 #    define ENCODER_MATRIX_ROW_CW(encoder_id) (((int[][2][2]){ENCODER_KEYMAPPING})[encoder_id][0][0])
