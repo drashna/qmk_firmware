@@ -19,4 +19,3 @@ SLEEP_LED_ENABLE = no    # Breathing sleep LED during USB suspend
 SPLIT_KEYBOARD = yes
 
 DEFAULT_FOLDER = keebio/quefrency/rev1
-LTO_ENABLE = yes

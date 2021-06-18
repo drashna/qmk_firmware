@@ -65,5 +65,3 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define UNUSED_PINS
 
 #define EE_HANDS
-
-#define LAYER_STATE_8BIT
