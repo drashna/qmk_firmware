@@ -23,11 +23,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "quantum.h"
 #include "split_util.h"
 #include "config.h"
-#include "transactions.h"
+#include "transport.h"
 
-#ifndef ERROR_DISCONNECT_COUNT
-#    define ERROR_DISCONNECT_COUNT 5
-#endif  // ERROR_DISCONNECT_COUNT
+#define ERROR_DISCONNECT_COUNT 5
 
 #define ROWS_PER_HAND (MATRIX_ROWS / 2)
 
