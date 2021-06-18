@@ -35,9 +35,6 @@
 #if defined(PIMORONI_TRACKBALL_ENABLE)
 #    include "drivers/sensors/pimoroni_trackball.h"
 #endif
-#ifdef SPLIT_KEYBOARD
-#    include "transport_sync.h"
-#endif
 
 /* Define layer names */
 enum userspace_layers {

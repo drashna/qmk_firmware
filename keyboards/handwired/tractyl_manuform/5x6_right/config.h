@@ -89,4 +89,3 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define NO_ACTION_FUNCTION
 
 #define SERIAL_USE_MULTI_TRANSACTION
-#define SPLIT_TRANSACTION_IDS_KB RPC_ID_STATE_SYNC, RPC_ID_SLAVE_STATE
