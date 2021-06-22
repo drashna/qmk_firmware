@@ -148,6 +148,15 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 };
 // clang-format on
 
+const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][2] = {
+    [_QWERTY] = { ENCODER_CCW_CW(KC_VOLD, KC_VOLU),  ENCODER_CCW_CW(KC_DOWN, KC_UP) },
+    [_LOWER]  = { ENCODER_CCW_CW(_______, _______),  ENCODER_CCW_CW(KC_PGDN, KC_PGUP) },
+    [_RAISE]  = { ENCODER_CCW_CW(RGB_VAD, RGB_VAI),  ENCODER_CCW_CW(_______, _______) },
+    [_ADJUST] = { ENCODER_CCW_CW(RGB_RMOD, RGB_MOD), ENCODER_CCW_CW(KC_LEFT, KC_RGHT) },
+    [_MOUSE]  = { ENCODER_CCW_CW(KC_WH_L, KC_WH_R),  ENCODER_CCW_CW(KC_WH_D, KC_WH_U) },
+};
+
+
 #ifdef POINTING_DEVICE_ENABLE
 static uint16_t mouse_timer           = 0;
 static uint16_t mouse_debounce_timer  = 0;
