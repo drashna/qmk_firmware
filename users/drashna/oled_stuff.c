@@ -69,7 +69,7 @@ void add_keylog(uint16_t keycode) {
 }
 
 bool process_record_user_oled(uint16_t keycode, keyrecord_t *record) {
-    if (record->event.pressed) {
+    if (record->event.pressed && !IS_ENCODEREVENT(record->event)) {
 #ifdef OLED_DRIVER_ENABLE
         oled_timer = timer_read32();
         add_keylog(keycode);

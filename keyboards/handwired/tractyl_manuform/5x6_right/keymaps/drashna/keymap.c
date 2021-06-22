@@ -148,6 +148,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 };
 // clang-format on
 
+#ifdef ENCODER_MAP_ENABLE
 const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][2] = {
     [_QWERTY] = { ENCODER_CCW_CW(KC_VOLD, KC_VOLU),  ENCODER_CCW_CW(KC_DOWN, KC_UP) },
     [_LOWER]  = { ENCODER_CCW_CW(_______, _______),  ENCODER_CCW_CW(KC_PGDN, KC_PGUP) },
@@ -155,7 +156,7 @@ const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][2] = {
     [_ADJUST] = { ENCODER_CCW_CW(RGB_RMOD, RGB_MOD), ENCODER_CCW_CW(KC_LEFT, KC_RGHT) },
     [_MOUSE]  = { ENCODER_CCW_CW(KC_WH_L, KC_WH_R),  ENCODER_CCW_CW(KC_WH_D, KC_WH_U) },
 };
-
+#endif
 
 #ifdef POINTING_DEVICE_ENABLE
 static uint16_t mouse_timer           = 0;
@@ -197,6 +198,7 @@ void matrix_scan_keymap(void) {
 }
 
 bool process_record_keymap(uint16_t keycode, keyrecord_t* record) {
+    if (IS_ENCODEREVENT(record->event)) { return true; }
     switch (keycode) {
         case TT(_MOUSE): {
             if (record->event.pressed) {
