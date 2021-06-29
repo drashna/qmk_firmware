@@ -995,8 +995,13 @@ static void setup_mcu(void) {
     MCUSR &= ~_BV(WDRF);
     wdt_disable();
 
+#if (F_CPU == 8000000 && F_USB == 16000000)
+    /* Divide clock by 2 */
+    clock_prescale_set(clock_div_2);
+#else
     /* Disable clock division */
     clock_prescale_set(clock_div_1);
+#endif
 }
 
 /** \brief Setup USB
