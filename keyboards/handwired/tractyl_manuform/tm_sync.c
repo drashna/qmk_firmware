@@ -1,5 +1,5 @@
 #include "tractyl_manuform.h"
-#include <split_sync.h>
+#include "split_sync.h"
 #include <string.h>
 
 kb_runtime_config_t kb_state;

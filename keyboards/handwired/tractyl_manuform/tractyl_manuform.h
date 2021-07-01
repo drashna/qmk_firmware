@@ -18,6 +18,7 @@
 
 #include "quantum.h"
 #include "pointing_device.h"
+#include "drivers/sensors/pmw3360.h"
 
 #if defined(KEYBOARD_handwired_tractyl_manuform_5x6_right)
 #    include "5x6_right.h"

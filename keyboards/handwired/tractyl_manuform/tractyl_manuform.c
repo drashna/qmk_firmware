@@ -15,7 +15,7 @@
  */
 
 #include "tractyl_manuform.h"
-#include <split_sync.h>
+#include "split_sync.h"
 #include <string.h>
 
 #ifndef TRACKBALL_DPI_OPTIONS
