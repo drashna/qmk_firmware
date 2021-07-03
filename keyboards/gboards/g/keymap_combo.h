@@ -1,8 +1,8 @@
 // Keymap helpers
 
-#define K_ENUM(name, key, ...) name,
-#define K_DATA(name, key, ...) const uint16_t PROGMEM cmb_##name[] = {__VA_ARGS__, COMBO_END};
-#define K_COMB(name, key, ...) [name] = COMBO(cmb_##name, key),
+#define K_ENUM(name, key, ...)    name,
+#define K_DATA(name, key, ...)    const uint16_t PROGMEM cmb_##name[] = {__VA_ARGS__, COMBO_END};
+#define K_COMB(name, key, ...)    [name] = COMBO(cmb_##name, key),
 
 #define A_ENUM(name, string, ...) name,
 #define A_DATA(name, string, ...) const uint16_t PROGMEM cmb_##name[] = {__VA_ARGS__, COMBO_END};
@@ -28,7 +28,10 @@
 #define TOGG A_ENUM
 enum combos {
 #include "combos.def"
+    COMBO_LENGTH
 };
+// Export length to combo module
+uint16_t COMBO_LEN = COMBO_LENGTH;
 
 // Bake combos into mem
 #undef COMB
@@ -53,9 +56,6 @@ combo_t key_combos[] = {
 #undef SUBS
 #undef TOGG
 
-// Export length to combo module
-int COMBO_LEN = sizeof(key_combos) / sizeof(key_combos[0]);
-
 // Fill QMK hook
 #define COMB BLANK
 #define SUBS A_ACTI
@@ -66,8 +66,8 @@ void process_combo_event(uint16_t combo_index, bool pressed) {
     }
 
     // Allow user overrides per keymap
-#if __has_include("inject.h") 
-# include "inject.h"
+#if __has_include("inject.h")
+#    include "inject.h"
 #endif
 }
 #undef COMB
