@@ -60,15 +60,13 @@ float bell_song[][2] = SONG(TERMINAL_SOUND);
 
 static void do_code16(uint16_t code, void (*f)(uint8_t)) {
     switch (code) {
-        case QK_MODS ... QK_MODS_MAX:
-            break;
-        default:
-            return;
+        case QK_MODS ... QK_MODS_MAX: break;
+        default: return;
     }
 
     uint8_t mods_to_send = 0;
 
-    if (code & QK_RMODS_MIN) {  // Right mod flag is set
+    if (code & QK_RMODS_MIN) { // Right mod flag is set
         if (code & QK_LCTL) mods_to_send |= MOD_BIT(KC_RCTL);
         if (code & QK_LSFT) mods_to_send |= MOD_BIT(KC_RSFT);
         if (code & QK_LALT) mods_to_send |= MOD_BIT(KC_RALT);
@@ -144,7 +142,12 @@ void reset_keyboard(void) {
 }
 
 /* Convert record into usable keycode via the contained event. */
-uint16_t get_record_keycode(keyrecord_t *record, bool update_layer_cache) { return get_event_keycode(record->event, update_layer_cache); }
+uint16_t get_record_keycode(keyrecord_t *record, bool update_layer_cache) {
+#ifdef COMBO_ENABLE
+    if (record->keycode) { return record->keycode; }
+#endif
+    return get_event_keycode(record->event, update_layer_cache);
+}
 
 /* Convert event into usable keycode. Checks the layer cache to ensure that it
  * retains the correct keycode after a layer change, if the key is still pressed.
@@ -170,6 +173,18 @@ uint16_t get_event_keycode(keyevent_t event, bool update_layer_cache) {
         return keymap_key_to_keycode(layer_switch_get_layer(event.key), event.key);
 }
 
+/* Get keycode, and then process pre tapping functionality */
+bool pre_process_record_quantum(keyrecord_t *record) {
+    if (!(
+#ifdef COMBO_ENABLE
+            process_combo(get_record_keycode(record, true), record) &&
+#endif
+            true)) {
+        return false;
+    }
+    return true; // continue processing
+}
+
 /* Get keycode, and then call keyboard function */
 void post_process_record_quantum(keyrecord_t *record) {
     uint16_t keycode = get_record_keycode(record, false);
@@ -191,15 +206,11 @@ bool process_record_quantum(keyrecord_t *record) {
     // }
 
 #ifdef VELOCIKEY_ENABLE
-    if (velocikey_enabled() && record->event.pressed) {
-        velocikey_accelerate();
-    }
+    if (velocikey_enabled() && record->event.pressed) { velocikey_accelerate(); }
 #endif
 
 #ifdef WPM_ENABLE
-    if (record->event.pressed) {
-        update_wpm(keycode);
-    }
+    if (record->event.pressed) { update_wpm(keycode); }
 #endif
 
 #ifdef TAP_DANCE_ENABLE
@@ -217,10 +228,10 @@ bool process_record_quantum(keyrecord_t *record) {
 #endif
 #if defined(AUDIO_ENABLE) && defined(AUDIO_CLICKY)
             process_clicky(keycode, record) &&
-#endif  // AUDIO_CLICKY
+#endif // AUDIO_CLICKY
 #ifdef HAPTIC_ENABLE
             process_haptic(keycode, record) &&
-#endif  // HAPTIC_ENABLE
+#endif // HAPTIC_ENABLE
 #if defined(VIA_ENABLE)
             process_record_via(keycode, record) &&
 #endif
@@ -251,9 +262,6 @@ bool process_record_quantum(keyrecord_t *record) {
 #endif
 #ifdef LEADER_ENABLE
             process_leader(keycode, record) &&
-#endif
-#ifdef COMBO_ENABLE
-            process_combo(keycode, record) &&
 #endif
 #ifdef PRINTING_ENABLE
             process_printer(keycode, record) &&
@@ -286,9 +294,7 @@ bool process_record_quantum(keyrecord_t *record) {
     if (record->event.pressed) {
         switch (keycode) {
 #ifndef NO_RESET
-            case RESET:
-                reset_keyboard();
-                return false;
+            case RESET: reset_keyboard(); return false;
 #endif
 #ifndef NO_DEBUG
             case DEBUG:
@@ -300,35 +306,19 @@ bool process_record_quantum(keyrecord_t *record) {
                 }
 #endif
                 return false;
-            case EEPROM_RESET:
-                eeconfig_init();
-                return false;
+            case EEPROM_RESET: eeconfig_init(); return false;
 #ifdef VELOCIKEY_ENABLE
-            case VLK_TOG:
-                velocikey_toggle();
-                return false;
+            case VLK_TOG: velocikey_toggle(); return false;
 #endif
 #ifdef BLUETOOTH_ENABLE
-            case OUT_AUTO:
-                set_output(OUTPUT_AUTO);
-                return false;
-            case OUT_USB:
-                set_output(OUTPUT_USB);
-                return false;
-            case OUT_BT:
-                set_output(OUTPUT_BLUETOOTH);
-                return false;
+            case OUT_AUTO: set_output(OUTPUT_AUTO); return false;
+            case OUT_USB: set_output(OUTPUT_USB); return false;
+            case OUT_BT: set_output(OUTPUT_BLUETOOTH); return false;
 #endif
 #ifndef NO_ACTION_ONESHOT
-            case ONESHOT_TOGGLE:
-                oneshot_toggle();
-                break;
-            case ONESHOT_ENABLE:
-                oneshot_enable();
-                break;
-            case ONESHOT_DISABLE:
-                oneshot_disable();
-                break;
+            case ONESHOT_TOGGLE: oneshot_toggle(); break;
+            case ONESHOT_ENABLE: oneshot_enable(); break;
+            case ONESHOT_DISABLE: oneshot_disable(); break;
 #endif
         }
     }

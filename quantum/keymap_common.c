@@ -44,7 +44,10 @@ extern keymap_config_t keymap_config;
 action_t action_for_key(uint8_t layer, keypos_t key) {
     // 16bit keycodes - important
     uint16_t keycode = keymap_key_to_keycode(layer, key);
+    return action_for_keycode(keycode);
+};
 
+action_t action_for_keycode(uint16_t keycode) {
     // keycode remapping
     keycode = keycode_config(keycode);
 
@@ -57,34 +60,22 @@ action_t action_for_key(uint8_t layer, keypos_t key) {
 
     switch (keycode) {
         case KC_A ... KC_EXSEL:
-        case KC_LCTRL ... KC_RGUI:
-            action.code = ACTION_KEY(keycode);
-            break;
+        case KC_LCTRL ... KC_RGUI: action.code = ACTION_KEY(keycode); break;
 #ifdef EXTRAKEY_ENABLE
-        case KC_SYSTEM_POWER ... KC_SYSTEM_WAKE:
-            action.code = ACTION_USAGE_SYSTEM(KEYCODE2SYSTEM(keycode));
-            break;
-        case KC_AUDIO_MUTE ... KC_BRIGHTNESS_DOWN:
-            action.code = ACTION_USAGE_CONSUMER(KEYCODE2CONSUMER(keycode));
-            break;
+        case KC_SYSTEM_POWER ... KC_SYSTEM_WAKE: action.code = ACTION_USAGE_SYSTEM(KEYCODE2SYSTEM(keycode)); break;
+        case KC_AUDIO_MUTE ... KC_BRIGHTNESS_DOWN: action.code = ACTION_USAGE_CONSUMER(KEYCODE2CONSUMER(keycode)); break;
 #endif
 #ifdef MOUSEKEY_ENABLE
-        case KC_MS_UP ... KC_MS_ACCEL2:
-            action.code = ACTION_MOUSEKEY(keycode);
-            break;
+        case KC_MS_UP ... KC_MS_ACCEL2: action.code = ACTION_MOUSEKEY(keycode); break;
 #endif
-        case KC_TRNS:
-            action.code = ACTION_TRANSPARENT;
-            break;
+        case KC_TRNS: action.code = ACTION_TRANSPARENT; break;
         case QK_MODS ... QK_MODS_MAX:;
             // Has a modifier
             // Split it up
-            action.code = ACTION_MODS_KEY(keycode >> 8, keycode & 0xFF);  // adds modifier to key
+            action.code = ACTION_MODS_KEY(keycode >> 8, keycode & 0xFF); // adds modifier to key
             break;
 #ifndef NO_ACTION_FUNCTION
-        case KC_FN0 ... KC_FN31:
-            action.code = keymap_function_id_to_action(FN_INDEX(keycode));
-            break;
+        case KC_FN0 ... KC_FN31: action.code = keymap_function_id_to_action(FN_INDEX(keycode)); break;
         case QK_FUNCTION ... QK_FUNCTION_MAX:;
             // Is a shortcut for function action_layer, pull last 12bits
             // This means we have 4,096 FN macros at our disposal
@@ -93,16 +84,14 @@ action_t action_for_key(uint8_t layer, keypos_t key) {
 #endif
 #ifndef NO_ACTION_MACRO
         case QK_MACRO ... QK_MACRO_MAX:
-            if (keycode & 0x800)  // tap macros have upper bit set
+            if (keycode & 0x800) // tap macros have upper bit set
                 action.code = ACTION_MACRO_TAP(keycode & 0xFF);
             else
                 action.code = ACTION_MACRO(keycode & 0xFF);
             break;
 #endif
 #ifndef NO_ACTION_LAYER
-        case QK_LAYER_TAP ... QK_LAYER_TAP_MAX:
-            action.code = ACTION_LAYER_TAP_KEY((keycode >> 0x8) & 0xF, keycode & 0xFF);
-            break;
+        case QK_LAYER_TAP ... QK_LAYER_TAP_MAX: action.code = ACTION_LAYER_TAP_KEY((keycode >> 0x8) & 0xF, keycode & 0xFF); break;
         case QK_TO ... QK_TO_MAX:;
             // Layer set "GOTO"
             when         = (keycode >> 0x4) & 0x3;
@@ -138,9 +127,7 @@ action_t action_for_key(uint8_t layer, keypos_t key) {
             break;
 #endif
 #ifndef NO_ACTION_LAYER
-        case QK_LAYER_TAP_TOGGLE ... QK_LAYER_TAP_TOGGLE_MAX:
-            action.code = ACTION_LAYER_TAP_TOGGLE(keycode & 0xFF);
-            break;
+        case QK_LAYER_TAP_TOGGLE ... QK_LAYER_TAP_TOGGLE_MAX: action.code = ACTION_LAYER_TAP_TOGGLE(keycode & 0xFF); break;
         case QK_LAYER_MOD ... QK_LAYER_MOD_MAX:
             mod          = mod_config(keycode & 0xF);
             action_layer = (keycode >> 4) & 0xF;
@@ -154,14 +141,10 @@ action_t action_for_key(uint8_t layer, keypos_t key) {
             break;
 #endif
 #ifdef SWAP_HANDS_ENABLE
-        case QK_SWAP_HANDS ... QK_SWAP_HANDS_MAX:
-            action.code = ACTION(ACT_SWAP_HANDS, keycode & 0xff);
-            break;
+        case QK_SWAP_HANDS ... QK_SWAP_HANDS_MAX: action.code = ACTION(ACT_SWAP_HANDS, keycode & 0xff); break;
 #endif
 
-        default:
-            action.code = ACTION_NO;
-            break;
+        default: action.code = ACTION_NO; break;
     }
     return action;
 }
@@ -189,7 +172,7 @@ __attribute__((weak)) uint16_t keymap_function_id_to_action(uint16_t function_id
 // If this function is called however, the keymap should have overridden fn_actions, and then the compile
 // is comparing against the wrong array
 #pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Warray-bounds"
+#pragma GCC diagnostic         ignored "-Warray-bounds"
     return pgm_read_word(&fn_actions[function_id]);
 #pragma GCC diagnostic pop
 }
