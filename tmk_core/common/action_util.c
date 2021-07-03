@@ -27,12 +27,16 @@ extern keymap_config_t keymap_config;
 static uint8_t real_mods  = 0;
 static uint8_t weak_mods  = 0;
 static uint8_t macro_mods = 0;
+#ifdef KEY_OVERRIDE_ENABLE
+static uint8_t weak_override_mods = 0;
+static uint8_t suppressed_mods    = 0;
+#endif
 
 #ifdef USB_6KRO_ENABLE
 #    define RO_ADD(a, b) ((a + b) % KEYBOARD_REPORT_KEYS)
 #    define RO_SUB(a, b) ((a - b + KEYBOARD_REPORT_KEYS) % KEYBOARD_REPORT_KEYS)
-#    define RO_INC(a) RO_ADD(a, 1)
-#    define RO_DEC(a) RO_SUB(a, 1)
+#    define RO_INC(a)    RO_ADD(a, 1)
+#    define RO_DEC(a)    RO_SUB(a, 1)
 static int8_t cb_head  = 0;
 static int8_t cb_tail  = 0;
 static int8_t cb_count = 0;
@@ -86,9 +90,9 @@ inline uint8_t get_oneshot_layer_state(void) { return oneshot_layer_data & 0b111
 #    ifdef SWAP_HANDS_ENABLE
 enum {
     SHO_OFF,
-    SHO_ACTIVE,   // Swap hands button was pressed, and we didn't send any swapped keys yet
-    SHO_PRESSED,  // Swap hands button is currently pressed
-    SHO_USED,     // Swap hands button is still pressed, and we already sent swapped keys
+    SHO_ACTIVE,  // Swap hands button was pressed, and we didn't send any swapped keys yet
+    SHO_PRESSED, // Swap hands button is currently pressed
+    SHO_USED,    // Swap hands button is still pressed, and we already sent swapped keys
 } swap_hands_oneshot = SHO_OFF;
 #    endif
 
@@ -108,28 +112,18 @@ void set_oneshot_swaphands(void) {
     swap_hands         = true;
 #        if (defined(ONESHOT_TIMEOUT) && (ONESHOT_TIMEOUT > 0))
     oneshot_swaphands_time = timer_read();
-    if (oneshot_layer_time != 0) {
-        oneshot_layer_time = oneshot_swaphands_time;
-    }
+    if (oneshot_layer_time != 0) { oneshot_layer_time = oneshot_swaphands_time; }
 #        endif
 }
 
 void release_oneshot_swaphands(void) {
-    if (swap_hands_oneshot == SHO_PRESSED) {
-        swap_hands_oneshot = SHO_ACTIVE;
-    }
-    if (swap_hands_oneshot == SHO_USED) {
-        clear_oneshot_swaphands();
-    }
+    if (swap_hands_oneshot == SHO_PRESSED) { swap_hands_oneshot = SHO_ACTIVE; }
+    if (swap_hands_oneshot == SHO_USED) { clear_oneshot_swaphands(); }
 }
 
 void use_oneshot_swaphands(void) {
-    if (swap_hands_oneshot == SHO_PRESSED) {
-        swap_hands_oneshot = SHO_USED;
-    }
-    if (swap_hands_oneshot == SHO_ACTIVE) {
-        clear_oneshot_swaphands();
-    }
+    if (swap_hands_oneshot == SHO_PRESSED) { swap_hands_oneshot = SHO_USED; }
+    if (swap_hands_oneshot == SHO_ACTIVE) { clear_oneshot_swaphands(); }
 }
 
 void clear_oneshot_swaphands(void) {
@@ -229,6 +223,7 @@ void send_keyboard_report(void) {
     keyboard_report->mods = real_mods;
     keyboard_report->mods |= weak_mods;
     keyboard_report->mods |= macro_mods;
+
 #ifndef NO_ACTION_ONESHOT
     if (oneshot_mods) {
 #    if (defined(ONESHOT_TIMEOUT) && (ONESHOT_TIMEOUT > 0))
@@ -238,12 +233,17 @@ void send_keyboard_report(void) {
         }
 #    endif
         keyboard_report->mods |= oneshot_mods;
-        if (has_anykey(keyboard_report)) {
-            clear_oneshot_mods();
-        }
+        if (has_anykey(keyboard_report)) { clear_oneshot_mods(); }
     }
 
 #endif
+
+#ifdef KEY_OVERRIDE_ENABLE
+    // These need to be last to be able to properly control key overrides
+    keyboard_report->mods &= ~suppressed_mods;
+    keyboard_report->mods |= weak_override_mods;
+#endif
+
     host_keyboard_send(keyboard_report);
 }
 
@@ -256,22 +256,22 @@ uint8_t get_mods(void) { return real_mods; }
  *
  * FIXME: needs doc
  */
-void add_mods(uint8_t mods) { real_mods |= mods; }
+void    add_mods(uint8_t mods) { real_mods |= mods; }
 /** \brief del mods
  *
  * FIXME: needs doc
  */
-void del_mods(uint8_t mods) { real_mods &= ~mods; }
+void    del_mods(uint8_t mods) { real_mods &= ~mods; }
 /** \brief set mods
  *
  * FIXME: needs doc
  */
-void set_mods(uint8_t mods) { real_mods = mods; }
+void    set_mods(uint8_t mods) { real_mods = mods; }
 /** \brief clear mods
  *
  * FIXME: needs doc
  */
-void clear_mods(void) { real_mods = 0; }
+void    clear_mods(void) { real_mods = 0; }
 
 /** \brief get weak mods
  *
@@ -282,22 +282,38 @@ uint8_t get_weak_mods(void) { return weak_mods; }
  *
  * FIXME: needs doc
  */
-void add_weak_mods(uint8_t mods) { weak_mods |= mods; }
+void    add_weak_mods(uint8_t mods) { weak_mods |= mods; }
 /** \brief del weak mods
  *
  * FIXME: needs doc
  */
-void del_weak_mods(uint8_t mods) { weak_mods &= ~mods; }
+void    del_weak_mods(uint8_t mods) { weak_mods &= ~mods; }
 /** \brief set weak mods
  *
  * FIXME: needs doc
  */
-void set_weak_mods(uint8_t mods) { weak_mods = mods; }
+void    set_weak_mods(uint8_t mods) { weak_mods = mods; }
 /** \brief clear weak mods
  *
  * FIXME: needs doc
  */
-void clear_weak_mods(void) { weak_mods = 0; }
+void    clear_weak_mods(void) { weak_mods = 0; }
+
+#ifdef KEY_OVERRIDE_ENABLE
+/** \brief set weak mods used by key overrides. DO not call this manually
+ */
+void set_weak_override_mods(uint8_t mods) { weak_override_mods = mods; }
+/** \brief clear weak mods used by key overrides. DO not call this manually
+ */
+void clear_weak_override_mods(void) { weak_override_mods = 0; }
+
+/** \brief set suppressed mods used by key overrides. DO not call this manually
+ */
+void set_suppressed_override_mods(uint8_t mods) { suppressed_mods = mods; }
+/** \brief clear suppressed mods used by key overrides. DO not call this manually
+ */
+void clear_suppressed_override_mods(void) { suppressed_mods = 0; }
+#endif
 
 /* macro modifier */
 /** \brief get macro mods
@@ -309,22 +325,22 @@ uint8_t get_macro_mods(void) { return macro_mods; }
  *
  * FIXME: needs doc
  */
-void add_macro_mods(uint8_t mods) { macro_mods |= mods; }
+void    add_macro_mods(uint8_t mods) { macro_mods |= mods; }
 /** \brief del macro mods
  *
  * FIXME: needs doc
  */
-void del_macro_mods(uint8_t mods) { macro_mods &= ~mods; }
+void    del_macro_mods(uint8_t mods) { macro_mods &= ~mods; }
 /** \brief set macro mods
  *
  * FIXME: needs doc
  */
-void set_macro_mods(uint8_t mods) { macro_mods = mods; }
+void    set_macro_mods(uint8_t mods) { macro_mods = mods; }
 /** \brief clear macro mods
  *
  * FIXME: needs doc
  */
-void clear_macro_mods(void) { macro_mods = 0; }
+void    clear_macro_mods(void) { macro_mods = 0; }
 
 #ifndef NO_ACTION_ONESHOT
 /** \brief get oneshot mods

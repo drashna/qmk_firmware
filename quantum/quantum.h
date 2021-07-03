@@ -118,6 +118,10 @@ extern layer_state_t layer_state;
 #    include "process_unicodemap.h"
 #endif
 
+#ifdef KEY_OVERRIDE_ENABLE
+#    include "process_key_override.h"
+#endif
+
 #ifdef TAP_DANCE_ENABLE
 #    include "process_tap_dance.h"
 #endif
@@ -214,10 +218,10 @@ layer_state_t update_tri_layer_state(layer_state_t state, uint8_t layer1, uint8_
 
 void set_single_persistent_default_layer(uint8_t default_layer);
 
-#define IS_LAYER_ON(layer) layer_state_is(layer)
-#define IS_LAYER_OFF(layer) !layer_state_is(layer)
+#define IS_LAYER_ON(layer)               layer_state_is(layer)
+#define IS_LAYER_OFF(layer)              !layer_state_is(layer)
 
-#define IS_LAYER_ON_STATE(state, layer) layer_state_cmp(state, layer)
+#define IS_LAYER_ON_STATE(state, layer)  layer_state_cmp(state, layer)
 #define IS_LAYER_OFF_STATE(state, layer) !layer_state_cmp(state, layer)
 
 void     matrix_init_kb(void);
