@@ -110,9 +110,14 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   )
 
 };
-// clang-format on
 
-const uint16_t PROGMEM encoder_map[][1][2] = {[_QWERTY] = {{KC_DOWN, KC_UP}}, [_RAISE] = {{KC_VOLD, KC_VOLU}}, [_LOWER] = {{RGB_MOD, RGB_RMOD}}, [_ADJUST] = {{CK_DOWN, CK_UP}}};
+const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][2] = {
+    [_QWERTY] = { { KC_DOWN, KC_UP   } },
+    [_RAISE]  = { { KC_VOLD, KC_VOLU } },
+    [_LOWER]  = { { RGB_MOD, RGB_RMOD} },
+    [_ADJUST] = { { CK_DOWN, CK_UP   } }
+};
+// clang-format on
 
 bool process_record_keymap(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
