@@ -104,6 +104,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 };
 // clang-format on
 
+const uint16_t PROGMEM encoder_map[][2][2] = {[_QWERTY] = {{KC_VOLD, KC_VOLU}, {KC_DOWN, KC_UP}}, [_RAISE] = {{KC_VOLD, KC_VOLU}, {KC_PGDN, KC_PGUP}}, [_LOWER] = {{RGB_MOD, RGB_RMOD}, {RGB_HUD, RGB_HUI}}, [_ADJUST] = {{CK_DOWN, CK_UP}, {KC_TRNS, KC_TRNS}}};
+
 #ifdef OLED_DRIVER_ENABLE
 oled_rotation_t oled_init_keymap(oled_rotation_t rotation) { return OLED_ROTATION_180; }
 #endif
