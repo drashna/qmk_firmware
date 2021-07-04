@@ -23,6 +23,10 @@
 // for memcpy
 #include <string.h>
 
+#ifndef ENCODER_MAP_KEY_DELAY
+#    define ENCODER_MAP_KEY_DELAY 2
+#endif
+
 #if !defined(ENCODER_RESOLUTIONS) && !defined(ENCODER_RESOLUTION)
 #    define ENCODER_RESOLUTION 4
 #endif
@@ -39,10 +43,10 @@ static uint8_t encoder_resolutions[] = ENCODER_RESOLUTIONS;
 #endif
 
 #ifndef ENCODER_DIRECTION_FLIP
-#    define ENCODER_CLOCKWISE true
+#    define ENCODER_CLOCKWISE         true
 #    define ENCODER_COUNTER_CLOCKWISE false
 #else
-#    define ENCODER_CLOCKWISE false
+#    define ENCODER_CLOCKWISE         false
 #    define ENCODER_COUNTER_CLOCKWISE true
 #endif
 static int8_t encoder_LUT[] = {0, -1, 1, 0, 1, 0, 0, -1, -1, 0, 0, 1, 0, 1, -1, 0};
@@ -94,6 +98,16 @@ void encoder_init(void) {
 #endif
 }
 
+#ifdef ENCODER_MAP_ENABLE
+static void encoder_exec_mapping(uint8_t index, bool clockwise) {
+    // The delays below cater for Windows and it's wonderful requirements.
+    action_exec(clockwise ? ENCODER_CW_EVENT(index, true) : ENCODER_CCW_EVENT(index, true));
+    wait_ms(ENCODER_MAP_KEY_DELAY);
+    action_exec(clockwise ? ENCODER_CW_EVENT(index, false) : ENCODER_CCW_EVENT(index, false));
+    wait_ms(ENCODER_MAP_KEY_DELAY);
+}
+#endif // ENCODER_MAP_ENABLE
+
 static bool encoder_update(uint8_t index, uint8_t state) {
     bool    changed = false;
     uint8_t i       = index;
@@ -111,12 +125,20 @@ static bool encoder_update(uint8_t index, uint8_t state) {
     if (encoder_pulses[i] >= resolution) {
         encoder_value[index]++;
         changed = true;
+#ifdef ENCODER_MAP_ENABLE
+        encoder_exec_mapping(index, ENCODER_COUNTER_CLOCKWISE);
+#else  // ENCODER_MAP_ENABLE
         encoder_update_kb(index, ENCODER_COUNTER_CLOCKWISE);
+#endif // ENCODER_MAP_ENABLE
     }
-    if (encoder_pulses[i] <= -resolution) {  // direction is arbitrary here, but this clockwise
+    if (encoder_pulses[i] <= -resolution) { // direction is arbitrary here, but this clockwise
         encoder_value[index]--;
         changed = true;
+#ifdef ENCODER_MAP_ENABLE
+        encoder_exec_mapping(index, ENCODER_CLOCKWISE);
+#else  // ENCODER_MAP_ENABLE
         encoder_update_kb(index, ENCODER_CLOCKWISE);
+#endif // ENCODER_MAP_ENABLE
     }
     encoder_pulses[i] %= resolution;
     return changed;
@@ -146,13 +168,21 @@ void encoder_update_raw(uint8_t* slave_state) {
             delta--;
             encoder_value[index]++;
             changed = true;
+#    ifdef ENCODER_MAP_ENABLE
+            encoder_exec_mapping(index, ENCODER_COUNTER_CLOCKWISE);
+#    else  // ENCODER_MAP_ENABLE
             encoder_update_kb(index, ENCODER_COUNTER_CLOCKWISE);
+#    endif // ENCODER_MAP_ENABLE
         }
         while (delta < 0) {
             delta++;
             encoder_value[index]--;
             changed = true;
+#    ifdef ENCODER_MAP_ENABLE
+            encoder_exec_mapping(index, ENCODER_CLOCKWISE);
+#    else  // ENCODER_MAP_ENABLE
             encoder_update_kb(index, ENCODER_CLOCKWISE);
+#    endif // ENCODER_MAP_ENABLE
         }
     }
 
