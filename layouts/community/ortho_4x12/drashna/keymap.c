@@ -112,10 +112,17 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 };
 
 const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][2] = {
-    [_QWERTY] = { { KC_DOWN, KC_UP   } },
-    [_RAISE]  = { { KC_VOLD, KC_VOLU } },
-    [_LOWER]  = { { RGB_MOD, RGB_RMOD} },
-    [_ADJUST] = { { CK_DOWN, CK_UP   } }
+    [_DEFAULT_LAYER_1] = { { KC_DOWN, KC_UP   } },
+    [_DEFAULT_LAYER_2] = { { _______, _______ } },
+    [_DEFAULT_LAYER_3] = { { _______, _______ } },
+    [_DEFAULT_LAYER_4] = { { _______, _______ } },
+    [_GAMEPAD]         = { { _______, _______ } },
+    [_DIABLO]          = { { _______, _______ } },
+    [_MOUSE]           = { { KC_WH_D, KC_WH_U } },
+    [_MEDIA]           = { { _______, _______ } },
+    [_RAISE]           = { { KC_VOLD, KC_VOLU } },
+    [_LOWER]           = { { RGB_MOD, RGB_RMOD} },
+    [_ADJUST]          = { { CK_DOWN, CK_UP   } },
 };
 // clang-format on
 
