@@ -45,7 +45,7 @@
 #include "raw_hid.h"
 #include "dynamic_keymap.h"
 #include "tmk_core/common/eeprom.h"
-#include "version.h"  // for QMK_BUILDDATE used in EEPROM magic
+#include "version.h" // for QMK_BUILDDATE used in EEPROM magic
 #include "via_ensure_keycode.h"
 
 // Forward declare some helpers.
@@ -62,7 +62,7 @@ void via_qmk_rgblight_get_value(uint8_t *data);
 // Can be called in an overriding via_init_kb() to test if keyboard level code usage of
 // EEPROM is invalid and use/save defaults.
 bool via_eeprom_is_valid(void) {
-    char *  p      = QMK_BUILDDATE;  // e.g. "2019-11-05-11:29:54"
+    char *  p      = QMK_BUILDDATE; // e.g. "2019-11-05-11:29:54"
     uint8_t magic0 = ((p[2] & 0x0F) << 4) | (p[3] & 0x0F);
     uint8_t magic1 = ((p[5] & 0x0F) << 4) | (p[6] & 0x0F);
     uint8_t magic2 = ((p[8] & 0x0F) << 4) | (p[9] & 0x0F);
@@ -73,7 +73,7 @@ bool via_eeprom_is_valid(void) {
 // Sets VIA/keyboard level usage of EEPROM to valid/invalid
 // Keyboard level code (eg. via_init_kb()) should not call this
 void via_eeprom_set_valid(bool valid) {
-    char *  p      = QMK_BUILDDATE;  // e.g. "2019-11-05-11:29:54"
+    char *  p      = QMK_BUILDDATE; // e.g. "2019-11-05-11:29:54"
     uint8_t magic0 = ((p[2] & 0x0F) << 4) | (p[3] & 0x0F);
     uint8_t magic1 = ((p[5] & 0x0F) << 4) | (p[6] & 0x0F);
     uint8_t magic2 = ((p[8] & 0x0F) << 4) | (p[9] & 0x0F);
@@ -81,16 +81,6 @@ void via_eeprom_set_valid(bool valid) {
     eeprom_update_byte((void *)VIA_EEPROM_MAGIC_ADDR + 0, valid ? magic0 : 0xFF);
     eeprom_update_byte((void *)VIA_EEPROM_MAGIC_ADDR + 1, valid ? magic1 : 0xFF);
     eeprom_update_byte((void *)VIA_EEPROM_MAGIC_ADDR + 2, valid ? magic2 : 0xFF);
-}
-
-// Flag QMK and VIA/keyboard level EEPROM as invalid.
-// Used in bootmagic_lite() and VIA command handler.
-// Keyboard level code should not need to call this.
-void via_eeprom_reset(void) {
-    // Set the VIA specific EEPROM state as invalid.
-    via_eeprom_set_valid(false);
-    // Set the TMK/QMK EEPROM state as invalid.
-    eeconfig_disable();
 }
 
 // Override this at the keyboard code level to check
@@ -109,25 +99,28 @@ void via_init(void) {
 
     // If the EEPROM has the magic, the data is good.
     // OK to load from EEPROM.
-    if (via_eeprom_is_valid()) {
-    } else {
-        // This resets the layout options
-        via_set_layout_options(VIA_EEPROM_LAYOUT_OPTIONS_DEFAULT);
-        // This resets the keymaps in EEPROM to what is in flash.
-        dynamic_keymap_reset();
-        // This resets the macros in EEPROM to nothing.
-        dynamic_keymap_macro_reset();
-        // Save the magic number last, in case saving was interrupted
-        via_eeprom_set_valid(true);
-    }
+    if (!via_eeprom_is_valid()) { eeconfig_init_via(); }
+}
+
+void eeconfig_init_via(void) {
+    // set the magic number to false, in case this gets interrupted
+    via_eeprom_set_valid(false);
+    // This resets the layout options
+    via_set_layout_options(VIA_EEPROM_LAYOUT_OPTIONS_DEFAULT);
+    // This resets the keymaps in EEPROM to what is in flash.
+    dynamic_keymap_reset();
+    // This resets the macros in EEPROM to nothing.
+    dynamic_keymap_macro_reset();
+    // Save the magic number last, in case saving was interrupted
+    via_eeprom_set_valid(true);
 }
 
 // This is generalized so the layout options EEPROM usage can be
 // variable, between 1 and 4 bytes.
 uint32_t via_get_layout_options(void) {
-    uint32_t value = 0;
+    uint32_t value  = 0;
     // Start at the most significant byte
-    void *source = (void *)(VIA_EEPROM_LAYOUT_OPTIONS_ADDR);
+    void *   source = (void *)(VIA_EEPROM_LAYOUT_OPTIONS_ADDR);
     for (uint8_t i = 0; i < VIA_EEPROM_LAYOUT_OPTIONS_SIZE; i++) {
         value = value << 8;
         value |= eeprom_read_byte(source);
@@ -204,179 +197,211 @@ void raw_hid_receive(uint8_t *data, uint8_t length) {
     uint8_t *command_id   = &(data[0]);
     uint8_t *command_data = &(data[1]);
     switch (*command_id) {
-        case id_get_protocol_version: {
-            command_data[0] = VIA_PROTOCOL_VERSION >> 8;
-            command_data[1] = VIA_PROTOCOL_VERSION & 0xFF;
-            break;
-        }
-        case id_get_keyboard_value: {
-            switch (command_data[0]) {
-                case id_uptime: {
-                    uint32_t value  = timer_read32();
-                    command_data[1] = (value >> 24) & 0xFF;
-                    command_data[2] = (value >> 16) & 0xFF;
-                    command_data[3] = (value >> 8) & 0xFF;
-                    command_data[4] = value & 0xFF;
-                    break;
-                }
-                case id_layout_options: {
-                    uint32_t value  = via_get_layout_options();
-                    command_data[1] = (value >> 24) & 0xFF;
-                    command_data[2] = (value >> 16) & 0xFF;
-                    command_data[3] = (value >> 8) & 0xFF;
-                    command_data[4] = value & 0xFF;
-                    break;
-                }
-                case id_switch_matrix_state: {
+        case id_get_protocol_version:
+            {
+                command_data[0] = VIA_PROTOCOL_VERSION >> 8;
+                command_data[1] = VIA_PROTOCOL_VERSION & 0xFF;
+                break;
+            }
+        case id_get_keyboard_value:
+            {
+                switch (command_data[0]) {
+                    case id_uptime:
+                        {
+                            uint32_t value  = timer_read32();
+                            command_data[1] = (value >> 24) & 0xFF;
+                            command_data[2] = (value >> 16) & 0xFF;
+                            command_data[3] = (value >> 8) & 0xFF;
+                            command_data[4] = value & 0xFF;
+                            break;
+                        }
+                    case id_layout_options:
+                        {
+                            uint32_t value  = via_get_layout_options();
+                            command_data[1] = (value >> 24) & 0xFF;
+                            command_data[2] = (value >> 16) & 0xFF;
+                            command_data[3] = (value >> 8) & 0xFF;
+                            command_data[4] = value & 0xFF;
+                            break;
+                        }
+                    case id_switch_matrix_state:
+                        {
 #if ((MATRIX_COLS / 8 + 1) * MATRIX_ROWS <= 28)
-                    uint8_t i = 1;
-                    for (uint8_t row = 0; row < MATRIX_ROWS; row++) {
-                        matrix_row_t value = matrix_get_row(row);
+                            uint8_t i = 1;
+                            for (uint8_t row = 0; row < MATRIX_ROWS; row++) {
+                                matrix_row_t value = matrix_get_row(row);
 #    if (MATRIX_COLS > 24)
-                        command_data[i++] = (value >> 24) & 0xFF;
+                                command_data[i++] = (value >> 24) & 0xFF;
 #    endif
 #    if (MATRIX_COLS > 16)
-                        command_data[i++] = (value >> 16) & 0xFF;
+                                command_data[i++] = (value >> 16) & 0xFF;
 #    endif
 #    if (MATRIX_COLS > 8)
-                        command_data[i++] = (value >> 8) & 0xFF;
+                                command_data[i++] = (value >> 8) & 0xFF;
 #    endif
-                        command_data[i++] = value & 0xFF;
-                    }
+                                command_data[i++] = value & 0xFF;
+                            }
 #endif
-                    break;
+                            break;
+                        }
+                    default:
+                        {
+                            raw_hid_receive_kb(data, length);
+                            break;
+                        }
                 }
-                default: {
-                    raw_hid_receive_kb(data, length);
-                    break;
-                }
+                break;
             }
-            break;
-        }
-        case id_set_keyboard_value: {
-            switch (command_data[0]) {
-                case id_layout_options: {
-                    uint32_t value = ((uint32_t)command_data[1] << 24) | ((uint32_t)command_data[2] << 16) | ((uint32_t)command_data[3] << 8) | (uint32_t)command_data[4];
-                    via_set_layout_options(value);
-                    break;
+        case id_set_keyboard_value:
+            {
+                switch (command_data[0]) {
+                    case id_layout_options:
+                        {
+                            uint32_t value = ((uint32_t)command_data[1] << 24) | ((uint32_t)command_data[2] << 16) | ((uint32_t)command_data[3] << 8) | (uint32_t)command_data[4];
+                            via_set_layout_options(value);
+                            break;
+                        }
+                    default:
+                        {
+                            raw_hid_receive_kb(data, length);
+                            break;
+                        }
                 }
-                default: {
-                    raw_hid_receive_kb(data, length);
-                    break;
-                }
+                break;
             }
-            break;
-        }
-        case id_dynamic_keymap_get_keycode: {
-            uint16_t keycode = dynamic_keymap_get_keycode(command_data[0], command_data[1], command_data[2]);
-            command_data[3]  = keycode >> 8;
-            command_data[4]  = keycode & 0xFF;
-            break;
-        }
-        case id_dynamic_keymap_set_keycode: {
-            dynamic_keymap_set_keycode(command_data[0], command_data[1], command_data[2], (command_data[3] << 8) | command_data[4]);
-            break;
-        }
-        case id_dynamic_keymap_reset: {
-            dynamic_keymap_reset();
-            break;
-        }
-        case id_lighting_set_value: {
+        case id_dynamic_keymap_get_keycode:
+            {
+                uint16_t keycode = dynamic_keymap_get_keycode(command_data[0], command_data[1], command_data[2]);
+                command_data[3]  = keycode >> 8;
+                command_data[4]  = keycode & 0xFF;
+                break;
+            }
+        case id_dynamic_keymap_set_keycode:
+            {
+                dynamic_keymap_set_keycode(command_data[0], command_data[1], command_data[2], (command_data[3] << 8) | command_data[4]);
+                break;
+            }
+        case id_dynamic_keymap_reset:
+            {
+                dynamic_keymap_reset();
+                break;
+            }
+        case id_lighting_set_value:
+            {
 #if defined(VIA_QMK_BACKLIGHT_ENABLE)
-            via_qmk_backlight_set_value(command_data);
+                via_qmk_backlight_set_value(command_data);
 #endif
 #if defined(VIA_QMK_RGBLIGHT_ENABLE)
-            via_qmk_rgblight_set_value(command_data);
+                via_qmk_rgblight_set_value(command_data);
 #endif
 #if defined(VIA_CUSTOM_LIGHTING_ENABLE)
-            raw_hid_receive_kb(data, length);
+                raw_hid_receive_kb(data, length);
 #endif
 #if !defined(VIA_QMK_BACKLIGHT_ENABLE) && !defined(VIA_QMK_RGBLIGHT_ENABLE) && !defined(VIA_CUSTOM_LIGHTING_ENABLE)
-            // Return the unhandled state
-            *command_id = id_unhandled;
+                // Return the unhandled state
+                *command_id = id_unhandled;
 #endif
-            break;
-        }
-        case id_lighting_get_value: {
+                break;
+            }
+        case id_lighting_get_value:
+            {
 #if defined(VIA_QMK_BACKLIGHT_ENABLE)
-            via_qmk_backlight_get_value(command_data);
+                via_qmk_backlight_get_value(command_data);
 #endif
 #if defined(VIA_QMK_RGBLIGHT_ENABLE)
-            via_qmk_rgblight_get_value(command_data);
+                via_qmk_rgblight_get_value(command_data);
 #endif
 #if defined(VIA_CUSTOM_LIGHTING_ENABLE)
-            raw_hid_receive_kb(data, length);
+                raw_hid_receive_kb(data, length);
 #endif
 #if !defined(VIA_QMK_BACKLIGHT_ENABLE) && !defined(VIA_QMK_RGBLIGHT_ENABLE) && !defined(VIA_CUSTOM_LIGHTING_ENABLE)
-            // Return the unhandled state
-            *command_id = id_unhandled;
+                // Return the unhandled state
+                *command_id = id_unhandled;
 #endif
-            break;
-        }
-        case id_lighting_save: {
+                break;
+            }
+        case id_lighting_save:
+            {
 #if defined(VIA_QMK_BACKLIGHT_ENABLE)
-            eeconfig_update_backlight_current();
+                eeconfig_update_backlight_current();
 #endif
 #if defined(VIA_QMK_RGBLIGHT_ENABLE)
-            eeconfig_update_rgblight_current();
+                eeconfig_update_rgblight_current();
 #endif
 #if defined(VIA_CUSTOM_LIGHTING_ENABLE)
-            raw_hid_receive_kb(data, length);
+                raw_hid_receive_kb(data, length);
 #endif
 #if !defined(VIA_QMK_BACKLIGHT_ENABLE) && !defined(VIA_QMK_RGBLIGHT_ENABLE) && !defined(VIA_CUSTOM_LIGHTING_ENABLE)
-            // Return the unhandled state
-            *command_id = id_unhandled;
+                // Return the unhandled state
+                *command_id = id_unhandled;
 #endif
-            break;
-        }
-        case id_dynamic_keymap_macro_get_count: {
-            command_data[0] = dynamic_keymap_macro_get_count();
-            break;
-        }
-        case id_dynamic_keymap_macro_get_buffer_size: {
-            uint16_t size   = dynamic_keymap_macro_get_buffer_size();
-            command_data[0] = size >> 8;
-            command_data[1] = size & 0xFF;
-            break;
-        }
-        case id_dynamic_keymap_macro_get_buffer: {
-            uint16_t offset = (command_data[0] << 8) | command_data[1];
-            uint16_t size   = command_data[2];  // size <= 28
-            dynamic_keymap_macro_get_buffer(offset, size, &command_data[3]);
-            break;
-        }
-        case id_dynamic_keymap_macro_set_buffer: {
-            uint16_t offset = (command_data[0] << 8) | command_data[1];
-            uint16_t size   = command_data[2];  // size <= 28
-            dynamic_keymap_macro_set_buffer(offset, size, &command_data[3]);
-            break;
-        }
-        case id_dynamic_keymap_macro_reset: {
-            dynamic_keymap_macro_reset();
-            break;
-        }
-        case id_dynamic_keymap_get_layer_count: {
-            command_data[0] = dynamic_keymap_get_layer_count();
-            break;
-        }
-        case id_dynamic_keymap_get_buffer: {
-            uint16_t offset = (command_data[0] << 8) | command_data[1];
-            uint16_t size   = command_data[2];  // size <= 28
-            dynamic_keymap_get_buffer(offset, size, &command_data[3]);
-            break;
-        }
-        case id_dynamic_keymap_set_buffer: {
-            uint16_t offset = (command_data[0] << 8) | command_data[1];
-            uint16_t size   = command_data[2];  // size <= 28
-            dynamic_keymap_set_buffer(offset, size, &command_data[3]);
-            break;
-        }
-        default: {
-            // The command ID is not known
-            // Return the unhandled state
-            *command_id = id_unhandled;
-            break;
-        }
+                break;
+            }
+#ifdef VIA_EEPROM_ALLOW_RESET
+        case id_eeprom_reset:
+            {
+                via_eeprom_set_valid(false);
+                eeconfig_init_via();
+                break;
+            }
+#endif
+        case id_dynamic_keymap_macro_get_count:
+            {
+                command_data[0] = dynamic_keymap_macro_get_count();
+                break;
+            }
+        case id_dynamic_keymap_macro_get_buffer_size:
+            {
+                uint16_t size   = dynamic_keymap_macro_get_buffer_size();
+                command_data[0] = size >> 8;
+                command_data[1] = size & 0xFF;
+                break;
+            }
+        case id_dynamic_keymap_macro_get_buffer:
+            {
+                uint16_t offset = (command_data[0] << 8) | command_data[1];
+                uint16_t size   = command_data[2]; // size <= 28
+                dynamic_keymap_macro_get_buffer(offset, size, &command_data[3]);
+                break;
+            }
+        case id_dynamic_keymap_macro_set_buffer:
+            {
+                uint16_t offset = (command_data[0] << 8) | command_data[1];
+                uint16_t size   = command_data[2]; // size <= 28
+                dynamic_keymap_macro_set_buffer(offset, size, &command_data[3]);
+                break;
+            }
+        case id_dynamic_keymap_macro_reset:
+            {
+                dynamic_keymap_macro_reset();
+                break;
+            }
+        case id_dynamic_keymap_get_layer_count:
+            {
+                command_data[0] = dynamic_keymap_get_layer_count();
+                break;
+            }
+        case id_dynamic_keymap_get_buffer:
+            {
+                uint16_t offset = (command_data[0] << 8) | command_data[1];
+                uint16_t size   = command_data[2]; // size <= 28
+                dynamic_keymap_get_buffer(offset, size, &command_data[3]);
+                break;
+            }
+        case id_dynamic_keymap_set_buffer:
+            {
+                uint16_t offset = (command_data[0] << 8) | command_data[1];
+                uint16_t size   = command_data[2]; // size <= 28
+                dynamic_keymap_set_buffer(offset, size, &command_data[3]);
+                break;
+            }
+        default:
+            {
+                // The command ID is not known
+                // Return the unhandled state
+                *command_id = id_unhandled;
+                break;
+            }
     }
 
     // Return the same buffer, optionally with values changed
@@ -394,19 +419,21 @@ void via_qmk_backlight_get_value(uint8_t *data) {
     uint8_t *value_id   = &(data[0]);
     uint8_t *value_data = &(data[1]);
     switch (*value_id) {
-        case id_qmk_backlight_brightness: {
-            // level / BACKLIGHT_LEVELS * 255
-            value_data[0] = ((uint16_t)get_backlight_level()) * 255 / BACKLIGHT_LEVELS;
-            break;
-        }
-        case id_qmk_backlight_effect: {
+        case id_qmk_backlight_brightness:
+            {
+                // level / BACKLIGHT_LEVELS * 255
+                value_data[0] = ((uint16_t)get_backlight_level()) * 255 / BACKLIGHT_LEVELS;
+                break;
+            }
+        case id_qmk_backlight_effect:
+            {
 #    ifdef BACKLIGHT_BREATHING
-            value_data[0] = is_backlight_breathing() ? 1 : 0;
+                value_data[0] = is_backlight_breathing() ? 1 : 0;
 #    else
-            value_data[0] = 0;
+                value_data[0] = 0;
 #    endif
-            break;
-        }
+                break;
+            }
     }
 }
 
@@ -414,25 +441,27 @@ void via_qmk_backlight_set_value(uint8_t *data) {
     uint8_t *value_id   = &(data[0]);
     uint8_t *value_data = &(data[1]);
     switch (*value_id) {
-        case id_qmk_backlight_brightness: {
-            // level / 255 * BACKLIGHT_LEVELS
-            backlight_level_noeeprom(((uint16_t)value_data[0]) * BACKLIGHT_LEVELS / 255);
-            break;
-        }
-        case id_qmk_backlight_effect: {
-#    ifdef BACKLIGHT_BREATHING
-            if (value_data[0] == 0) {
-                backlight_disable_breathing();
-            } else {
-                backlight_enable_breathing();
+        case id_qmk_backlight_brightness:
+            {
+                // level / 255 * BACKLIGHT_LEVELS
+                backlight_level_noeeprom(((uint16_t)value_data[0]) * BACKLIGHT_LEVELS / 255);
+                break;
             }
+        case id_qmk_backlight_effect:
+            {
+#    ifdef BACKLIGHT_BREATHING
+                if (value_data[0] == 0) {
+                    backlight_disable_breathing();
+                } else {
+                    backlight_enable_breathing();
+                }
 #    endif
-            break;
-        }
+                break;
+            }
     }
 }
 
-#endif  // #if defined(VIA_QMK_BACKLIGHT_ENABLE)
+#endif // #if defined(VIA_QMK_BACKLIGHT_ENABLE)
 
 #if defined(VIA_QMK_RGBLIGHT_ENABLE)
 
@@ -440,23 +469,27 @@ void via_qmk_rgblight_get_value(uint8_t *data) {
     uint8_t *value_id   = &(data[0]);
     uint8_t *value_data = &(data[1]);
     switch (*value_id) {
-        case id_qmk_rgblight_brightness: {
-            value_data[0] = rgblight_get_val();
-            break;
-        }
-        case id_qmk_rgblight_effect: {
-            value_data[0] = rgblight_get_mode();
-            break;
-        }
-        case id_qmk_rgblight_effect_speed: {
-            value_data[0] = rgblight_get_speed();
-            break;
-        }
-        case id_qmk_rgblight_color: {
-            value_data[0] = rgblight_get_hue();
-            value_data[1] = rgblight_get_sat();
-            break;
-        }
+        case id_qmk_rgblight_brightness:
+            {
+                value_data[0] = rgblight_get_val();
+                break;
+            }
+        case id_qmk_rgblight_effect:
+            {
+                value_data[0] = rgblight_get_mode();
+                break;
+            }
+        case id_qmk_rgblight_effect_speed:
+            {
+                value_data[0] = rgblight_get_speed();
+                break;
+            }
+        case id_qmk_rgblight_color:
+            {
+                value_data[0] = rgblight_get_hue();
+                value_data[1] = rgblight_get_sat();
+                break;
+            }
     }
 }
 
@@ -464,28 +497,32 @@ void via_qmk_rgblight_set_value(uint8_t *data) {
     uint8_t *value_id   = &(data[0]);
     uint8_t *value_data = &(data[1]);
     switch (*value_id) {
-        case id_qmk_rgblight_brightness: {
-            rgblight_sethsv_noeeprom(rgblight_get_hue(), rgblight_get_sat(), value_data[0]);
-            break;
-        }
-        case id_qmk_rgblight_effect: {
-            rgblight_mode_noeeprom(value_data[0]);
-            if (value_data[0] == 0) {
-                rgblight_disable_noeeprom();
-            } else {
-                rgblight_enable_noeeprom();
+        case id_qmk_rgblight_brightness:
+            {
+                rgblight_sethsv_noeeprom(rgblight_get_hue(), rgblight_get_sat(), value_data[0]);
+                break;
             }
-            break;
-        }
-        case id_qmk_rgblight_effect_speed: {
-            rgblight_set_speed_noeeprom(value_data[0]);
-            break;
-        }
-        case id_qmk_rgblight_color: {
-            rgblight_sethsv_noeeprom(value_data[0], value_data[1], rgblight_get_val());
-            break;
-        }
+        case id_qmk_rgblight_effect:
+            {
+                rgblight_mode_noeeprom(value_data[0]);
+                if (value_data[0] == 0) {
+                    rgblight_disable_noeeprom();
+                } else {
+                    rgblight_enable_noeeprom();
+                }
+                break;
+            }
+        case id_qmk_rgblight_effect_speed:
+            {
+                rgblight_set_speed_noeeprom(value_data[0]);
+                break;
+            }
+        case id_qmk_rgblight_color:
+            {
+                rgblight_sethsv_noeeprom(value_data[0], value_data[1], rgblight_get_val());
+                break;
+            }
     }
 }
 
-#endif  // #if defined(VIA_QMK_RGBLIGHT_ENABLE)
+#endif // #if defined(VIA_QMK_RGBLIGHT_ENABLE)

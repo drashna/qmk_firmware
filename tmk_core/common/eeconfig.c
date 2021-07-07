@@ -17,6 +17,11 @@
 #    include "haptic.h"
 #endif
 
+#if defined(VIA_ENABLE)
+void via_eeprom_set_valid(bool valid);
+void eeconfig_init_via(void);
+#endif
+
 /** \brief eeconfig enable
  *
  * FIXME: needs doc
@@ -51,7 +56,7 @@ void eeconfig_init_quantum(void) {
     eeprom_update_byte(EECONFIG_KEYMAP_UPPER_BYTE, 0);
     eeprom_update_byte(EECONFIG_MOUSEKEY_ACCEL, 0);
     eeprom_update_byte(EECONFIG_BACKLIGHT, 0);
-    eeprom_update_byte(EECONFIG_AUDIO, 0xFF);  // On by default
+    eeprom_update_byte(EECONFIG_AUDIO, 0xFF); // On by default
     eeprom_update_dword(EECONFIG_RGBLIGHT, 0);
     eeprom_update_byte(EECONFIG_STENOMODE, 0);
     eeprom_update_dword(EECONFIG_HAPTIC, 0);
@@ -76,6 +81,13 @@ void eeconfig_init_quantum(void) {
     // in the haptic configuration eeprom. All zero will trigger a haptic_reset
     // when a haptic-enabled firmware is loaded onto the keyboard.
     eeprom_update_dword(EECONFIG_HAPTIC, 0);
+#endif
+#if defined(VIA_ENABLE)
+    // Invalidate VIA eeprom config, and then reset.
+    // Just in case if power is lost mid init, this makes sure that it pets
+    // properly re-initialized.
+    via_eeprom_set_valid(false);
+    eeconfig_init_via();
 #endif
 
     eeconfig_init_kb();
@@ -128,7 +140,7 @@ uint8_t eeconfig_read_debug(void) { return eeprom_read_byte(EECONFIG_DEBUG); }
  *
  * FIXME: needs doc
  */
-void eeconfig_update_debug(uint8_t val) { eeprom_update_byte(EECONFIG_DEBUG, val); }
+void    eeconfig_update_debug(uint8_t val) { eeprom_update_byte(EECONFIG_DEBUG, val); }
 
 /** \brief eeconfig read default layer
  *
@@ -139,7 +151,7 @@ uint8_t eeconfig_read_default_layer(void) { return eeprom_read_byte(EECONFIG_DEF
  *
  * FIXME: needs doc
  */
-void eeconfig_update_default_layer(uint8_t val) { eeprom_update_byte(EECONFIG_DEFAULT_LAYER, val); }
+void    eeconfig_update_default_layer(uint8_t val) { eeprom_update_byte(EECONFIG_DEFAULT_LAYER, val); }
 
 /** \brief eeconfig read keymap
  *
@@ -150,7 +162,7 @@ uint16_t eeconfig_read_keymap(void) { return (eeprom_read_byte(EECONFIG_KEYMAP_L
  *
  * FIXME: needs doc
  */
-void eeconfig_update_keymap(uint16_t val) {
+void     eeconfig_update_keymap(uint16_t val) {
     eeprom_update_byte(EECONFIG_KEYMAP_LOWER_BYTE, val & 0xFF);
     eeprom_update_byte(EECONFIG_KEYMAP_UPPER_BYTE, (val >> 8) & 0xFF);
 }
@@ -164,7 +176,7 @@ uint8_t eeconfig_read_audio(void) { return eeprom_read_byte(EECONFIG_AUDIO); }
  *
  * FIXME: needs doc
  */
-void eeconfig_update_audio(uint8_t val) { eeprom_update_byte(EECONFIG_AUDIO, val); }
+void    eeconfig_update_audio(uint8_t val) { eeprom_update_byte(EECONFIG_AUDIO, val); }
 
 /** \brief eeconfig read kb
  *
@@ -175,7 +187,7 @@ uint32_t eeconfig_read_kb(void) { return eeprom_read_dword(EECONFIG_KEYBOARD); }
  *
  * FIXME: needs doc
  */
-void eeconfig_update_kb(uint32_t val) { eeprom_update_dword(EECONFIG_KEYBOARD, val); }
+void     eeconfig_update_kb(uint32_t val) { eeprom_update_dword(EECONFIG_KEYBOARD, val); }
 
 /** \brief eeconfig read user
  *
@@ -186,7 +198,7 @@ uint32_t eeconfig_read_user(void) { return eeprom_read_dword(EECONFIG_USER); }
  *
  * FIXME: needs doc
  */
-void eeconfig_update_user(uint32_t val) { eeprom_update_dword(EECONFIG_USER, val); }
+void     eeconfig_update_user(uint32_t val) { eeprom_update_dword(EECONFIG_USER, val); }
 
 /** \brief eeconfig read haptic
  *
@@ -197,7 +209,7 @@ uint32_t eeconfig_read_haptic(void) { return eeprom_read_dword(EECONFIG_HAPTIC);
  *
  * FIXME: needs doc
  */
-void eeconfig_update_haptic(uint32_t val) { eeprom_update_dword(EECONFIG_HAPTIC, val); }
+void     eeconfig_update_haptic(uint32_t val) { eeprom_update_dword(EECONFIG_HAPTIC, val); }
 
 /** \brief eeconfig read split handedness
  *
