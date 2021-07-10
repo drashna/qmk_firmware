@@ -22,7 +22,7 @@ extern haptic_config_t haptic_config;
 #endif
 
 #ifdef OLED_DRIVER_ENABLE
-static bool is_asleep = false;
+static bool     is_asleep = false;
 static uint32_t oled_timer;
 
 void suspend_power_down_kb(void) {
@@ -111,4 +111,17 @@ bool encoder_update_kb(uint8_t index, bool clockwise) {
     }
     return true;
 }
+#endif
+
+#ifdef SWAP_HANDS_ENABLE
+const keypos_t PROGMEM hand_swap_config[MATRIX_ROWS][MATRIX_COLS] = {
+    {{2, 0}, {1, 0}, {0, 0}},
+    {{2, 1}, {1, 1}, {0, 1}},
+    {{2, 2}, {1, 2}, {0, 2}},
+    {{2, 3}, {1, 3}, {0, 3}},
+};
+
+#    ifdef ENCODER_MAP_ENABLE
+const uint8_t PROGMEM encoder_hand_swap_config[NUM_ENCODERS] = {0};
+#    endif
 #endif
