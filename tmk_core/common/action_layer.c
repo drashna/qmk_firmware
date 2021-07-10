@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include "keyboard.h"
+#include "keymap.h"
 #include "action.h"
 #include "util.h"
 #include "action_layer.h"
@@ -39,9 +40,9 @@ static void default_layer_state_set(layer_state_t state) {
     default_layer_debug();
     debug("\n");
 #ifdef STRICT_LAYER_RELEASE
-    clear_keyboard_but_mods();  // To avoid stuck keys
+    clear_keyboard_but_mods(); // To avoid stuck keys
 #else
-    clear_keyboard_but_mods_and_keys();  // Don't reset held keys
+    clear_keyboard_but_mods_and_keys(); // Don't reset held keys
 #endif
 }
 
@@ -105,9 +106,9 @@ void layer_state_set(layer_state_t state) {
     layer_debug();
     dprintln();
 #    ifdef STRICT_LAYER_RELEASE
-    clear_keyboard_but_mods();  // To avoid stuck keys
+    clear_keyboard_but_mods(); // To avoid stuck keys
 #    else
-    clear_keyboard_but_mods_and_keys();  // Don't reset held keys
+    clear_keyboard_but_mods_and_keys(); // Don't reset held keys
 #    endif
 }
 
@@ -128,9 +129,7 @@ bool layer_state_is(uint8_t layer) { return layer_state_cmp(layer_state, layer);
  * Used for comparing layers {mostly used for unit testing}
  */
 bool layer_state_cmp(layer_state_t cmp_layer_state, uint8_t layer) {
-    if (!cmp_layer_state) {
-        return layer == 0;
-    }
+    if (!cmp_layer_state) { return layer == 0; }
     return (cmp_layer_state & ((layer_state_t)1 << layer)) != 0;
 }
 
@@ -186,19 +185,49 @@ void layer_debug(void) { dprintf("%08lX(%u)", layer_state, get_highest_layer(lay
  */
 
 uint8_t source_layers_cache[(MATRIX_ROWS * MATRIX_COLS + 7) / 8][MAX_LAYER_BITS] = {{0}};
+#    ifdef ENCODER_MAP_ENABLE
+uint8_t encoder_source_layers_cache[(NUM_ENCODERS + 7) / 8][MAX_LAYER_BITS] = {{0}};
+#    endif // ENCODER_MAP_ENABLE
 
-/** \brief update source layers cache
+/** \brief update source layers cache impl
  *
- * Updates the cached keys when changing layers
+ * Updates the supplied cache when changing layers
+ */
+void update_source_layers_cache_impl(uint8_t layer, uint8_t entry_number, uint8_t cache[][MAX_LAYER_BITS]) {
+    const uint8_t storage_idx = entry_number / 8;
+    const uint8_t storage_bit = entry_number % 8;
+    for (uint8_t bit_number = 0; bit_number < MAX_LAYER_BITS; bit_number++) { cache[storage_idx][bit_number] ^= (-((layer & (1U << bit_number)) != 0) ^ cache[storage_idx][bit_number]) & (1U << storage_bit); }
+}
+
+/** \brief read source layers cache
+ *
+ * reads the cached keys stored when the layer was changed
+ */
+uint8_t read_source_layers_cache_impl(uint8_t entry_number, uint8_t cache[][MAX_LAYER_BITS]) {
+    const uint8_t storage_idx = entry_number / 8;
+    const uint8_t storage_bit = entry_number % 8;
+    uint8_t       layer       = 0;
+
+    for (uint8_t bit_number = 0; bit_number < MAX_LAYER_BITS; bit_number++) { layer |= ((cache[storage_idx][bit_number] & (1U << storage_bit)) != 0) << bit_number; }
+
+    return layer;
+}
+
+/** \brief update encoder source layers cache
+ *
+ * Updates the cached encoders when changing layers
  */
 void update_source_layers_cache(keypos_t key, uint8_t layer) {
-    const uint8_t key_number  = key.col + (key.row * MATRIX_COLS);
-    const uint8_t storage_row = key_number / 8;
-    const uint8_t storage_bit = key_number % 8;
-
-    for (uint8_t bit_number = 0; bit_number < MAX_LAYER_BITS; bit_number++) {
-        source_layers_cache[storage_row][bit_number] ^= (-((layer & (1U << bit_number)) != 0) ^ source_layers_cache[storage_row][bit_number]) & (1U << storage_bit);
+    if (key.row < MATRIX_ROWS && key.col < MATRIX_COLS) {
+        const uint8_t entry_number = key.col + (key.row * MATRIX_COLS);
+        update_source_layers_cache_impl(layer, entry_number, source_layers_cache);
     }
+#    ifdef ENCODER_MAP_ENABLE
+    else if (key.row == KEYLOC_ENCODER_CW || key.row == KEYLOC_ENCODER_CCW) {
+        const uint8_t entry_number = key.col;
+        update_source_layers_cache_impl(layer, entry_number, encoder_source_layers_cache);
+    }
+#    endif // ENCODER_MAP_ENABLE
 }
 
 /** \brief read source layers cache
@@ -206,16 +235,17 @@ void update_source_layers_cache(keypos_t key, uint8_t layer) {
  * reads the cached keys stored when the layer was changed
  */
 uint8_t read_source_layers_cache(keypos_t key) {
-    const uint8_t key_number  = key.col + (key.row * MATRIX_COLS);
-    const uint8_t storage_row = key_number / 8;
-    const uint8_t storage_bit = key_number % 8;
-    uint8_t       layer       = 0;
-
-    for (uint8_t bit_number = 0; bit_number < MAX_LAYER_BITS; bit_number++) {
-        layer |= ((source_layers_cache[storage_row][bit_number] & (1U << storage_bit)) != 0) << bit_number;
+    if (key.row < MATRIX_ROWS && key.col < MATRIX_COLS) {
+        const uint8_t entry_number = key.col + (key.row * MATRIX_COLS);
+        return read_source_layers_cache_impl(entry_number, source_layers_cache);
     }
-
-    return layer;
+#    ifdef ENCODER_MAP_ENABLE
+    else if (key.row == KEYLOC_ENCODER_CW || key.row == KEYLOC_ENCODER_CCW) {
+        const uint8_t entry_number = key.col;
+        return read_source_layers_cache_impl(entry_number, encoder_source_layers_cache);
+    }
+#    endif // ENCODER_MAP_ENABLE
+    return 0;
 }
 #endif
 
@@ -228,9 +258,7 @@ uint8_t read_source_layers_cache(keypos_t key) {
  */
 action_t store_or_get_action(bool pressed, keypos_t key) {
 #if !defined(NO_ACTION_LAYER) && !defined(STRICT_LAYER_RELEASE)
-    if (disable_action_cache) {
-        return layer_switch_get_action(key);
-    }
+    if (disable_action_cache) { return layer_switch_get_action(key); }
 
     uint8_t layer;
 
@@ -260,9 +288,7 @@ uint8_t layer_switch_get_layer(keypos_t key) {
     for (int8_t i = MAX_LAYER - 1; i >= 0; i--) {
         if (layers & ((layer_state_t)1 << i)) {
             action = action_for_key(i, key);
-            if (action.code != ACTION_TRANSPARENT) {
-                return i;
-            }
+            if (action.code != ACTION_TRANSPARENT) { return i; }
         }
     }
     /* fall back to layer 0 */

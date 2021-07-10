@@ -84,6 +84,7 @@ void action_exec(keyevent_t event) {
     }
 
 #ifdef SWAP_HANDS_ENABLE
+    // Swap hands is only available for the normal matrix, for now.
     if (!IS_NOEVENT(event)) { process_hand_swap(&event); }
 #endif
 
@@ -114,6 +115,10 @@ void action_exec(keyevent_t event) {
 #ifdef SWAP_HANDS_ENABLE
 bool swap_hands = false;
 bool swap_held  = false;
+#    ifdef ENCODER_MAP_ENABLE
+#        include "keymap.h"
+extern const uint8_t PROGMEM encoder_hand_swap_config[NUM_ENCODERS];
+#    endif // ENCODER_MAP_ENABLE
 
 /** \brief Process Hand Swap
  *
@@ -121,14 +126,20 @@ bool swap_held  = false;
  */
 void process_hand_swap(keyevent_t *event) {
     static swap_state_row_t swap_state[MATRIX_ROWS];
-
-    keypos_t         pos     = event->key;
-    swap_state_row_t col_bit = (swap_state_row_t)1 << pos.col;
-    bool             do_swap = event->pressed ? swap_hands : swap_state[pos.row] & (col_bit);
+    keypos_t                pos     = event->key;
+    swap_state_row_t        col_bit = (swap_state_row_t)1 << pos.col;
+    bool                    do_swap = event->pressed ? swap_hands : swap_state[pos.row] & (col_bit);
 
     if (do_swap) {
-        event->key.row = pgm_read_byte(&hand_swap_config[pos.row][pos.col].row);
-        event->key.col = pgm_read_byte(&hand_swap_config[pos.row][pos.col].col);
+#    ifdef ENCODER_MAP_ENABLE
+        if (pos.row == KEYLOC_ENCODER_CW || pos.row == KEYLOC_ENCODER_CCW) {
+            event->key.col = pgm_read_byte(&encoder_hand_swap_config[pos.col]);
+        } else
+#    endif
+        {
+            event->key.row = pgm_read_byte(&hand_swap_config[pos.row][pos.col].row);
+            event->key.col = pgm_read_byte(&hand_swap_config[pos.row][pos.col].col);
+        }
         swap_state[pos.row] |= col_bit;
     } else {
         swap_state[pos.row] &= ~(col_bit);
