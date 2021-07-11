@@ -35,9 +35,24 @@
 #    error "No encoder pads defined by ENCODERS_PAD_A and ENCODERS_PAD_B"
 #endif
 
-#define NUMBER_OF_ENCODERS (sizeof(encoders_pad_a) / sizeof(pin_t))
-static pin_t encoders_pad_a[] = ENCODERS_PAD_A;
-static pin_t encoders_pad_b[] = ENCODERS_PAD_B;
+#define NUMBER_OF_ENCODERS (sizeof(encoders_pad_a) / sizeof(*encoders_pad_a))
+#ifdef ENCODER_MATRIX
+#    define ENCODER_ROWS (sizeof(encoder_row_pins) / sizeof(*encoder_row_pins))
+#    define ENCODER_COLS (sizeof(encoder_col_pins) / sizeof(*encoder_col_pins))
+static pin_t encoder_row_pins[] = ENCODER_ROW_PINS;
+static pin_t encoder_col_pins[] = ENCODER_COL_PINS;
+
+static encoder_pin_pair_t PROGMEM encoders_pad_a[] = ENCODERS_PAD_A;
+static encoder_pin_pair_t PROGMEM encoders_pad_b[] = ENCODERS_PAD_B;
+/* max 32 cols for now */
+static uint32_t encoder_matrix[ENCODER_ROWS];
+
+#    define ENCODER_MATRIX_READ(row, col) (!!(encoder_matrix[row] & (((uint32_t)1) << col)))
+#else
+static pin_t   encoders_pad_a[]                  = ENCODERS_PAD_A;
+static pin_t   encoders_pad_b[]                  = ENCODERS_PAD_B;
+#endif
+
 #ifdef ENCODER_RESOLUTIONS
 static uint8_t encoder_resolutions[] = ENCODER_RESOLUTIONS;
 #endif
@@ -67,6 +82,19 @@ __attribute__((weak)) bool encoder_update_user(uint8_t index, bool clockwise) { 
 
 __attribute__((weak)) bool encoder_update_kb(uint8_t index, bool clockwise) { return encoder_update_user(index, clockwise); }
 
+#ifdef ENCODER_MATRIX
+static inline void setPinOutput_writeLow(pin_t pin) {
+    ATOMIC_BLOCK_FORCEON {
+        setPinOutput(pin);
+        writePinLow(pin);
+    }
+}
+
+static inline void setPinInputHigh_atomic(pin_t pin) {
+    ATOMIC_BLOCK_FORCEON { setPinInputHigh(pin); }
+}
+#endif
+
 void encoder_init(void) {
 #if defined(SPLIT_KEYBOARD) && defined(ENCODERS_PAD_A_RIGHT) && defined(ENCODERS_PAD_B_RIGHT)
     if (!isLeftHand) {
@@ -85,12 +113,17 @@ void encoder_init(void) {
     }
 #endif
 
+#ifdef ENCODER_MATRIX
+    for (size_t i = 0; i < ENCODER_ROWS; ++i) setPinInputHigh_atomic(encoder_row_pins[i]);
+    for (size_t i = 0; i < ENCODER_COLS; ++i) setPinInputHigh_atomic(encoder_col_pins[i]);
+#else
     for (int i = 0; i < NUMBER_OF_ENCODERS; i++) {
         setPinInputHigh(encoders_pad_a[i]);
         setPinInputHigh(encoders_pad_b[i]);
 
         encoder_state[i] = (readPin(encoders_pad_a[i]) << 0) | (readPin(encoders_pad_b[i]) << 1);
     }
+#endif
 
 #ifdef SPLIT_KEYBOARD
     thisHand = isLeftHand ? 0 : NUMBER_OF_ENCODERS;
@@ -106,7 +139,7 @@ static void encoder_exec_mapping(uint8_t index, bool clockwise) {
     action_exec(clockwise ? ENCODER_CW_EVENT(index, false) : ENCODER_CCW_EVENT(index, false));
     wait_ms(ENCODER_MAP_KEY_DELAY);
 }
-#endif // ENCODER_MAP_ENABLE
+#endif  // ENCODER_MAP_ENABLE
 
 static bool encoder_update(uint8_t index, uint8_t state) {
     bool    changed = false;
@@ -127,28 +160,63 @@ static bool encoder_update(uint8_t index, uint8_t state) {
         changed = true;
 #ifdef ENCODER_MAP_ENABLE
         encoder_exec_mapping(index, ENCODER_COUNTER_CLOCKWISE);
-#else  // ENCODER_MAP_ENABLE
+#else   // ENCODER_MAP_ENABLE
         encoder_update_kb(index, ENCODER_COUNTER_CLOCKWISE);
-#endif // ENCODER_MAP_ENABLE
+#endif  // ENCODER_MAP_ENABLE
     }
-    if (encoder_pulses[i] <= -resolution) { // direction is arbitrary here, but this clockwise
+    if (encoder_pulses[i] <= -resolution) {  // direction is arbitrary here, but this clockwise
         encoder_value[index]--;
         changed = true;
 #ifdef ENCODER_MAP_ENABLE
         encoder_exec_mapping(index, ENCODER_CLOCKWISE);
-#else  // ENCODER_MAP_ENABLE
+#else   // ENCODER_MAP_ENABLE
         encoder_update_kb(index, ENCODER_CLOCKWISE);
-#endif // ENCODER_MAP_ENABLE
+#endif  // ENCODER_MAP_ENABLE
     }
     encoder_pulses[i] %= resolution;
     return changed;
 }
 
+#ifdef ENCODER_MATRIX
+static void encoder_matrix_read_row(size_t row) {
+    setPinOutput_writeLow(encoder_row_pins[row]);
+    matrix_io_delay();
+
+    uint32_t line = 0;
+    for (size_t col = 0; col < ENCODER_COLS; ++col) {
+        uint8_t pin_state = readPin(encoder_col_pins[col]);
+        line |= pin_state ? 0 : (((uint32_t)1) << col);
+    }
+
+    setPinInputHigh_atomic(encoder_row_pins[row]);
+    matrix_io_delay();
+
+    encoder_matrix[row] = line;
+}
+
+static void encoder_matrix_read(void) {
+    for (size_t row = 0; row < ENCODER_ROWS; ++row) encoder_matrix_read_row(row);
+}
+#endif
+
 bool encoder_read(void) {
     bool changed = false;
+
+#ifdef ENCODER_MATRIX
+    encoder_matrix_read();
+#endif
+
     for (uint8_t i = 0; i < NUMBER_OF_ENCODERS; i++) {
+        uint8_t state;
+#ifdef ENCODER_MATRIX
+        size_t row_a = pgm_read_byte(&encoders_pad_a[i].row), col_a = pgm_read_byte(&encoders_pad_a[i].col);
+        size_t row_b = pgm_read_byte(&encoders_pad_b[i].row), col_b = pgm_read_byte(&encoders_pad_b[i].col);
+        state = (ENCODER_MATRIX_READ(row_a, col_a) << 0) | (ENCODER_MATRIX_READ(row_b, col_b) << 1);
+#else
+        state = (readPin(encoders_pad_a[i]) << 0) | (readPin(encoders_pad_b[i]) << 1);
+#endif
         encoder_state[i] <<= 2;
-        encoder_state[i] |= (readPin(encoders_pad_a[i]) << 0) | (readPin(encoders_pad_b[i]) << 1);
+        encoder_state[i] |= state;
         changed |= encoder_update(i, encoder_state[i]);
     }
     return changed;
@@ -170,9 +238,9 @@ void encoder_update_raw(uint8_t* slave_state) {
             changed = true;
 #    ifdef ENCODER_MAP_ENABLE
             encoder_exec_mapping(index, ENCODER_COUNTER_CLOCKWISE);
-#    else  // ENCODER_MAP_ENABLE
+#    else   // ENCODER_MAP_ENABLE
             encoder_update_kb(index, ENCODER_COUNTER_CLOCKWISE);
-#    endif // ENCODER_MAP_ENABLE
+#    endif  // ENCODER_MAP_ENABLE
         }
         while (delta < 0) {
             delta++;
@@ -180,9 +248,9 @@ void encoder_update_raw(uint8_t* slave_state) {
             changed = true;
 #    ifdef ENCODER_MAP_ENABLE
             encoder_exec_mapping(index, ENCODER_CLOCKWISE);
-#    else  // ENCODER_MAP_ENABLE
+#    else   // ENCODER_MAP_ENABLE
             encoder_update_kb(index, ENCODER_CLOCKWISE);
-#    endif // ENCODER_MAP_ENABLE
+#    endif  // ENCODER_MAP_ENABLE
         }
     }
 
