@@ -19,7 +19,7 @@
 #include "muse.h"
 
 #ifdef LAYOUT
-#undef LAYOUT
+#    undef LAYOUT
 #endif
 #define LAYOUT LAYOUT_planck_2x2u
 
@@ -34,29 +34,47 @@ enum {
 #define _RAISE _FUNC
 #define _LOWER _SECRETS
 
-#define KP MO(_KP)
-#define LOWER MO(_LOWER)
-#define RAISE MO(_RAISE)
+#define KP     MO(_KP)
+#define LOWER  MO(_LOWER)
+#define RAISE  MO(_RAISE)
 
 int ctl_state = 0;
 
 void ctl_finished(qk_tap_dance_state_t *state, void *user_data) {
     ctl_state = cur_dance(state);
     switch (ctl_state) {
-        case SINGLE_TAP:    qk_leader_start(); break;
-        case SINGLE_HOLD:   register_code(KC_LCTL); break;
-        case DOUBLE_TAP:    tap_code(KC_RCTL); break;
-        case DOUBLE_HOLD:   register_code(KC_RCTL); break;
-        case TRIPLE_TAP:    tap_code(KC_RCTL); tap_code(KC_RCTL); break;
-        case TRIPLE_HOLD:   tap_code(KC_RCTL); register_code(KC_RCTL); break;
+        case SINGLE_TAP:
+            qk_leader_start();
+            break;
+        case SINGLE_HOLD:
+            register_code(KC_LCTL);
+            break;
+        case DOUBLE_TAP:
+            tap_code(KC_RCTL);
+            break;
+        case DOUBLE_HOLD:
+            register_code(KC_RCTL);
+            break;
+        case TRIPLE_TAP:
+            tap_code(KC_RCTL);
+            tap_code(KC_RCTL);
+            break;
+        case TRIPLE_HOLD:
+            tap_code(KC_RCTL);
+            register_code(KC_RCTL);
+            break;
     }
 }
 
 void ctl_reset(qk_tap_dance_state_t *state, void *user_data) {
     switch (ctl_state) {
-        case SINGLE_HOLD:   unregister_code(KC_LCTL); break;
+        case SINGLE_HOLD:
+            unregister_code(KC_LCTL);
+            break;
         case DOUBLE_HOLD:
-        case TRIPLE_HOLD:   unregister_code(KC_RCTL); break;
+        case TRIPLE_HOLD:
+            unregister_code(KC_RCTL);
+            break;
     }
     ctl_state = 0;
 }
@@ -77,24 +95,28 @@ int kp_state = 0;
 void kp_finished(qk_tap_dance_state_t *state, void *user_data) {
     kp_state = hold_cur_dance(state);
     switch (kp_state) {
-        case SINGLE_HOLD: layer_on(_KP);  break;
-        case DOUBLE_HOLD: layer_on(_RPT); break;
+        case SINGLE_HOLD:
+            layer_on(_KP);
+            break;
+        case DOUBLE_HOLD:
+            layer_on(_RPT);
+            break;
     }
 }
 
 void kp_reset(qk_tap_dance_state_t *state, void *user_data) {
     switch (kp_state) {
-        case SINGLE_HOLD: layer_off(_KP);  break;
-        case DOUBLE_HOLD: layer_off(_RPT); break;
+        case SINGLE_HOLD:
+            layer_off(_KP);
+            break;
+        case DOUBLE_HOLD:
+            layer_off(_RPT);
+            break;
     }
     kp_state = 0;
 }
 
-enum {
-    TD_LDCTL,
-    TD_G,
-    TD_KP
-};
+enum { TD_LDCTL, TD_G, TD_KP };
 
 qk_tap_dance_action_t tap_dance_actions[] = {
     [TD_LDCTL] = ACTION_TAP_DANCE_FN_ADVANCED(NULL, ctl_finished, ctl_reset),
@@ -104,79 +126,44 @@ qk_tap_dance_action_t tap_dance_actions[] = {
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
-/* Qwerty
- * ,-----------------------------------------------------------------------------------.
- * | Tab  |   Q  |   W  |   E  |   R  |   T  |   Y  |   U  |   I  |   O  |   P  |  `   |
- * |------+------+------+------+------+------+------+------+------+------+------+------|
- * | Ctrl |   A  |   S  |   D  |   F  |   G  |   H  |   J  |   K  |   L  |   ;  |  "   |
- * |------+------+------+------+------+------+------+------+------+------+------+------|
- * | Shift|   Z  |   X  |   C  |   V  |   B  |   N  |   M  |   ,  |   .  |   /  |Enter |
- * |------+------+------+------+------+------+------+------+------+------+------+------|
- * | Ctrl | Gui  | Alt  |Keypad|    Bksp     |    Space    | Left | Down |  Up  |Right |
- * `-----------------------------------------------------------------------------------'
- */
-[_QWERTY] = LAYOUT(
-    KC_TAB,       KC_Q,        KC_W,    KC_E,    KC_R,    KC_T,    KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    KC_GRV,
-    KC_LCTL,      KC_A,        KC_S,    KC_D,    KC_F,    KC_G,    KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, KC_QUOT,
-    KC_LSFT,      KC_Z,        KC_X,    KC_C,    KC_V,    KC_B,    KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, KC_ENT,
-    TD(TD_LDCTL), MO(_ADJUST), MY_GUI,  MY_ALT,      MY_BSPC,          MY_SPC,       KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT
-),
+    /* Qwerty
+     * ,-----------------------------------------------------------------------------------.
+     * | Tab  |   Q  |   W  |   E  |   R  |   T  |   Y  |   U  |   I  |   O  |   P  |  `   |
+     * |------+------+------+------+------+------+------+------+------+------+------+------|
+     * | Ctrl |   A  |   S  |   D  |   F  |   G  |   H  |   J  |   K  |   L  |   ;  |  "   |
+     * |------+------+------+------+------+------+------+------+------+------+------+------|
+     * | Shift|   Z  |   X  |   C  |   V  |   B  |   N  |   M  |   ,  |   .  |   /  |Enter |
+     * |------+------+------+------+------+------+------+------+------+------+------+------|
+     * | Ctrl | Gui  | Alt  |Keypad|    Bksp     |    Space    | Left | Down |  Up  |Right |
+     * `-----------------------------------------------------------------------------------'
+     */
+    [_QWERTY] = LAYOUT(KC_TAB, KC_Q, KC_W, KC_E, KC_R, KC_T, KC_Y, KC_U, KC_I, KC_O, KC_P, KC_GRV, KC_LCTL, KC_A, KC_S, KC_D, KC_F, KC_G, KC_H, KC_J, KC_K, KC_L, KC_SCLN, KC_QUOT, KC_LSFT, KC_Z, KC_X, KC_C, KC_V, KC_B, KC_N, KC_M, KC_COMM, KC_DOT, KC_SLSH, KC_ENT, TD(TD_LDCTL), MO(_ADJUST), MY_GUI, MY_ALT, MY_BSPC, MY_SPC, KC_LEFT, KC_DOWN, KC_UP, KC_RGHT),
 
-[_GAME] = LAYOUT(
-    _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
-    _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
-    _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
-    _______, KC_NO,   KC_LALT, RAISE,         KC_SPC,          KC_SPC,      _______, _______, _______, _______
-),
+    [_GAME] = LAYOUT(_______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, KC_NO, KC_LALT, RAISE, KC_SPC, KC_SPC, _______, _______, _______, _______),
 
-[_RAISE] = LAYOUT(
-    KC_ESC,  _______, FW_WRD,  KB_EOL,  _______,  _______,  KB_COPY, KC_PGUP, _______, KC_LPRN,  KC_RPRN,  KC_MINS,
-    _______, KB_BOL,  _______, KC_PGDN, _______,  TD(TD_G), KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT,  _______,  KC_BSLS,
-    _______, _______, KC_DEL,  _______, KB_PASTE, BK_WRD,   _______, _______, _______, _______,  _______,  KC_CALC,
-    _______, _______, _______, _______,        _______,              _______,     KC_HOME, KC_PGDN,  KC_PGUP,  KC_END
-),
+    [_RAISE] = LAYOUT(KC_ESC, _______, FW_WRD, KB_EOL, _______, _______, KB_COPY, KC_PGUP, _______, KC_LPRN, KC_RPRN, KC_MINS, _______, KB_BOL, _______, KC_PGDN, _______, TD(TD_G), KC_LEFT, KC_DOWN, KC_UP, KC_RGHT, _______, KC_BSLS, _______, _______, KC_DEL, _______, KB_PASTE, BK_WRD, _______, _______, _______, _______, _______, KC_CALC, _______, _______, _______, _______, _______, _______, KC_HOME, KC_PGDN, KC_PGUP, KC_END),
 
-/* Same as _QWERTY but disable autoshift */
-[_RPT] = LAYOUT(
-    _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
-    _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
-    _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
-    _______, _______, _______, _______,      KC_BSPC,          KC_SPC,      _______, _______, _______, _______
-),
+    /* Same as _QWERTY but disable autoshift */
+    [_RPT] = LAYOUT(_______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, KC_BSPC, KC_SPC, _______, _______, _______, _______),
 
-[_KP] = LAYOUT(
-    KC_NUMLOCK, KC_F9,   KC_F10,  KC_F11,  KC_F12,  KC_F13,  KC_F14,   KC_7,    KC_8,    KC_9,    KC_MINS, KC_EQL,
-    _______,    KC_F5,   KC_F6,   KC_F7,   KC_F8,   XXXXXXX, XXXXXXX,  KC_4,    KC_5,    KC_6,    KC_ASTR, _______,
-    _______,    KC_F1,   KC_F2,   KC_F3,   KC_F4,   XXXXXXX, XXXXXXX,  KC_1,    KC_2,    KC_3,    KC_SLSH, _______,
-    _______,    _______, _______, _______,     _______,          _______,       KC_0,    KC_DOT,  KC_PLUS, KC_END
-),
+    [_KP] = LAYOUT(KC_NUMLOCK, KC_F9, KC_F10, KC_F11, KC_F12, KC_F13, KC_F14, KC_7, KC_8, KC_9, KC_MINS, KC_EQL, _______, KC_F5, KC_F6, KC_F7, KC_F8, XXXXXXX, XXXXXXX, KC_4, KC_5, KC_6, KC_ASTR, _______, _______, KC_F1, KC_F2, KC_F3, KC_F4, XXXXXXX, XXXXXXX, KC_1, KC_2, KC_3, KC_SLSH, _______, _______, _______, _______, _______, _______, _______, KC_0, KC_DOT, KC_PLUS, KC_END),
 
-[_LOWER] = LAYOUT(
-    KC_TILD, KC_EXLM, KC_AT,   KC_HASH, KC_DLR,  KC_PERC, KC_CIRC, KC_AMPR, KC_ASTR, KC_LBRC, KC_RBRC, KC_EQL,
-    _______, _______, _______, _______, _______, _______, _______, _______, _______, KC_LCBR, KC_RCBR, KC_PIPE,
-    _______, _______, _______, _______, _______, _______, _______, _______, _______, KC_HOME, KC_END,  KC_MPLY,
-    _______, _______, _______, _______,       _______,         _______,     KC_MPRV, KC_VOLD, KC_VOLU, KC_MNXT
-),
+    [_LOWER] = LAYOUT(KC_TILD, KC_EXLM, KC_AT, KC_HASH, KC_DLR, KC_PERC, KC_CIRC, KC_AMPR, KC_ASTR, KC_LBRC, KC_RBRC, KC_EQL, _______, _______, _______, _______, _______, _______, _______, _______, _______, KC_LCBR, KC_RCBR, KC_PIPE, _______, _______, _______, _______, _______, _______, _______, _______, _______, KC_HOME, KC_END, KC_MPLY, _______, _______, _______, _______, _______, _______, KC_MPRV, KC_VOLD, KC_VOLU, KC_MNXT),
 
-[_ADJUST] = LAYOUT(
-    _______, RESET,   DEBUG,   RGB_TOG, RGB_MOD, RGB_HUI, RGB_HUD, RGB_SAI, RGB_SAD, RGB_VAI, RGB_VAD, KC_DEL,
-    _______, _______, MU_MOD,  AU_ON,   AU_OFF,  AG_NORM, AG_SWAP, _______, _______, _______, _______, _______,
-    _______, RGB_TOG, KB_MAKE, KB_FLSH, KB_VRSN, KB_BOOT, _______, TG_SYS,  _______, _______, _______, _______,
-    _______, _______, _______, _______,      _______,          _______,     _______, _______, _______, _______
-)
+    [_ADJUST] = LAYOUT(_______, RESET, DEBUG, RGB_TOG, RGB_MOD, RGB_HUI, RGB_HUD, RGB_SAI, RGB_SAD, RGB_VAI, RGB_VAD, KC_DEL, _______, _______, MU_MOD, AU_ON, AU_OFF, AG_NORM, AG_SWAP, _______, _______, _______, _______, _______, _______, RGB_TOG, KB_MAKE, KB_FLSH, KB_VRSN, KB_BOOT, _______, TG_SYS, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______)
 
-/* [_ADJUST] = LAYOUT( */
-/*     _______, RESET,   DEBUG,   RGB_TOG, RGB_MOD, RGB_HUI, RGB_HUD, RGB_SAI, RGB_SAD,  RGB_VAI, RGB_VAD, KC_DEL , */
-/*     _______, _______, MU_MOD,  AU_ON,   AU_OFF,  AG_NORM, AG_SWAP, QWERTY,  COLEMAK,  DVORAK,  PLOVER,  _______, */
-/*     _______, MUV_DE,  MUV_IN,  MU_ON,   MU_OFF,  MI_ON,   MI_OFF,  TERM_ON, TERM_OFF, _______, _______, _______, */
-/*     _______, _______, _______, _______,      _______,          _______,     _______, _______, _______,  _______ */
-/* ) */
+    /* [_ADJUST] = LAYOUT( */
+    /*     _______, RESET,   DEBUG,   RGB_TOG, RGB_MOD, RGB_HUI, RGB_HUD, RGB_SAI, RGB_SAD,  RGB_VAI, RGB_VAD, KC_DEL , */
+    /*     _______, _______, MU_MOD,  AU_ON,   AU_OFF,  AG_NORM, AG_SWAP, QWERTY,  COLEMAK,  DVORAK,  PLOVER,  _______, */
+    /*     _______, MUV_DE,  MUV_IN,  MU_ON,   MU_OFF,  MI_ON,   MI_OFF,  TERM_ON, TERM_OFF, _______, _______, _______, */
+    /*     _______, _______, _______, _______,      _______,          _______,     _______, _______, _______,  _______ */
+    /* ) */
 
 };
 
 #ifdef AUDIO_ENABLE
-  float plover_song[][2]     = SONG(PLOVER_SOUND);
-  float plover_gb_song[][2]  = SONG(PLOVER_GOODBYE_SOUND);
+float plover_song[][2]    = SONG(PLOVER_SOUND);
+float plover_gb_song[][2] = SONG(PLOVER_GOODBYE_SOUND);
 #endif
 
 layer_state_t layer_state_set_keymap(layer_state_t state) {
@@ -188,8 +175,8 @@ layer_state_t layer_state_set_keymap(layer_state_t state) {
 }
 
 bool process_record_keymap(uint16_t keycode, keyrecord_t *record) {
-    bool rc = true;
-    static bool bspc_del = false;
+    bool        rc                  = true;
+    static bool bspc_del            = false;
     static bool bspc_initiated_func = false;
 
     switch (keycode) {
@@ -202,7 +189,7 @@ bool process_record_keymap(uint16_t keycode, keyrecord_t *record) {
                     register_code(KC_DEL);
                     return false;
                 } else {
-                    bspc_timer = timer_read();
+                    bspc_timer          = timer_read();
                     bspc_initiated_func = true;
                     layer_on(_KP);
                 }
@@ -232,8 +219,8 @@ bool process_record_keymap(uint16_t keycode, keyrecord_t *record) {
                     unregister_code(KC_BSPC);
                 }
             }
-            return false; // special case, return now without resetting timer
-                          // other paths should set rc and break
+            return false;  // special case, return now without resetting timer
+                           // other paths should set rc and break
             break;
 
         case BACKLIT:
@@ -253,66 +240,72 @@ bool process_record_keymap(uint16_t keycode, keyrecord_t *record) {
     return rc;
 }
 
-bool muse_mode = false;
-uint8_t last_muse_note = 0;
-uint16_t muse_counter = 0;
-uint8_t muse_offset = 70;
-uint16_t muse_tempo = 50;
+bool     muse_mode      = false;
+uint8_t  last_muse_note = 0;
+uint16_t muse_counter   = 0;
+uint8_t  muse_offset    = 70;
+uint16_t muse_tempo     = 50;
 
-void encoder_update(bool clockwise) {
-  if (muse_mode) {
-    if (IS_LAYER_ON(_RAISE)) {
-      if (clockwise) {
-        muse_offset++;
-      } else {
-        muse_offset--;
-      }
+bool encoder_update_user(bool clockwise) {
+    if (muse_mode) {
+        if (IS_LAYER_ON(_RAISE)) {
+            if (clockwise) {
+                muse_offset++;
+            } else {
+                muse_offset--;
+            }
+        } else {
+            if (clockwise) {
+                muse_tempo += 1;
+            } else {
+                muse_tempo -= 1;
+            }
+        }
     } else {
-      if (clockwise) {
-        muse_tempo+=1;
-      } else {
-        muse_tempo-=1;
-      }
+        if (clockwise) {
+#ifdef MOUSEKEY_ENABLE
+            tap_code(KC_MS_WH_DOWN);
+#else
+            tap_code(KC_PGDN);
+#endif
+        } else {
+#ifdef MOUSEKEY_ENABLE
+            tap_code(KC_MS_WH_UP);
+#else
+            tap_code(KC_PGUP);
+#endif
+        }
     }
-  } else {
-    if (clockwise) {
-      #ifdef MOUSEKEY_ENABLE
-        tap_code(KC_MS_WH_DOWN);
-      #else
-        tap_code(KC_PGDN);
-      #endif
-    } else {
-      #ifdef MOUSEKEY_ENABLE
-        tap_code(KC_MS_WH_UP);
-      #else
-        tap_code(KC_PGUP);
-      #endif
-    }
-  }
+    return true;
 }
 
 void dip_switch_update_user(uint8_t index, bool active) {
     switch (index) {
-        case 0: {
+        case 0:
+            {
 #ifdef AUDIO_ENABLE
-            static bool play_sound = false;
+                static bool play_sound = false;
 #endif
-            if (active) {
+                if (active) {
 #ifdef AUDIO_ENABLE
-                if (play_sound) { PLAY_SONG(plover_song); }
+                    if (play_sound) {
+                        PLAY_SONG(plover_song);
+                    }
 #endif
-                layer_on(_ADJUST);
-            } else {
+                    layer_on(_ADJUST);
+                } else {
 #ifdef AUDIO_ENABLE
-                if (play_sound) { PLAY_SONG(plover_gb_song); }
+                    if (play_sound) {
+                        PLAY_SONG(plover_gb_song);
+                    }
 #endif
-                layer_off(_ADJUST);
+                    layer_off(_ADJUST);
+                }
+#ifdef AUDIO_ENABLE
+                play_sound = true;
+#endif
+                break;
             }
-#ifdef AUDIO_ENABLE
-            play_sound = true;
-#endif
-            break;
-        }
         case 1:
             if (active) {
                 muse_mode = true;
@@ -322,9 +315,7 @@ void dip_switch_update_user(uint8_t index, bool active) {
     }
 }
 
-void keyboard_post_init_keymap(void) {
-    bspc_timer = 0;
-}
+void keyboard_post_init_keymap(void) { bspc_timer = 0; }
 
 LEADER_EXTERNS();
 
@@ -358,66 +349,32 @@ void matrix_scan_keymap(void) {
         leading = false;
         leader_end();
 
-        SEQ_ONE_KEY(KC_K) {
-            layer_invert(_KP);
-        }
-        SEQ_ONE_KEY(KC_G) {
-            layer_invert(_GAME);
-        }
-        SEQ_ONE_KEY(KC_KP_5) {
-            layer_invert(_KP);
-        }
-        SEQ_ONE_KEY(KC_5) {
-            layer_invert(_KP);
-        }
-        SEQ_TWO_KEYS(KC_SCLN, KC_1) {
-            send_secret_string(0);
-        }
-        SEQ_TWO_KEYS(KC_SCLN, KC_2) {
-            send_secret_string(1);
-        }
-        SEQ_TWO_KEYS(KC_SCLN, KC_3) {
-            send_secret_string(2);
-        }
-        SEQ_TWO_KEYS(KC_SCLN, KC_4) {
-            send_secret_string(3);
-        }
-        SEQ_TWO_KEYS(KC_SCLN, KC_5) {
-            send_secret_string(4);
-        }
-        SEQ_TWO_KEYS(KC_SCLN, KC_6) {
-            send_secret_string(5);
-        }
-        SEQ_TWO_KEYS(KC_SCLN, KC_M) {
-            send_secret_string(0);
-        }
-        SEQ_TWO_KEYS(KC_SCLN, KC_COMM) {
-            send_secret_string(1);
-        }
-        SEQ_TWO_KEYS(KC_SCLN, KC_DOT) {
-            send_secret_string(2);
-        }
-        SEQ_TWO_KEYS(KC_SCLN, KC_J) {
-            send_secret_string(3);
-        }
-        SEQ_TWO_KEYS(KC_SCLN, KC_K) {
-            send_secret_string(4);
-        }
-        SEQ_TWO_KEYS(KC_SCLN, KC_L) {
-            send_secret_string(5);
-        }
-        SEQ_ONE_KEY(KC_C) {
-            tap_code16(C(KC_C));
-        }
+        SEQ_ONE_KEY(KC_K) { layer_invert(_KP); }
+        SEQ_ONE_KEY(KC_G) { layer_invert(_GAME); }
+        SEQ_ONE_KEY(KC_KP_5) { layer_invert(_KP); }
+        SEQ_ONE_KEY(KC_5) { layer_invert(_KP); }
+        SEQ_TWO_KEYS(KC_SCLN, KC_1) { send_secret_string(0); }
+        SEQ_TWO_KEYS(KC_SCLN, KC_2) { send_secret_string(1); }
+        SEQ_TWO_KEYS(KC_SCLN, KC_3) { send_secret_string(2); }
+        SEQ_TWO_KEYS(KC_SCLN, KC_4) { send_secret_string(3); }
+        SEQ_TWO_KEYS(KC_SCLN, KC_5) { send_secret_string(4); }
+        SEQ_TWO_KEYS(KC_SCLN, KC_6) { send_secret_string(5); }
+        SEQ_TWO_KEYS(KC_SCLN, KC_M) { send_secret_string(0); }
+        SEQ_TWO_KEYS(KC_SCLN, KC_COMM) { send_secret_string(1); }
+        SEQ_TWO_KEYS(KC_SCLN, KC_DOT) { send_secret_string(2); }
+        SEQ_TWO_KEYS(KC_SCLN, KC_J) { send_secret_string(3); }
+        SEQ_TWO_KEYS(KC_SCLN, KC_K) { send_secret_string(4); }
+        SEQ_TWO_KEYS(KC_SCLN, KC_L) { send_secret_string(5); }
+        SEQ_ONE_KEY(KC_C) { tap_code16(C(KC_C)); }
     }
 }
 
 bool music_mask_user(uint16_t keycode) {
-  switch (keycode) {
-    case RAISE:
-    case LOWER:
-      return false;
-    default:
-      return true;
-  }
+    switch (keycode) {
+        case RAISE:
+        case LOWER:
+            return false;
+        default:
+            return true;
+    }
 }
