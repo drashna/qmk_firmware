@@ -31,6 +31,20 @@
 #    define FORCED_SYNC_THROTTLE_MS 100
 #endif  // FORCED_SYNC_THROTTLE_MS
 
+// Max number of consecutive failed communications before the communication is seen as disconnected.
+// All built-in transactions (i.e. not transaction_rpc_*-based ones) are given 10 attempts each, and most send one transaction over the transport, so 40 errors is basically (up to) four completely failed built-in transactions.
+// On the other hand, each RPC transaction consists of four transport transactions without retries, so 40 errors is roughly ten completely failed RPC transactions.
+// Set to a negative value to disable the disconnection check altogether.
+#ifndef SPLIT_MAX_CONNECTION_ERRORS
+#    define SPLIT_MAX_CONNECTION_ERRORS 40
+#endif  // SPLIT_MAX_CONNECTION_ERRORS
+
+// How long (in milliseconds) to block all connection attempts after the communication has been flagged as disconnected.
+// Each [this amount of time], one connection attempt will be allowed. If that succeeds, the communication is seen as up again.
+#ifndef SPLIT_CONNECTION_CHECK_TIMEOUT
+#    define SPLIT_CONNECTION_CHECK_TIMEOUT 500
+#endif  // SPLIT_CONNECTION_CHECK_TIMEOUT
+
 #define sizeof_member(type, member) sizeof(((type *)NULL)->member)
 
 #define trans_initiator2target_initializer_cb(member, cb) \
@@ -41,8 +55,8 @@
     { &dummy, 0, 0, sizeof_member(split_shared_memory_t, member), offsetof(split_shared_memory_t, member), cb }
 #define trans_target2initiator_initializer(member) trans_target2initiator_initializer_cb(member, NULL)
 
-#define transport_write(id, data, length) transport_execute_transaction(id, data, length, NULL, 0)
-#define transport_read(id, data, length) transport_execute_transaction(id, NULL, 0, data, length)
+#define transport_write(id, data, length)          transport_transaction(id, data, length, NULL, 0)
+#define transport_read(id, data, length)           transport_transaction(id, NULL, 0, data, length)
 
 #if defined(SPLIT_TRANSACTION_IDS_KB) || defined(SPLIT_TRANSACTION_IDS_USER)
 // Forward-declare the RPC callback handlers
@@ -52,6 +66,36 @@ void slave_rpc_exec_callback(uint8_t initiator2target_buffer_size, const void *i
 
 ////////////////////////////////////////////////////
 // Helpers
+
+bool transport_transaction(int8_t id, const void *initiator2target_buf, uint16_t initiator2target_length, void *target2initiator_buf, uint16_t target2initiator_length) {
+#if SPLIT_MAX_CONNECTION_ERRORS < 0
+    return transport_execute_transaction(id, initiator2target_buf, initiator2target_length, target2initiator_buf, target2initiator_length);
+#else   // SPLIT_MAX_CONNECTION_ERRORS < 0
+    // Throttle transaction attempts if target doesn't seem to be connected
+    // Without this, a solo half becomes unusable due to constant read timeouts
+    static uint8_t  connection_errors      = 0;
+    static uint16_t connection_check_timer = 0;
+    if (connection_errors >= SPLIT_MAX_CONNECTION_ERRORS && timer_elapsed(connection_check_timer) < SPLIT_CONNECTION_CHECK_TIMEOUT) {
+        return false;
+    }
+    connection_check_timer = timer_read();
+
+    if (!transport_execute_transaction(id, initiator2target_buf, initiator2target_length, target2initiator_buf, target2initiator_length)) {
+        if (connection_errors < UINT8_MAX) {
+            connection_errors++;
+        }
+        if (connection_errors >= SPLIT_MAX_CONNECTION_ERRORS) {
+            dprintln("Target disconnected, throttling connection attempts");
+        }
+        return false;
+    } else if (connection_errors >= SPLIT_MAX_CONNECTION_ERRORS) {
+        dprintln("Target connected");
+    }
+
+    connection_errors = 0;
+    return true;
+#endif  // SPLIT_MAX_CONNECTION_ERRORS < 0
+}
 
 bool transaction_handler_master(bool okay, matrix_row_t master_matrix[], matrix_row_t slave_matrix[], const char *prefix, bool (*handler)(matrix_row_t master_matrix[], matrix_row_t slave_matrix[])) {
     if (okay) {
@@ -160,8 +204,8 @@ static void master_matrix_handlers_slave(matrix_row_t master_matrix[], matrix_ro
     memcpy(master_matrix, split_shmem->mmatrix.matrix, sizeof(split_shmem->mmatrix.matrix));
 }
 
-#    define TRANSACTIONS_MASTER_MATRIX_MASTER() TRANSACTION_HANDLER_MASTER(master_matrix_handlers)
-#    define TRANSACTIONS_MASTER_MATRIX_SLAVE() TRANSACTION_HANDLER_SLAVE(master_matrix_handlers)
+#    define TRANSACTIONS_MASTER_MATRIX_MASTER()      TRANSACTION_HANDLER_MASTER(master_matrix_handlers)
+#    define TRANSACTIONS_MASTER_MATRIX_SLAVE()       TRANSACTION_HANDLER_SLAVE(master_matrix_handlers)
 #    define TRANSACTIONS_MASTER_MATRIX_REGISTRATIONS [PUT_MASTER_MATRIX] = trans_initiator2target_initializer(mmatrix.matrix),
 
 #else  // SPLIT_TRANSPORT_MIRROR
@@ -238,8 +282,8 @@ static void sync_timer_handlers_slave(matrix_row_t master_matrix[], matrix_row_t
     }
 }
 
-#    define TRANSACTIONS_SYNC_TIMER_MASTER() TRANSACTION_HANDLER_MASTER(sync_timer_handlers)
-#    define TRANSACTIONS_SYNC_TIMER_SLAVE() TRANSACTION_HANDLER_SLAVE(sync_timer_handlers)
+#    define TRANSACTIONS_SYNC_TIMER_MASTER()      TRANSACTION_HANDLER_MASTER(sync_timer_handlers)
+#    define TRANSACTIONS_SYNC_TIMER_SLAVE()       TRANSACTION_HANDLER_SLAVE(sync_timer_handlers)
 #    define TRANSACTIONS_SYNC_TIMER_REGISTRATIONS [PUT_SYNC_TIMER] = trans_initiator2target_initializer(sync_timer),
 
 #else  // DISABLE_SYNC_TIMER
@@ -303,8 +347,8 @@ static void led_state_handlers_slave(matrix_row_t master_matrix[], matrix_row_t 
     set_split_host_keyboard_leds(split_shmem->led_state);
 }
 
-#    define TRANSACTIONS_LED_STATE_MASTER() TRANSACTION_HANDLER_MASTER(led_state_handlers)
-#    define TRANSACTIONS_LED_STATE_SLAVE() TRANSACTION_HANDLER_SLAVE(led_state_handlers)
+#    define TRANSACTIONS_LED_STATE_MASTER()      TRANSACTION_HANDLER_MASTER(led_state_handlers)
+#    define TRANSACTIONS_LED_STATE_SLAVE()       TRANSACTION_HANDLER_SLAVE(led_state_handlers)
 #    define TRANSACTIONS_LED_STATE_REGISTRATIONS [PUT_LED_STATE] = trans_initiator2target_initializer(led_state),
 
 #else  // SPLIT_LED_STATE_ENABLE
@@ -360,8 +404,8 @@ static void mods_handlers_slave(matrix_row_t master_matrix[], matrix_row_t slave
 #    endif
 }
 
-#    define TRANSACTIONS_MODS_MASTER() TRANSACTION_HANDLER_MASTER(mods_handlers)
-#    define TRANSACTIONS_MODS_SLAVE() TRANSACTION_HANDLER_SLAVE(mods_handlers)
+#    define TRANSACTIONS_MODS_MASTER()      TRANSACTION_HANDLER_MASTER(mods_handlers)
+#    define TRANSACTIONS_MODS_SLAVE()       TRANSACTION_HANDLER_SLAVE(mods_handlers)
 #    define TRANSACTIONS_MODS_REGISTRATIONS [PUT_MODS] = trans_initiator2target_initializer(mods),
 
 #else  // SPLIT_MODS_ENABLE
@@ -385,8 +429,8 @@ static bool backlight_handlers_master(matrix_row_t master_matrix[], matrix_row_t
 
 static void backlight_handlers_slave(matrix_row_t master_matrix[], matrix_row_t slave_matrix[]) { backlight_set(split_shmem->backlight_level); }
 
-#    define TRANSACTIONS_BACKLIGHT_MASTER() TRANSACTION_HANDLER_MASTER(backlight_handlers)
-#    define TRANSACTIONS_BACKLIGHT_SLAVE() TRANSACTION_HANDLER_SLAVE(backlight_handlers)
+#    define TRANSACTIONS_BACKLIGHT_MASTER()      TRANSACTION_HANDLER_MASTER(backlight_handlers)
+#    define TRANSACTIONS_BACKLIGHT_SLAVE()       TRANSACTION_HANDLER_SLAVE(backlight_handlers)
 #    define TRANSACTIONS_BACKLIGHT_REGISTRATIONS [PUT_BACKLIGHT] = trans_initiator2target_initializer(backlight_level),
 
 #else  // BACKLIGHT_ENABLE
@@ -422,8 +466,8 @@ static void rgblight_handlers_slave(matrix_row_t master_matrix[], matrix_row_t s
     }
 }
 
-#    define TRANSACTIONS_RGBLIGHT_MASTER() TRANSACTION_HANDLER_MASTER(rgblight_handlers)
-#    define TRANSACTIONS_RGBLIGHT_SLAVE() TRANSACTION_HANDLER_SLAVE(rgblight_handlers)
+#    define TRANSACTIONS_RGBLIGHT_MASTER()      TRANSACTION_HANDLER_MASTER(rgblight_handlers)
+#    define TRANSACTIONS_RGBLIGHT_SLAVE()       TRANSACTION_HANDLER_SLAVE(rgblight_handlers)
 #    define TRANSACTIONS_RGBLIGHT_REGISTRATIONS [PUT_RGBLIGHT] = trans_initiator2target_initializer(rgblight_sync),
 
 #else  // defined(RGBLIGHT_ENABLE) && defined(RGBLIGHT_SPLIT)
@@ -452,8 +496,8 @@ static void led_matrix_handlers_slave(matrix_row_t master_matrix[], matrix_row_t
     led_matrix_set_suspend_state(split_shmem->led_matrix_sync.led_suspend_state);
 }
 
-#    define TRANSACTIONS_LED_MATRIX_MASTER() TRANSACTION_HANDLER_MASTER(led_matrix_handlers)
-#    define TRANSACTIONS_LED_MATRIX_SLAVE() TRANSACTION_HANDLER_SLAVE(led_matrix_handlers)
+#    define TRANSACTIONS_LED_MATRIX_MASTER()      TRANSACTION_HANDLER_MASTER(led_matrix_handlers)
+#    define TRANSACTIONS_LED_MATRIX_SLAVE()       TRANSACTION_HANDLER_SLAVE(led_matrix_handlers)
 #    define TRANSACTIONS_LED_MATRIX_REGISTRATIONS [PUT_LED_MATRIX] = trans_initiator2target_initializer(led_matrix_sync),
 
 #else  // defined(LED_MATRIX_ENABLE) && defined(LED_MATRIX_SPLIT)
@@ -482,8 +526,8 @@ static void rgb_matrix_handlers_slave(matrix_row_t master_matrix[], matrix_row_t
     rgb_matrix_set_suspend_state(split_shmem->rgb_matrix_sync.rgb_suspend_state);
 }
 
-#    define TRANSACTIONS_RGB_MATRIX_MASTER() TRANSACTION_HANDLER_MASTER(rgb_matrix_handlers)
-#    define TRANSACTIONS_RGB_MATRIX_SLAVE() TRANSACTION_HANDLER_SLAVE(rgb_matrix_handlers)
+#    define TRANSACTIONS_RGB_MATRIX_MASTER()      TRANSACTION_HANDLER_MASTER(rgb_matrix_handlers)
+#    define TRANSACTIONS_RGB_MATRIX_SLAVE()       TRANSACTION_HANDLER_SLAVE(rgb_matrix_handlers)
 #    define TRANSACTIONS_RGB_MATRIX_REGISTRATIONS [PUT_RGB_MATRIX] = trans_initiator2target_initializer(rgb_matrix_sync),
 
 #else  // defined(RGB_MATRIX_ENABLE) && defined(RGB_MATRIX_SPLIT)
@@ -507,8 +551,8 @@ static bool wpm_handlers_master(matrix_row_t master_matrix[], matrix_row_t slave
 
 static void wpm_handlers_slave(matrix_row_t master_matrix[], matrix_row_t slave_matrix[]) { set_current_wpm(split_shmem->current_wpm); }
 
-#    define TRANSACTIONS_WPM_MASTER() TRANSACTION_HANDLER_MASTER(wpm_handlers)
-#    define TRANSACTIONS_WPM_SLAVE() TRANSACTION_HANDLER_SLAVE(wpm_handlers)
+#    define TRANSACTIONS_WPM_MASTER()      TRANSACTION_HANDLER_MASTER(wpm_handlers)
+#    define TRANSACTIONS_WPM_SLAVE()       TRANSACTION_HANDLER_SLAVE(wpm_handlers)
 #    define TRANSACTIONS_WPM_REGISTRATIONS [PUT_WPM] = trans_initiator2target_initializer(current_wpm),
 
 #else  // defined(WPM_ENABLE) && defined(SPLIT_WPM_ENABLE)
