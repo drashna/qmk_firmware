@@ -111,6 +111,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 };
 
+#ifdef ENCODER_MAP_ENABLE
 const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][2] = {
     [_DEFAULT_LAYER_1] = { { KC_DOWN, KC_UP   } },
     [_DEFAULT_LAYER_2] = { { _______, _______ } },
@@ -124,6 +125,7 @@ const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][2] = {
     [_LOWER]           = { { RGB_MOD, RGB_RMOD} },
     [_ADJUST]          = { { CK_DOWN, CK_UP   } },
 };
+#endif
 // clang-format on
 
 bool process_record_keymap(uint16_t keycode, keyrecord_t *record) {
@@ -144,7 +146,9 @@ bool process_record_keymap(uint16_t keycode, keyrecord_t *record) {
         case TH_LVL:
             if (record->event.pressed) {
                 keyboard_config.led_level++;
-                if (keyboard_config.led_level > 4) { keyboard_config.led_level = 0; }
+                if (keyboard_config.led_level > 4) {
+                    keyboard_config.led_level = 0;
+                }
                 planck_ez_right_led_level((uint8_t)keyboard_config.led_level * 255 / 4);
                 planck_ez_left_led_level((uint8_t)keyboard_config.led_level * 255 / 4);
                 eeconfig_update_kb(keyboard_config.raw);
@@ -163,8 +167,10 @@ bool music_mask_user(uint16_t keycode) {
         case BK_LWER:
         case SP_LWER:
         case DL_RAIS:
-        case ET_RAIS: return false;
-        default: return true;
+        case ET_RAIS:
+            return false;
+        default:
+            return true;
     }
 }
 
@@ -273,7 +279,9 @@ void rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
     }
 
     if ((this_mod | this_osm) & MOD_MASK_SHIFT || this_led & (1 << USB_LED_CAPS_LOCK)) {
-        if (!layer_state_cmp(layer_state, _ADJUST)) { RGB_MATRIX_INDICATOR_SET_COLOR(24, 0x00, 0xFF, 0x00); }
+        if (!layer_state_cmp(layer_state, _ADJUST)) {
+            RGB_MATRIX_INDICATOR_SET_COLOR(24, 0x00, 0xFF, 0x00);
+        }
         RGB_MATRIX_INDICATOR_SET_COLOR(36, 0x00, 0xFF, 0x00);
     }
     if ((this_mod | this_osm) & MOD_MASK_CTRL) {
@@ -281,8 +289,12 @@ void rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
         RGB_MATRIX_INDICATOR_SET_COLOR(34, 0xFF, 0x00, 0x00);
         RGB_MATRIX_INDICATOR_SET_COLOR(37, 0xFF, 0x00, 0x00);
     }
-    if ((this_mod | this_osm) & MOD_MASK_GUI) { RGB_MATRIX_INDICATOR_SET_COLOR(39, 0xFF, 0xD9, 0x00); }
-    if ((this_mod | this_osm) & MOD_MASK_ALT) { RGB_MATRIX_INDICATOR_SET_COLOR(38, 0x00, 0x00, 0xFF); }
+    if ((this_mod | this_osm) & MOD_MASK_GUI) {
+        RGB_MATRIX_INDICATOR_SET_COLOR(39, 0xFF, 0xD9, 0x00);
+    }
+    if ((this_mod | this_osm) & MOD_MASK_ALT) {
+        RGB_MATRIX_INDICATOR_SET_COLOR(38, 0x00, 0x00, 0xFF);
+    }
 }
 
 void matrix_init_keymap(void) {
@@ -291,7 +303,7 @@ void matrix_init_keymap(void) {
 #    endif
     // rgblight_mode(RGB_MATRIX_MULTISPLASH);
 }
-#else // RGB_MATRIX_INIT
+#else  // RGB_MATRIX_INIT
 
 void matrix_init_keymap(void) {
 #    if !defined(CONVERT_TO_PROTON_C) && !defined(KEYBOARD_planck)
@@ -302,12 +314,14 @@ void matrix_init_keymap(void) {
     writePinHigh(B0);
 #    endif
 }
-#endif // RGB_MATRIX_INIT
+#endif  // RGB_MATRIX_INIT
 
 #ifdef ENCODER_ENABLE
 bool encoder_update_user(uint8_t index, bool clockwise) {
     switch (get_highest_layer(layer_state)) {
-        case _RAISE: clockwise ? tap_code(KC_VOLD) : tap_code(KC_VOLU); break;
+        case _RAISE:
+            clockwise ? tap_code(KC_VOLD) : tap_code(KC_VOLU);
+            break;
         case _LOWER:
 #    ifdef RGB_MATRIX_ENABLE
             clockwise ? rgb_matrix_step() : rgb_matrix_step_reverse();
@@ -320,14 +334,15 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
             clockwise ? clicky_freq_up() : clicky_freq_down();
 #    endif
             break;
-        default: clockwise ? tap_code(KC_DOWN) : tap_code(KC_UP);
+        default:
+            clockwise ? tap_code(KC_DOWN) : tap_code(KC_UP);
     }
 #    ifdef AUDIO_CLICKY
     clicky_play();
 #    endif
     return true;
 }
-#endif // ENCODER_ENABLE
+#endif  // ENCODER_ENABLE
 
 #ifdef KEYBOARD_planck_rev6
 void dip_update(uint8_t index, bool active) {
@@ -346,24 +361,33 @@ void dip_update(uint8_t index, bool active) {
                 clicky_off();
             }
             break;
-        case 2: keymap_config.swap_lctl_lgui = keymap_config.swap_rctl_rgui = active; break;
-        case 3: userspace_config.nuke_switch = active; break;
+        case 2:
+            keymap_config.swap_lctl_lgui = keymap_config.swap_rctl_rgui = active;
+            break;
+        case 3:
+            userspace_config.nuke_switch = active;
+            break;
     }
 }
-#endif // KEYBOARD_planck_rev6
+#endif  // KEYBOARD_planck_rev6
 
 #ifdef KEYBOARD_planck_ez
 layer_state_t layer_state_set_keymap(layer_state_t state) {
     planck_ez_left_led_off();
     planck_ez_right_led_off();
     switch (get_highest_layer(state)) {
-        case _LOWER: planck_ez_left_led_on(); break;
-        case _RAISE: planck_ez_right_led_on(); break;
+        case _LOWER:
+            planck_ez_left_led_on();
+            break;
+        case _RAISE:
+            planck_ez_right_led_on();
+            break;
         case _ADJUST:
             planck_ez_right_led_on();
             planck_ez_left_led_on();
             break;
-        default: break;
+        default:
+            break;
     }
     return state;
 }
