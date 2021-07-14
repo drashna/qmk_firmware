@@ -38,13 +38,21 @@ extern "C" {
 #    endif
 #endif
 
+#if !defined(TAP_CODE_DELAY)
+#    define TAP_CODE_DELAY 0
+#endif
+
+#if !defined(TAP_HOLD_CAPS_DELAY)
+#    define TAP_HOLD_CAPS_DELAY 80
+#endif
+
 /* tapping count and state */
 typedef struct {
     bool    interrupted : 1;
-    bool    reserved2   : 1;
-    bool    reserved1   : 1;
-    bool    reserved0   : 1;
-    uint8_t count       : 4;
+    bool    reserved2 : 1;
+    bool    reserved1 : 1;
+    bool    reserved0 : 1;
+    uint8_t count : 4;
 } tap_t;
 
 /* Key event container for recording */
@@ -100,7 +108,10 @@ void process_record(keyrecord_t *record);
 void process_record_handler(keyrecord_t *record);
 void post_process_record_quantum(keyrecord_t *record);
 void process_action(keyrecord_t *record, action_t action);
+void register_code_deferred(uint8_t code);
 void register_code(uint8_t code);
+void unregister_code_deferred(uint8_t code);
+void unregister_code_buffered(uint8_t code, uint16_t delay);
 void unregister_code(uint8_t code);
 void tap_code(uint8_t code);
 void tap_code_delay(uint8_t code, uint16_t delay);
