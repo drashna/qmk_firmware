@@ -1,9 +1,6 @@
 # MCU name
 MCU = atmega32u4
 
-# Processor frequency
-F_CPU = 16000000
-
 # Bootloader selection
 BOOTLOADER = atmel-dfu
 
@@ -24,9 +21,10 @@ UNICODE_ENABLE = no         # Unicode
 BLUETOOTH_ENABLE = no       # Enable Bluetooth
 AUDIO_ENABLE = no           # Audio output
 POINTING_DEVICE_ENABLE = yes
+POINTING_DEVICE_DRIVER = adns5050
 MOUSEKEY_ENABLE = no        # Mouse keys
 
 QUANTUM_LIB_SRC += analog.c
-SRC += drivers/sensors/adns5050.c opt_encoder.c
+SRC += opt_encoder.c
 
 DEFAULT_FOLDER = ploopyco/trackball_mini/rev1_001
