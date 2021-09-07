@@ -51,7 +51,7 @@ void kb_config_update(void) {
         static uint16_t cpi = 0;
         if (cpi != kb_config.device_cpi) {
             cpi = kb_config.device_cpi;
-            pmw_set_cpi(cpi);
+            pmw3360_set_cpi(cpi);
         }
     }
 }
@@ -114,6 +114,6 @@ kb_pointer_data_t kb_pointer_sync_get(void) { return (kb_pointer_data_t){.mouse_
 void trackball_set_cpi(uint16_t cpi) {
     kb_config.device_cpi = cpi;
     if (!is_keyboard_left()) {
-        pmw_set_cpi(cpi);
+        pmw3360_set_cpi(cpi);
     }
 }

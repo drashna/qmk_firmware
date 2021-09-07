@@ -45,12 +45,12 @@ __attribute__((weak)) void process_mouse_user(report_mouse_t* mouse_report, int8
 __attribute__((weak)) kb_pointer_data_t process_mouse(void) {
     kb_pointer_data_t temp_data = {.mouse_x = 0, .mouse_y = 0};
 
-    report_pmw_t data = pmw_read_burst();
-        // Reset timer if stopped moving
-        if (!data.isMotion) {
-            if (MotionStart != 0) MotionStart = 0;
-            return temp_data;
-        }
+    report_pmw3360_t data = pmw3360_read_burst();
+    // Reset timer if stopped moving
+    if (!data.isMotion) {
+        if (MotionStart != 0) MotionStart = 0;
+        return temp_data;
+    }
 
     if (data.isOnSurface) {
         // Set timer if new motion
@@ -146,7 +146,7 @@ void keyboard_pre_init_kb(void) {
 void pointing_device_init(void) {
     if (!is_keyboard_left()) {
         // initialize ball sensor
-        pmw_spi_init();
+        pmw3360_init();
     }
     trackball_set_cpi(dpi_array[keyboard_config.dpi_config]);
 }
