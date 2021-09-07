@@ -21,9 +21,10 @@ UNICODE_ENABLE = no         # Unicode
 BLUETOOTH_ENABLE = no       # Enable Bluetooth
 AUDIO_ENABLE = no           # Audio output
 POINTING_DEVICE_ENABLE = yes
+POINTING_DEVICE_DRIVER = pmw3360
 MOUSEKEY_ENABLE = yes       # Mouse keys
 
-QUANTUM_LIB_SRC += analog.c spi_master.c
-SRC += drivers/sensors/pmw3360.c opt_encoder.c
+QUANTUM_LIB_SRC += analog.c
+SRC += opt_encoder.c
 
 DEFAULT_FOLDER = ploopyco/trackball/rev1_005
