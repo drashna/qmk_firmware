@@ -757,23 +757,119 @@ void render_autocorrected_info(uint8_t col, uint8_t line) {
 #endif
 }
 
+void render_cyberpunk_logo(uint8_t col, uint8_t line) {
+    oled_set_cursor(col, line);
+    oled_write_raw_P(cyberpunk_logo, sizeof(cyberpunk_logo));
+}
+
+void render_arasaka_logo_small(uint8_t col, uint8_t line) {
+    for (uint8_t i = 0; i < 4; i++) {
+        oled_set_cursor(col, line + i);
+        oled_write_raw_P(arasaka_logo[i], ARRAY_SIZE(arasaka_logo[i]));
+    }
+}
+
+void render_arasaka_logo(uint8_t col, uint8_t line) {
+    static bool     glitch      = true;
+    static uint8_t  frame_count = 15;
+    static uint16_t arasaka_timer;
+
+    oled_set_cursor(col, line);
+
+    uint16_t timer        = timer_elapsed(arasaka_timer);
+    bool     can_be_dirty = true;
+
+    if (timer < 150) {
+        oled_write_raw_P(text_glitch_dirty[rand() % text_glitch_dirty_count], sizeof(text_glitch_dirty[0]));
+        return;
+    }
+
+    if (timer < 250) {
+        uint8_t frame = can_be_dirty ? rand() % (text_glitch_count + text_glitch_dirty_count) : rand() % text_glitch_count;
+
+        if (frame < text_glitch_count) {
+            oled_write_raw_P(text_glitch[frame], sizeof(text_glitch[0]));
+
+            return;
+        }
+
+        oled_write_raw_P(text_glitch_dirty[rand() % text_glitch_dirty_count], sizeof(text_glitch_dirty[0]));
+
+        return;
+    }
+
+    if (timer > 9750 && timer < 9850) {
+        uint8_t frame = can_be_dirty ? rand() % (text_glitch_count + text_glitch_dirty_count) : rand() % text_glitch_count;
+
+        if (frame < text_glitch_count) {
+            oled_write_raw_P(text_glitch[frame], sizeof(text_glitch[0]));
+
+            return;
+        }
+
+        oled_write_raw_P(text_glitch_dirty[rand() % text_glitch_dirty_count], sizeof(text_glitch_dirty[0]));
+        return;
+    }
+
+    if (timer > 9850 && timer < 10000) {
+        oled_write_raw_P(text_glitch_dirty[rand() % text_glitch_dirty_count], sizeof(text_glitch_dirty[0]));
+        return;
+    }
+
+    if (timer > 10000) {
+        arasaka_timer = timer_read();
+    }
+
+    if (glitch && 0 != frame_count) {
+        frame_count--;
+        uint8_t frame = can_be_dirty ? rand() % (text_glitch_count + text_glitch_dirty_count) : rand() % text_glitch_count;
+
+        if (frame < text_glitch_count) {
+            oled_write_raw_P(text_glitch[frame], sizeof(text_glitch[0]));
+
+            return;
+        }
+
+        oled_write_raw_P(text_glitch_dirty[rand() % text_glitch_dirty_count], sizeof(text_glitch_dirty[0]));
+        return;
+    }
+
+    glitch = false;
+
+    oled_write_raw_P(text_clean, frame_size);
+
+    if (1 == rand() % 60) {
+        glitch      = true;
+        frame_count = 1 + rand() % 4;
+        return;
+    }
+
+    if (1 == rand() % 60) {
+        glitch      = true;
+        frame_count = 1 + rand() % 10;
+    }
+}
+
 #ifdef OLED_DISPLAY_128X128
 __attribute__((weak)) void oled_render_large_display(bool side) {
     if (side) {
         render_rgb_hsv(1, 6);
         render_rgb_mode(1, 7);
 
-        oled_set_cursor(0, 8);
-        oled_write_raw_P(qmk_logo, 384);
+        render_arasaka_logo(0, 8);
         render_wpm_graph(20, 107, 33, 88);
 
     } else {
         // oled_advance_page(true);
+#    if 1
         render_autocorrected_info(1, 7);
 
         oled_set_cursor(1, 13);
         oled_write_P(PSTR("Mouse Jiggler: "), false);
         oled_write_P(userspace_config.mouse_jiggler ? PSTR("ON ") : PSTR("OFF"), false);
+#    else
+        render_arasaka_logo(1, 7);
+#    endif
         render_unicode_mode(1, 14);
     }
 }
