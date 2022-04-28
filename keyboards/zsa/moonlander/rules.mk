@@ -1,3 +1,4 @@
+MCU_LDSCRIPT = STM32F303xB
 AUDIO_DRIVER = dac_additive
 CUSTOM_MATRIX = lite
 
