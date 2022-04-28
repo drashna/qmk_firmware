@@ -1,3 +1,4 @@
+AUDIO_DRIVER = dac_additive
 CUSTOM_MATRIX = lite
 
 VPATH += drivers/gpio
