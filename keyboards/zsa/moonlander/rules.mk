@@ -1,3 +1,5 @@
+MCU_LDSCRIPT = STM32F303xB
+
 # Build Options
 #   change yes to no to disable
 #
