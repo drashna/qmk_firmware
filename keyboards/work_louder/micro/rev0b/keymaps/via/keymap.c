@@ -3,42 +3,50 @@
 
 #include QMK_KEYBOARD_H
 
+#undef LAYOUT
+#define LAYOUT( \
+    keA, keB, keC, keD, \
+    k0A, k0B, k0C, k0D, \
+    k1A, k1B, k1C, k1D, \
+    k2A, k2B, k2C, k2D, \
+    k3A, k3B, k3C) { \
+     {k0A, k0B, k0C, k0D}, \
+     {k1A, k1B, k1C, k1D}, \
+     {k2A, k2B, k2C, k2D}, \
+     {k3A, k3B, k3C, KC_NO}, \
+     {keA, keB, keC, keD} \
+}
+
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     LAYOUT(
-        KC_MPLY, KC_9,    KC_0,    KC_NO,
-        KC_5,    KC_6,    KC_7,    KC_8,
+        KC_VOLD, KC_VOLU, KC_WH_D, KC_WH_U,
         KC_1,    KC_2,    KC_3,    KC_4,
-        TO(1),   KC_DOT,  KC_COMM, USER09
+        KC_5,    KC_6,    KC_7,    KC_8,
+        KC_9,    KC_0,    KC_A,    KC_B,
+        TO(1),   KC_C,    KC_D
     ),
     LAYOUT(
         _______, _______, _______, _______,
-        _______, _______, _______, _______,
-        _______, _______, _______, _______,
-        TO(2),   _______, _______, _______
-
+        KC_1,    KC_2,    KC_3,    KC_4,
+        KC_5,    KC_6,    KC_7,    KC_8,
+        KC_9,    KC_0,    KC_A,    KC_B,
+        TO(2),   KC_C,    KC_D
     ),
     LAYOUT(
         _______, _______, _______, _______,
-        _______, _______, _______, _______,
-        _______, _______, _______, _______,
-        TO(3),   _______, _______, _______
+        KC_1,    KC_2,    KC_3,    KC_4,
+        KC_5,    KC_6,    KC_7,    KC_8,
+        KC_9,    KC_0,    KC_A,    KC_B,
+        TO(3),   KC_C,    KC_D
     ),
     LAYOUT(
         _______, _______, _______, _______,
-        _______, _______, _______, _______,
-        _______, _______, _______, _______,
-        TO(0),   _______, _______, _______
+        KC_1,    KC_2,    KC_3,    KC_4,
+        KC_5,    KC_6,    KC_7,    KC_8,
+        KC_9,    KC_0,    KC_A,    KC_B,
+        TO(0),   KC_C,    USER00
     )
 };
-
-#if defined(ENCODER_MAP_ENABLE)
-const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][2] = {
-    { ENCODER_CCW_CW(KC_VOLD, KC_VOLU),           ENCODER_CCW_CW(C(KC_Z), C(KC_Y))  },
-    { ENCODER_CCW_CW(_______, _______),           ENCODER_CCW_CW(_______, _______)  },
-    { ENCODER_CCW_CW(_______, _______),           ENCODER_CCW_CW(_______, _______)  },
-    { ENCODER_CCW_CW(_______, _______),           ENCODER_CCW_CW(_______, _______)  }
-};
-#endif
 
 typedef union {
     uint32_t raw;
@@ -55,7 +63,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 #endif
 
     switch (keycode) {
-        case USER09:
+        case USER00:
             if (record->event.pressed) {
                 work_louder_config.led_level++;
                 if (work_louder_config.led_level > 4) {
