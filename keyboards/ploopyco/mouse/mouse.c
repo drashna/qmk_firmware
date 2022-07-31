@@ -17,6 +17,7 @@
  */
 
 #include "mouse.h"
+#include "i2c_mouse.h"
 
 #ifndef OPT_DEBOUNCE
 #    define OPT_DEBOUNCE 5  // (ms) 			Time between scroll events
@@ -222,4 +223,12 @@ void matrix_init_kb(void) {
         eeconfig_init_kb();
     }
     matrix_init_user();
+}
+
+void keyboard_post_init_kb(void) {
+    if (!is_keyboard_master()) {
+        // hack to disable USB driver (eg, just don't send)
+        i2c_mouse_init();
+    }
+    keyboard_post_init_user();
 }
