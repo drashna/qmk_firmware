@@ -228,7 +228,7 @@ void matrix_init_kb(void) {
 void keyboard_post_init_kb(void) {
 #ifdef RGBLIGHT_ENABLE
     rgblight_enable_noeeprom();
-    rgblight_sethsv_noeeprom(HSV_BLACK);
+    rgblight_sethsv_noeeprom(HSV_BLUE);
 #endif
     if (!is_keyboard_master()) {
         // hack to disable USB driver (eg, just don't send)
@@ -236,9 +236,10 @@ void keyboard_post_init_kb(void) {
 #ifdef RGBLIGHT_ENABLE
         rgblight_sethsv_noeeprom(HSV_RED);
 #endif
-    }
+    } else {
 #ifdef RGBLIGHT_ENABLE
         rgblight_sethsv_noeeprom(HSV_GREEN);
 #endif
+    }
     keyboard_post_init_user();
 }
