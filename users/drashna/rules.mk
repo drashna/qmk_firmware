@@ -135,3 +135,9 @@ ifeq ($(strip $(HARDWARE_DEBUG_ENABLE)), yes)
     OPT := 0
     OPT_DEFS += -g
 endif
+
+ifeq ($(strip $(QUANTUM_PAINTER_ENABLE)), yes)
+    include $(USER_PATH)/painter/painter.mk
+endif
+
+-include $(KEYMAP_PATH)/post_rules.mk

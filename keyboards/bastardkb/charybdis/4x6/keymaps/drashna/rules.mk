@@ -14,6 +14,10 @@ ifeq ($(strip $(KEYBOARD)), bastardkb/charybdis/4x6/blackpill)
 
     BACKLIGHT_DRIVER      = pwm
 
+    VBUS_PIN_ENABLE ?= yes
+    ifeq ($(strip $(VBUS_PIN_ENABLE)), yes)
+        OPT_DEFS += -DUSB_VBUS_PIN=B10
+    endif
     OVERLOAD_FEATURES = yes
 endif
 
@@ -30,7 +34,7 @@ ifeq ($(strip $(OVERLOAD_FEATURES)), yes)
     BOOTMAGIC_ENABLE      = yes # Enable Bootmagic Lite
     MOUSEKEY_ENABLE       = yes # Mouse keys
     EXTRAKEY_ENABLE       = yes # Audio control and System control
-    CONSOLE_ENABLE        = yes # Console for debug
+    CONSOLE_ENABLE        = no  # Console for debug
     COMMAND_ENABLE        = no  # Commands for debug and configuration
     NKRO_ENABLE           = yes # Enable N-Key Rollover
     RGBLIGHT_ENABLE       = no  # Enable keyboard RGB underglow
@@ -49,4 +53,11 @@ ifeq ($(strip $(OVERLOAD_FEATURES)), yes)
     CUSTOM_POINTING_DEVICE = yes
     CUSTOM_SPLIT_TRANSPORT_SYNC = yes
 
+    QUANTUM_PAINTER_ENABLE = no
+    ifeq ($(strip $(QUANTUM_PAINTER_ENABLE)), yes)
+        QUANTUM_PAINTER_DRIVERS = ili9341_spi
+        DEBUG_MATRIX_SCAN_RATE_ENABLE = api
+        BACKLIGHT_ENABLE = yes
+        BACKLIGHT_DRIVER = software
+    endif
 endif
