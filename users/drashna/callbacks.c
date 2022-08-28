@@ -2,6 +2,9 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "drashna.h"
+#ifdef CUSTOM_QUANTUM_PAINTER_ENABLE
+#    include "painter/ili9341_display.h"
+#endif
 
 #ifdef CUSTOM_DYNAMIC_MACROS_ENABLE
 #    include "keyrecords/dynamic_macros.h"
@@ -48,6 +51,9 @@ void                       keyboard_post_init_user(void) {
 #if defined(SPLIT_KEYBOARD) && defined(SPLIT_TRANSACTION_IDS_USER)
     keyboard_post_init_transport_sync();
 #endif
+#ifdef CUSTOM_QUANTUM_PAINTER_ENABLE
+    keyboard_post_init_quantum_painter();
+#endif
 #ifdef I2C_SCANNER_ENABLE
     keyboard_post_init_i2c();
 #endif
@@ -90,6 +96,9 @@ void                       shutdown_user(void) {
 #ifdef OLED_ENABLE
     oled_shutdown();
 #endif
+#ifdef CUSTOM_QUANTUM_PAINTER_ENABLE
+    shutdown_quantum_painter();
+#endif
 
     shutdown_keymap();
 }
@@ -110,12 +119,20 @@ void suspend_power_down_user(void) {
 #ifdef OLED_ENABLE
     oled_off();
 #endif
+
+#ifdef CUSTOM_QUANTUM_PAINTER_ENABLE
+    suspend_power_down_quantum_painter();
+#endif
+
     suspend_power_down_keymap();
 }
 
 __attribute__((weak)) void suspend_wakeup_init_keymap(void) {}
 void                       suspend_wakeup_init_user(void) {
     set_is_device_suspended(false);
+#ifdef CUSTOM_QUANTUM_PAINTER_ENABLE
+    suspend_wakeup_init_quantum_painter();
+#endif
     suspend_wakeup_init_keymap();
 }
 
@@ -320,6 +337,8 @@ void                       housekeeping_task_user(void) {
 #if defined(SPLIT_KEYBOARD) && defined(SPLIT_TRANSACTION_IDS_USER)
     housekeeping_task_transport_sync();
 #endif
-
+#ifdef CUSTOM_QUANTUM_PAINTER_ENABLE
+    housekeeping_task_quantum_painter();
+#endif
     housekeeping_task_keymap();
 }
