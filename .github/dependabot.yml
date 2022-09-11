@@ -7,3 +7,4 @@ updates:
       - "qmk/collaborators"
     schedule:
       interval: "daily"
+
