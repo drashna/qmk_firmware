@@ -18,7 +18,7 @@
 
 // This is changed only when the command IDs change,
 // so OpenRGB can detect compatible firmware.
-#define OPENRGB_PROTOCOL_VERSION 0xC
+#define OPENRGB_PROTOCOL_VERSION 0xD
 
 #define RAW_EPSIZE 64
 
