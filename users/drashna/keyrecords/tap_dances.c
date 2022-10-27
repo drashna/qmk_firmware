@@ -46,6 +46,7 @@ qk_tap_dance_action_t tap_dance_actions[] = {
     [TD_D3_2] = ACTION_TAP_DANCE_DIABLO(1, KC_2),
     [TD_D3_3] = ACTION_TAP_DANCE_DIABLO(2, KC_3),
     [TD_D3_4] = ACTION_TAP_DANCE_DIABLO(3, KC_4),
+    [4] = ACTION_TAP_DANCE_QUAD(KC_1, KC_2, KC_3, KC_4),
 };
 
 /**
