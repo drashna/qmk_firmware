@@ -57,28 +57,28 @@ typedef struct {
 } qk_tap_dance_dual_role_t;
 
 typedef enum {
-    TD_NONE,
-    TD_UNKNOWN,
-    TD_SINGLE_TAP,
-    TD_SINGLE_HOLD,
-    TD_DOUBLE_TAP,
-    TD_DOUBLE_HOLD,
-    TD_DOUBLE_SINGLE_TAP, // Send two single taps
-    TD_TRIPLE_TAP,
-    TD_TRIPLE_HOLD
-} td_state_t;
+    TD_Q_NONE,
+    TD_Q_UNKNOWN,
+    TD_Q_SINGLE_TAP,
+    TD_Q_SINGLE_HOLD,
+    TD_Q_DOUBLE_TAP,
+    TD_Q_DOUBLE_HOLD,
+    TD_Q_DOUBLE_SINGLE_TAP, // Send two single taps
+    TD_Q_TRIPLE_TAP,
+    TD_Q_TRIPLE_HOLD
+} quad_td_state_t;
 
 typedef struct {
     bool is_press_action;
-    td_state_t state;
-} td_tap_t;
+    quad_td_state_t state;
+} quad_td_tap_t;
 
 typedef struct {
     uint16_t kc1;
     uint16_t kc2;
     uint16_t kc3;
     uint16_t kc4;
-    td_tap_t tap;
+    quad_td_tap_t tap;
 } qk_tap_dance_quatrain_t;
 
 
@@ -86,7 +86,7 @@ typedef struct {
         { .fn = {qk_tap_dance_pair_on_each_tap, qk_tap_dance_pair_finished, qk_tap_dance_pair_reset}, .user_data = (void *)&((qk_tap_dance_pair_t){kc1, kc2}), }
 
 #    define ACTION_TAP_DANCE_QUAD(kc1, kc2, kc3, kc4) \
-        { .fn = {qk_tap_dance_quatrain_on_each_tap, qk_tap_dance_quatrain_finished, qk_tap_dance_quatrain_reset}, .user_data = (void *)&((qk_tap_dance_quatrain_t){kc1, kc2, kc3, kc4, {true, TD_NONE}}), }
+        { .fn = {qk_tap_dance_quatrain_on_each_tap, qk_tap_dance_quatrain_finished, qk_tap_dance_quatrain_reset}, .user_data = (void *)&((qk_tap_dance_quatrain_t){kc1, kc2, kc3, kc4, {true, TD_Q_NONE}}), }
 
 #    define ACTION_TAP_DANCE_LAYER_MOVE(kc, layer) \
         { .fn = {qk_tap_dance_dual_role_on_each_tap, qk_tap_dance_dual_role_finished, qk_tap_dance_dual_role_reset}, .user_data = (void *)&((qk_tap_dance_dual_role_t){kc, layer, layer_move}), }
