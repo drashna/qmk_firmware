@@ -75,16 +75,16 @@ quad_td_state_t qk_tap_dance_quatrain_cur_dance(qk_tap_dance_state_t *state) {
 }
 
 void qk_tap_dance_quatrain_on_each_tap(qk_tap_dance_state_t *state, void *user_data) {
-    qk_tap_dance_quatrain_t *quatrain = (qk_tap_dance_quatrain_t *)user_data;
+    // qk_tap_dance_quatrain_t *quatrain = (qk_tap_dance_quatrain_t *)user_data;
 
-    if (state->count == 3) {
-        tap_code16(quatrain->kc1);
-        tap_code16(quatrain->kc1);
-        tap_code16(quatrain->kc1);
-    }
-    if (state->count > 3) {
-        tap_code16(quatrain->kc1);
-    }
+    // if (state->count == 3) {
+    //     tap_code16(quatrain->kc1);
+    //     tap_code16(quatrain->kc1);
+    //     tap_code16(quatrain->kc1);
+    // }
+    // if (state->count > 3) {
+    //     tap_code16(quatrain->kc1);
+    // }
 }
 
 void qk_tap_dance_quatrain_finished(qk_tap_dance_state_t *state, void *user_data) {
@@ -102,7 +102,7 @@ void qk_tap_dance_quatrain_finished(qk_tap_dance_state_t *state, void *user_data
             register_code(quatrain->kc3);
             break;
         case TD_Q_DOUBLE_HOLD:
-            register_code(quatrain->kc3);
+            register_code(quatrain->kc4);
             break;
         // Last case is for fast typing. Assuming your key is `f`:
         // For example, when typing the word `buffer`, and you want to make sure that you send `ff` and not `Esc`.
