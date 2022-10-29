@@ -116,6 +116,9 @@ void qk_tap_dance_quatrain_finished(qk_tap_dance_state_t *state, void *user_data
     }
 }
 
+    // TODO: Taps work fine, holds don't release.
+    // Using the same code from quad dance example, but doesn't work correctly.
+
 void qk_tap_dance_quatrain_reset(qk_tap_dance_state_t *state, void *user_data) {
     qk_tap_dance_quatrain_t *quatrain = (qk_tap_dance_quatrain_t *)user_data;
     quatrain->tap.state               = qk_tap_dance_quatrain_cur_dance(state);
