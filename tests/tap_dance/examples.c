@@ -170,7 +170,7 @@ void x_finished(qk_tap_dance_state_t *state, void *user_data) {
         case TD_SINGLE_HOLD: register_code(KC_LCTL); break;
         case TD_DOUBLE_TAP: register_code(KC_ESC); break;
         case TD_DOUBLE_HOLD: register_code(KC_LALT); break;
-        case TD_DOUBLE_SINGLE_TAP: tap_code(KC_X); register_code(KC_X);
+        case TD_DOUBLE_SINGLE_TAP: tap_code(KC_X); register_code(KC_X); break;
         default: break;  // Not present in documentation
     }
 }
@@ -180,8 +180,8 @@ void x_reset(qk_tap_dance_state_t *state, void *user_data) {
         case TD_SINGLE_TAP: unregister_code(KC_X); break;
         case TD_SINGLE_HOLD: unregister_code(KC_LCTL); break;
         case TD_DOUBLE_TAP: unregister_code(KC_ESC); break;
-        case TD_DOUBLE_HOLD: unregister_code(KC_LALT);
-        case TD_DOUBLE_SINGLE_TAP: unregister_code(KC_X);
+        case TD_DOUBLE_HOLD: unregister_code(KC_LALT); break;
+        case TD_DOUBLE_SINGLE_TAP: unregister_code(KC_X); break;
         default: break;  // Not present in documentation
     }
     xtap_state.state = TD_NONE;
@@ -189,11 +189,12 @@ void x_reset(qk_tap_dance_state_t *state, void *user_data) {
 
 
 qk_tap_dance_action_t tap_dance_actions[] = {
-    [TD_ESC_CAPS] = ACTION_TAP_DANCE_DOUBLE(KC_ESC, KC_CAPS),
-    [CT_EGG]      = ACTION_TAP_DANCE_FN(dance_egg),
-    [CT_FLSH]     = ACTION_TAP_DANCE_FN_ADVANCED(dance_flsh_each, dance_flsh_finished, dance_flsh_reset),
-    [CT_CLN]      = ACTION_TAP_DANCE_TAP_HOLD(KC_COLN, KC_SCLN),
-    [X_CTL]       = ACTION_TAP_DANCE_FN_ADVANCED(NULL, x_finished, x_reset)
+    [TD_ESC_CAPS]      = ACTION_TAP_DANCE_DOUBLE(KC_ESC, KC_CAPS),
+    [CT_EGG]           = ACTION_TAP_DANCE_FN(dance_egg),
+    [CT_FLSH]          = ACTION_TAP_DANCE_FN_ADVANCED(dance_flsh_each, dance_flsh_finished, dance_flsh_reset),
+    [CT_CLN]           = ACTION_TAP_DANCE_TAP_HOLD(KC_COLN, KC_SCLN),
+    [X_CTL]            = ACTION_TAP_DANCE_FN_ADVANCED(NULL, x_finished, x_reset),
+    [TD_X_CTL_ESC_ALT] = ACTION_TAP_DANCE_QUAD(KC_X, KC_A, KC_ESC, KC_LALT),
 };
 
 // clang-format on

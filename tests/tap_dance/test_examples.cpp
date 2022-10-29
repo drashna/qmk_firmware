@@ -257,6 +257,69 @@ TEST_F(TapDance, TapHold) {
 TEST_F(TapDance, QuadFunction) {
     TestDriver driver;
     InSequence s;
+    auto       key_quad    = KeymapKey{0, 1, 0, TD(TD_X_CTL_ESC_ALT)};
+    auto       regular_key = KeymapKey(0, 2, 0, KC_A);
+
+    set_keymap({key_quad, regular_key});
+
+    /* Single tap */
+    key_quad.press();
+    run_one_scan_loop();
+    key_quad.release();
+    idle_for(TAPPING_TERM);
+    EXPECT_REPORT(driver, (KC_X));
+    EXPECT_EMPTY_REPORT(driver);
+    run_one_scan_loop();
+
+    /* Single hold */
+    key_quad.press();
+    run_one_scan_loop();
+    idle_for(TAPPING_TERM);
+    EXPECT_REPORT(driver, (KC_A));
+    run_one_scan_loop();
+    key_quad.release();
+    EXPECT_EMPTY_REPORT(driver);
+    run_one_scan_loop();
+
+    // /* Double tap */
+    // tap_key(key_quad);
+    // key_quad.press();
+    // run_one_scan_loop();
+    // key_quad.release();
+    // idle_for(TAPPING_TERM);
+    // EXPECT_REPORT(driver, (KC_ESC));
+    // EXPECT_EMPTY_REPORT(driver);
+    // run_one_scan_loop();
+
+    // /* Double tap and hold */
+    // tap_key(key_quad);
+    // key_quad.press();
+    // run_one_scan_loop();
+    // idle_for(TAPPING_TERM);
+    // EXPECT_REPORT(driver, (KC_LALT));
+    // run_one_scan_loop();
+    // key_quad.release();
+    // EXPECT_EMPTY_REPORT(driver);
+    // run_one_scan_loop();
+
+    // /* Double single tap */
+    // tap_key(key_quad);
+    // tap_key(key_quad);
+    // regular_key.press();
+    // EXPECT_REPORT(driver, (KC_X));
+    // EXPECT_EMPTY_REPORT(driver);
+    // EXPECT_REPORT(driver, (KC_X));
+    // EXPECT_EMPTY_REPORT(driver);
+    // EXPECT_REPORT(driver, (KC_A));
+    // run_one_scan_loop();
+    // regular_key.release();
+    // EXPECT_EMPTY_REPORT(driver);
+    // run_one_scan_loop();
+}
+
+TEST_F(TapDance, QuadFunctionExample) {
+    TestDriver driver;
+    InSequence s;
     auto       key_quad    = KeymapKey{0, 1, 0, TD(X_CTL)};
     auto       regular_key = KeymapKey(0, 2, 0, KC_A);
 
