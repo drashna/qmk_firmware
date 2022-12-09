@@ -24,8 +24,11 @@ typedef enum {
     OS_UNSURE,
     OS_LINUX,
     OS_WINDOWS,
+    OS_WINDOWS_UNSURE,
     OS_MACOS,
     OS_IOS,
+    OS_PS5,
+    OS_HANDHELD,
 } os_variant_t;
 
 void         process_wlength(const uint16_t w_length);
