@@ -242,68 +242,68 @@ TEST_F(OsDetectionTest, TestVusbWindows10_2) {
 }
 
 TEST_F(OsDetectionTest, TestChibiosPs5) {
-    EXPECT_EQ(check_sequence({0x2, 0x4, 0x2, 0x28, 0x2, 0x24}), OS_LINUX);
+    EXPECT_EQ(check_sequence({0x2, 0x4, 0x2, 0x28, 0x2, 0x24}), OS_PS5);
     os_detection_task();
     assert_not_reported();
 }
 
 TEST_F(OsDetectionTest, TestLufaPs5) {
-    EXPECT_EQ(check_sequence({0x2, 0x4, 0x2, 0xE, 0x2, 0x10}), OS_LINUX);
+    EXPECT_EQ(check_sequence({0x2, 0x4, 0x2, 0xE, 0x2, 0x10}), OS_PS5);
     os_detection_task();
     assert_not_reported();
 }
 
 TEST_F(OsDetectionTest, TestVusbPs5) {
-    EXPECT_EQ(check_sequence({0x2, 0x4, 0x2, 0xE, 0x2}), OS_LINUX);
+    EXPECT_EQ(check_sequence({0x2, 0x4, 0x2, 0xE, 0x2}), OS_PS5);
     os_detection_task();
     assert_not_reported();
 }
 
 TEST_F(OsDetectionTest, TestChibiosNintendoSwitch) {
-    EXPECT_EQ(check_sequence({0x82, 0xFF, 0x40, 0x40, 0xFF, 0x40, 0x40, 0xFF, 0x40, 0x40, 0xFF, 0x40, 0x40, 0xFF, 0x40, 0x40}), OS_LINUX);
+    EXPECT_EQ(check_sequence({0x82, 0xFF, 0x40, 0x40, 0xFF, 0x40, 0x40, 0xFF, 0x40, 0x40, 0xFF, 0x40, 0x40, 0xFF, 0x40, 0x40}), OS_HANDHELD);
     os_detection_task();
     assert_not_reported();
 }
 
 TEST_F(OsDetectionTest, TestLufaNintendoSwitch) {
-    EXPECT_EQ(check_sequence({0x82, 0xFF, 0x40, 0x40, 0xFF, 0x40, 0x40}), OS_LINUX);
+    EXPECT_EQ(check_sequence({0x82, 0xFF, 0x40, 0x40, 0xFF, 0x40, 0x40}), OS_HANDHELD);
     os_detection_task();
     assert_not_reported();
 }
 
 TEST_F(OsDetectionTest, TestVusbNintendoSwitch) {
-    EXPECT_EQ(check_sequence({0x82, 0xFF, 0x40, 0x40}), OS_LINUX);
+    EXPECT_EQ(check_sequence({0x82, 0xFF, 0x40, 0x40}), OS_HANDHELD);
     os_detection_task();
     assert_not_reported();
 }
 
 TEST_F(OsDetectionTest, TestChibiosQuest2) {
-    EXPECT_EQ(check_sequence({0xFF, 0xFF, 0xFF, 0xFE, 0xFF, 0xFE, 0xFF, 0xFE, 0xFF, 0xFE, 0xFF}), OS_LINUX);
+    EXPECT_EQ(check_sequence({0xFF, 0xFF, 0xFF, 0xFE, 0xFF, 0xFE, 0xFF, 0xFE, 0xFF, 0xFE, 0xFF}), OS_HANDHELD);
     os_detection_task();
     assert_not_reported();
 }
 
 TEST_F(OsDetectionTest, TestVusbQuest2) {
-    EXPECT_EQ(check_sequence({0xFF, 0xFF, 0xFF, 0xFE}), OS_LINUX);
+    EXPECT_EQ(check_sequence({0xFF, 0xFF, 0xFF, 0xFE}), OS_HANDHELD);
     os_detection_task();
     assert_not_reported();
 }
 
 TEST_F(OsDetectionTest, TestDoNotReportIfUsbUnstable) {
-    EXPECT_EQ(check_sequence({0xFF, 0xFF, 0xFF, 0xFE}), OS_LINUX);
+    EXPECT_EQ(check_sequence({0xFF, 0xFF, 0xFF, 0xFE}), OS_HANDHELD);
     os_detection_task();
     assert_not_reported();
 
     advance_time(OS_DETECTION_DEBOUNCE);
     os_detection_task();
     assert_not_reported();
-    EXPECT_EQ(detected_host_os(), OS_LINUX);
+    EXPECT_EQ(detected_host_os(), OS_HANDHELD);
 }
 
 static struct usb_device_state usb_device_state_configured = {.configure_state = USB_DEVICE_STATE_CONFIGURED};
 
 TEST_F(OsDetectionTest, TestReportAfterDebounce) {
-    EXPECT_EQ(check_sequence({0xFF, 0xFF, 0xFF, 0xFE}), OS_LINUX);
+    EXPECT_EQ(check_sequence({0xFF, 0xFF, 0xFF, 0xFE}), OS_HANDHELD);
     os_detection_notify_usb_device_state_change(usb_device_state_configured);
     os_detection_task();
     assert_not_reported();
@@ -311,31 +311,31 @@ TEST_F(OsDetectionTest, TestReportAfterDebounce) {
     advance_time(1);
     os_detection_task();
     assert_not_reported();
-    EXPECT_EQ(detected_host_os(), OS_LINUX);
+    EXPECT_EQ(detected_host_os(), OS_HANDHELD);
 
     advance_time(OS_DETECTION_DEBOUNCE - 3);
     os_detection_task();
     assert_not_reported();
-    EXPECT_EQ(detected_host_os(), OS_LINUX);
+    EXPECT_EQ(detected_host_os(), OS_HANDHELD);
 
     advance_time(1);
     os_detection_task();
     assert_not_reported();
-    EXPECT_EQ(detected_host_os(), OS_LINUX);
+    EXPECT_EQ(detected_host_os(), OS_HANDHELD);
 
     // advancing the timer alone must not cause a report
     advance_time(1);
     assert_not_reported();
-    EXPECT_EQ(detected_host_os(), OS_LINUX);
+    EXPECT_EQ(detected_host_os(), OS_HANDHELD);
     // the task will cause a report
     os_detection_task();
-    assert_reported(OS_LINUX);
-    EXPECT_EQ(detected_host_os(), OS_LINUX);
+    assert_reported(OS_HANDHELD);
+    EXPECT_EQ(detected_host_os(), OS_HANDHELD);
 
     // check that it remains the same after a long time
     advance_time(OS_DETECTION_DEBOUNCE * 15);
-    assert_reported(OS_LINUX);
-    EXPECT_EQ(detected_host_os(), OS_LINUX);
+    assert_reported(OS_HANDHELD);
+    EXPECT_EQ(detected_host_os(), OS_HANDHELD);
 }
 
 TEST_F(OsDetectionTest, TestReportAfterDebounceLongWait) {
@@ -404,13 +404,13 @@ TEST_F(OsDetectionTest, TestDoNotReportIntermediateResults) {
     EXPECT_EQ(detected_host_os(), OS_UNSURE);
 
     // at this stage, the final result has not been reached yet
-    EXPECT_EQ(check_sequence({0xFF}), OS_LINUX);
+    EXPECT_EQ(check_sequence({0xFF}), OS_HANDHELD);
     os_detection_notify_usb_device_state_change(usb_device_state_configured);
     advance_time(OS_DETECTION_DEBOUNCE - 1);
     os_detection_task();
     assert_not_reported();
     // the intermedite but yet unstable result is exposed through detected_host_os()
-    EXPECT_EQ(detected_host_os(), OS_LINUX);
+    EXPECT_EQ(detected_host_os(), OS_HANDHELD);
 
     // the remainder is processed
     EXPECT_EQ(check_sequence({0x4, 0x10, 0xFF, 0xFF, 0xFF, 0x4, 0x10, 0x20A, 0x20A, 0x20A, 0x20A, 0x20A, 0x20A}), OS_WINDOWS);
@@ -438,7 +438,8 @@ TEST_F(OsDetectionTest, TestDoNotReportIntermediateResults) {
 
 TEST_F(OsDetectionTest, TestDoNotGoBackToUnsure) {
     // 0x02 would cause it to go back to Unsure, so check that it does not
-    EXPECT_EQ(check_sequence({0xFF, 0xFF, 0xFF, 0xFE, 0x02}), OS_LINUX);
+    EXPECT_EQ(check_sequence({0xFF, 0xFF, 0xFF, 0xFE, 0x02}), OS_HANDHELD);
     os_detection_task();
     assert_not_reported();
+    EXPECT_EQ(check_sequence({0x2, 0x4, 0x2, 0x28, 0x2, 0x24}), OS_WINDOWS);
 }
