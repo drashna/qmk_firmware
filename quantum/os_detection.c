@@ -147,8 +147,10 @@ void process_wlength(const uint16_t w_length) {
     // now try to make a guess
     os_variant_t guessed = OS_UNSURE;
     if (setups_data.count >= 3) {
-        if (setups_data.cnt_ff >= 2 && setups_data.cnt_04 >= 1) {
+        if (setups_data.cnt_04 >= 1 && setups_data.cnt_ff >= 2) {
             guessed = OS_WINDOWS;
+        } else if (setups_data.cnt_04 >= 1 && setups_data.cnt_ff) {
+            guessed = OS_WINDOWS_UNSURE;
         } else if (setups_data.count == setups_data.cnt_ff) {
             // Linux has 3 packets with 0xFF.
             guessed = OS_LINUX;
@@ -159,10 +161,10 @@ void process_wlength(const uint16_t w_length) {
             guessed = OS_IOS;
         } else if (setups_data.cnt_ff == 0 && setups_data.cnt_02 == 3 && setups_data.cnt_04 == 1) {
             // This is actually PS5.
-            guessed = OS_LINUX;
+            guessed = OS_PS5;
         } else if (setups_data.cnt_ff >= 1 && setups_data.cnt_02 == 0 && setups_data.cnt_04 == 0) {
             // This is actually Quest 2 or Nintendo Switch.
-            guessed = OS_LINUX;
+            guessed = OS_HANDHELD;
         }
     }
 
