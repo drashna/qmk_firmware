@@ -68,6 +68,7 @@ ChibiOS:
 Windows 10: [FF, FF, 4, 24, 4, 24, 4, FF, 24, FF, 4, FF, 24, 4, 24, 20A, 20A, 20A, 20A, 20A, 20A, 20A, 20A, 20A, 20A, 20A, 20A, 20A, 20A, 20A, 20A, 20A, 20A, 20A, 20A, 20A, 20A, 20A, 20A]
 Windows 10 (another host): [FF, FF, 4, 24, 4, 24, 4, 24, 4, 24, 4, 24]
 macOS 12.5: [2, 24, 2, 28, FF]
+[ 2, 42, 2, 1C, 2, 1A, FF, 2, 42, 2, 1C, 2, 1A, FF]
 iOS/iPadOS 15.6: [2, 24, 2, 28]
 Linux (including Android, Raspberry Pi and WebOS TV): [FF, FF, FF]
 PS5: [2, 4, 2, 28, 2, 24]
@@ -111,6 +112,18 @@ TEST_F(OsDetectionTest, TestLinux) {
 
 TEST_F(OsDetectionTest, TestChibiosMacos) {
     EXPECT_EQ(check_sequence({0x2, 0x24, 0x2, 0x28, 0xFF}), OS_MACOS);
+    os_detection_task();
+    assert_not_reported();
+}
+
+TEST_F(OsDetectionTest, TestChibiosMacos2) {
+    EXPECT_EQ(check_sequence({0x2, 0x42, 0x2, 0x1C, 0x2, 0x1A, 0xFF}), OS_MACOS);
+    os_detection_task();
+    assert_not_reported();
+}
+
+TEST_F(OsDetectionTest, TestChibiosMacos3) {
+    EXPECT_EQ(check_sequence({ 0x2, 0x42, 0x2, 0x1C, 0x2, 0x1A, 0xFF, 0x2, 0x42, 0x2, 0x1C, 0x2, 0x1A, 0xFF}), OS_MACOS);
     os_detection_task();
     assert_not_reported();
 }
@@ -188,73 +201,73 @@ TEST_F(OsDetectionTest, TestVusbWindows10_2) {
 }
 
 TEST_F(OsDetectionTest, TestChibiosPs5) {
-    EXPECT_EQ(check_sequence({0x2, 0x4, 0x2, 0x28, 0x2, 0x24}), OS_LINUX);
+    EXPECT_EQ(check_sequence({0x2, 0x4, 0x2, 0x28, 0x2, 0x24}), OS_PS5);
     os_detection_task();
     assert_not_reported();
 }
 
 TEST_F(OsDetectionTest, TestLufaPs5) {
-    EXPECT_EQ(check_sequence({0x2, 0x4, 0x2, 0xE, 0x2, 0x10}), OS_LINUX);
+    EXPECT_EQ(check_sequence({0x2, 0x4, 0x2, 0xE, 0x2, 0x10}), OS_PS5);
     os_detection_task();
     assert_not_reported();
 }
 
 TEST_F(OsDetectionTest, TestVusbPs5) {
-    EXPECT_EQ(check_sequence({0x2, 0x4, 0x2, 0xE, 0x2}), OS_LINUX);
+    EXPECT_EQ(check_sequence({0x2, 0x4, 0x2, 0xE, 0x2}), OS_PS5);
     os_detection_task();
     assert_not_reported();
 }
 
 TEST_F(OsDetectionTest, TestChibiosNintendoSwitch) {
-    EXPECT_EQ(check_sequence({0x82, 0xFF, 0x40, 0x40, 0xFF, 0x40, 0x40, 0xFF, 0x40, 0x40, 0xFF, 0x40, 0x40, 0xFF, 0x40, 0x40}), OS_LINUX);
+    EXPECT_EQ(check_sequence({0x82, 0xFF, 0x40, 0x40, 0xFF, 0x40, 0x40, 0xFF, 0x40, 0x40, 0xFF, 0x40, 0x40, 0xFF, 0x40, 0x40}), OS_HANDHELD);
     os_detection_task();
     assert_not_reported();
 }
 
 TEST_F(OsDetectionTest, TestLufaNintendoSwitch) {
-    EXPECT_EQ(check_sequence({0x82, 0xFF, 0x40, 0x40, 0xFF, 0x40, 0x40}), OS_LINUX);
+    EXPECT_EQ(check_sequence({0x82, 0xFF, 0x40, 0x40, 0xFF, 0x40, 0x40}), OS_HANDHELD);
     os_detection_task();
     assert_not_reported();
 }
 
 TEST_F(OsDetectionTest, TestVusbNintendoSwitch) {
-    EXPECT_EQ(check_sequence({0x82, 0xFF, 0x40, 0x40}), OS_LINUX);
+    EXPECT_EQ(check_sequence({0x82, 0xFF, 0x40, 0x40}), OS_HANDHELD);
     os_detection_task();
     assert_not_reported();
 }
 
 TEST_F(OsDetectionTest, TestChibiosQuest2) {
-    EXPECT_EQ(check_sequence({0xFF, 0xFF, 0xFF, 0xFE, 0xFF, 0xFE, 0xFF, 0xFE, 0xFF, 0xFE, 0xFF}), OS_LINUX);
+    EXPECT_EQ(check_sequence({0xFF, 0xFF, 0xFF, 0xFE, 0xFF, 0xFE, 0xFF, 0xFE, 0xFF, 0xFE, 0xFF}), OS_HANDHELD);
     os_detection_task();
     assert_not_reported();
 }
 
 TEST_F(OsDetectionTest, TestVusbQuest2) {
-    EXPECT_EQ(check_sequence({0xFF, 0xFF, 0xFF, 0xFE}), OS_LINUX);
+    EXPECT_EQ(check_sequence({0xFF, 0xFF, 0xFF, 0xFE}), OS_HANDHELD);
     os_detection_task();
     assert_not_reported();
 }
 
 // Regression reported in https://github.com/qmk/qmk_firmware/pull/21777#issuecomment-1922815841
 TEST_F(OsDetectionTest, TestDetectMacM1AsIOS) {
-    EXPECT_EQ(check_sequence({0x02, 0x32, 0x02, 0x24, 0x101, 0xFF}), OS_IOS);
+    EXPECT_EQ(check_sequence({0x02, 0x32, 0x02, 0x24, 0x101, 0xFF}), OS_MACOS);
     os_detection_task();
     assert_not_reported();
 }
 
 TEST_F(OsDetectionTest, TestDoNotReportIfUsbUnstable) {
-    EXPECT_EQ(check_sequence({0xFF, 0xFF, 0xFF, 0xFE}), OS_LINUX);
+    EXPECT_EQ(check_sequence({0xFF, 0xFF, 0xFF, 0xFE}), OS_HANDHELD);
     os_detection_task();
     assert_not_reported();
 
     advance_time(OS_DETECTION_DEBOUNCE);
     os_detection_task();
     assert_not_reported();
-    EXPECT_EQ(detected_host_os(), OS_LINUX);
+    EXPECT_EQ(detected_host_os(), OS_HANDHELD);
 }
 
 TEST_F(OsDetectionTest, TestReportAfterDebounce) {
-    EXPECT_EQ(check_sequence({0xFF, 0xFF, 0xFF, 0xFE}), OS_LINUX);
+    EXPECT_EQ(check_sequence({0xFF, 0xFF, 0xFF, 0xFE}), OS_HANDHELD);
     os_detection_notify_usb_device_state_change(USB_DEVICE_STATE_CONFIGURED);
     os_detection_task();
     assert_not_reported();
@@ -262,22 +275,22 @@ TEST_F(OsDetectionTest, TestReportAfterDebounce) {
     advance_time(1);
     os_detection_task();
     assert_not_reported();
-    EXPECT_EQ(detected_host_os(), OS_LINUX);
+    EXPECT_EQ(detected_host_os(), OS_HANDHELD);
 
     advance_time(OS_DETECTION_DEBOUNCE - 3);
     os_detection_task();
     assert_not_reported();
-    EXPECT_EQ(detected_host_os(), OS_LINUX);
+    EXPECT_EQ(detected_host_os(), OS_HANDHELD);
 
     advance_time(1);
     os_detection_task();
     assert_not_reported();
-    EXPECT_EQ(detected_host_os(), OS_LINUX);
+    EXPECT_EQ(detected_host_os(), OS_HANDHELD);
 
     // advancing the timer alone must not cause a report
     advance_time(1);
     assert_not_reported();
-    EXPECT_EQ(detected_host_os(), OS_LINUX);
+    EXPECT_EQ(detected_host_os(), OS_HANDHELD);
     // the task will cause a report
     os_detection_task();
     assert_reported(OS_LINUX);
@@ -392,4 +405,5 @@ TEST_F(OsDetectionTest, TestDoNotGoBackToUnsure) {
     EXPECT_EQ(check_sequence({0xFF, 0xFF, 0xFF, 0xFE, 0x02}), OS_LINUX);
     os_detection_task();
     assert_not_reported();
+    EXPECT_EQ(check_sequence({0x2, 0x4, 0x2, 0x28, 0x2, 0x24}), OS_PS5);
 }
