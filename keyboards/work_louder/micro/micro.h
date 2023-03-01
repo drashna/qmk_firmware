@@ -4,6 +4,7 @@
 #pragma once
 
 #include "quantum.h"
+#include "rgb_functions.h"
 
 extern void work_louder_micro_led_1_on(void);
 extern void work_louder_micro_led_2_on(void);
@@ -23,3 +24,13 @@ extern void work_louder_micro_led_3_set(uint8_t n);
 
 extern void work_louder_micro_led_all_set(uint8_t n);
 void work_louder_led_init_animation(void);
+
+
+typedef union {
+    uint32_t raw;
+    struct {
+        uint8_t led_level : 3;
+    };
+} work_louder_config_t;
+
+extern work_louder_config_t work_louder_config;
