@@ -16,31 +16,12 @@
  */
 #include QMK_KEYBOARD_H
 
-#ifdef CHARYBDIS_AUTO_POINTER_LAYER_TRIGGER_ENABLE
-#    include "timer.h"
-#endif // CHARYBDIS_AUTO_POINTER_LAYER_TRIGGER_ENABLE
-
 enum charybdis_keymap_layers {
     LAYER_BASE = 0,
     LAYER_LOWER,
     LAYER_RAISE,
     LAYER_POINTER,
 };
-
-/** \brief Automatically enable sniping-mode on the pointer layer. */
-#define CHARYBDIS_AUTO_SNIPING_ON_LAYER LAYER_POINTER
-
-#ifdef CHARYBDIS_AUTO_POINTER_LAYER_TRIGGER_ENABLE
-static uint16_t auto_pointer_layer_timer = 0;
-
-#    ifndef CHARYBDIS_AUTO_POINTER_LAYER_TRIGGER_TIMEOUT_MS
-#        define CHARYBDIS_AUTO_POINTER_LAYER_TRIGGER_TIMEOUT_MS 1000
-#    endif // CHARYBDIS_AUTO_POINTER_LAYER_TRIGGER_TIMEOUT_MS
-
-#    ifndef CHARYBDIS_AUTO_POINTER_LAYER_TRIGGER_THRESHOLD
-#        define CHARYBDIS_AUTO_POINTER_LAYER_TRIGGER_THRESHOLD 8
-#    endif // CHARYBDIS_AUTO_POINTER_LAYER_TRIGGER_THRESHOLD
-#endif     // CHARYBDIS_AUTO_POINTER_LAYER_TRIGGER_ENABLE
 
 #define LOWER MO(LAYER_LOWER)
 #define RAISE MO(LAYER_RAISE)
@@ -118,42 +99,129 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 };
 // clang-format on
 
-#ifdef POINTING_DEVICE_ENABLE
-#    ifdef CHARYBDIS_AUTO_POINTER_LAYER_TRIGGER_ENABLE
-report_mouse_t pointing_device_task_user(report_mouse_t mouse_report) {
-    if (abs(mouse_report.x) > CHARYBDIS_AUTO_POINTER_LAYER_TRIGGER_THRESHOLD || abs(mouse_report.y) > CHARYBDIS_AUTO_POINTER_LAYER_TRIGGER_THRESHOLD) {
-        if (auto_pointer_layer_timer == 0) {
-            layer_on(LAYER_POINTER);
-#        ifdef RGB_MATRIX_ENABLE
-            rgb_matrix_mode_noeeprom(RGB_MATRIX_NONE);
-            rgb_matrix_sethsv_noeeprom(HSV_GREEN);
-#        endif // RGB_MATRIX_ENABLE
-        }
-        auto_pointer_layer_timer = timer_read();
-    }
-    return mouse_report;
-}
-
-void matrix_scan_user(void) {
-    if (auto_pointer_layer_timer != 0 && TIMER_DIFF_16(timer_read(), auto_pointer_layer_timer) >= CHARYBDIS_AUTO_POINTER_LAYER_TRIGGER_TIMEOUT_MS) {
-        auto_pointer_layer_timer = 0;
-        layer_off(LAYER_POINTER);
-#        ifdef RGB_MATRIX_ENABLE
-        rgb_matrix_mode_noeeprom(RGB_MATRIX_DEFAULT_MODE);
-#        endif // RGB_MATRIX_ENABLE
-    }
-}
-#    endif // CHARYBDIS_AUTO_POINTER_LAYER_TRIGGER_ENABLE
-
-#    ifdef CHARYBDIS_AUTO_SNIPING_ON_LAYER
-layer_state_t layer_state_set_user(layer_state_t state) {
-    charybdis_set_pointer_sniping_enabled(layer_state_cmp(state, CHARYBDIS_AUTO_SNIPING_ON_LAYER));
-    return state;
-}
-#    endif // CHARYBDIS_AUTO_SNIPING_ON_LAYER
-#endif     // POINTING_DEVICE_ENABLE
-
 #ifdef RGB_MATRIX_ENABLE
 // Forward-declare this helper function since it is defined in rgb_matrix.c.
 void rgb_matrix_update_pwm_buffers(void);
 #endif
+
+void shutdown_user(void) {
+#ifdef RGBLIGHT_ENABLE
+    rgblight_enable_noeeprom();
+    rgblight_mode_noeeprom(1);
+    rgblight_setrgb(RGB_RED);
+#endif // RGBLIGHT_ENABLE
+#ifdef RGB_MATRIX_ENABLE
+    rgb_matrix_set_color_all(RGB_RED);
+    rgb_matrix_update_pwm_buffers();
+#endif // RGB_MATRIX_ENABLE
+}
+
+
+bool is_mouse_record_user(uint16_t keycode, keyrecord_t* record) {
+    switch(keycode) {
+        case QK_KB ... QK_KB_MAX:
+            return true;
+        default:
+            return false;
+    }
+    return false;
+}
+
+enum via_indicator_value {
+    id_charybdis_autolayer_enable = 1,
+    id_charybdis_autolayer_layer,
+};
+
+typedef union {
+    uint32_t raw;
+    struct {
+        bool enable;
+        uint8_t layer;
+    };
+} auto_layer_config_t;
+
+auto_layer_config_t auto_layer_config;
+
+void eeconfig_init_user(void) {
+    auto_layer_config.raw       = 0;
+    auto_layer_config.enable = true;
+    auto_layer_config.layer = LAYER_POINTER;
+    eeconfig_update_user(auto_layer_config.raw);
+
+    set_auto_mouse_layer(auto_layer_config.layer);
+    set_auto_mouse_enable(auto_layer_config.enable);
+}
+
+void pointing_device_init_user(void) {
+    auto_layer_config.raw = eeconfig_read_user();
+
+    set_auto_mouse_layer(auto_layer_config.layer);
+    set_auto_mouse_enable(auto_layer_config.enable);
+}
+
+void charybdis_config_set_value(uint8_t *data) {
+    // data = [ value_id, value_data ]
+    uint8_t *value_id   = &(data[0]);
+    uint8_t *value_data = &(data[1]);
+
+    switch (*value_id) {
+        case id_charybdis_autolayer_enable:
+            auto_layer_config.enable = (bool)*value_data;
+            set_auto_mouse_enable(auto_layer_config.enable);
+            break;
+        case id_charybdis_autolayer_layer:
+            auto_layer_config.layer = (uint8_t)*value_data + 1;
+            set_auto_mouse_layer(auto_layer_config.layer);
+            break;
+    }
+}
+
+void charybdis_config_get_value(uint8_t *data) {
+    // data = [ value_id, value_data ]
+    uint8_t *value_id   = &(data[0]);
+    uint8_t *value_data = &(data[1]);
+
+    switch (*value_id) {
+        case id_charybdis_autolayer_enable:
+            *value_data = auto_layer_config.enable = get_auto_mouse_enable();
+            break;
+        case id_charybdis_autolayer_layer:
+            auto_layer_config.layer = get_auto_mouse_layer();
+            *value_data = auto_layer_config.layer - 1;
+            break;
+    }
+}
+
+void charybdis_config_save(void) {
+    eeconfig_update_user(auto_layer_config.raw);
+}
+
+void via_custom_value_command_kb(uint8_t *data, uint8_t length) {
+    uint8_t *command_id        = &(data[0]);
+    uint8_t *channel_id        = &(data[1]);
+    uint8_t *value_id_and_data = &(data[2]);
+
+    if (*channel_id == id_custom_channel) {
+        switch (*command_id) {
+            case id_custom_set_value: {
+                charybdis_config_set_value(value_id_and_data);
+                break;
+            }
+            case id_custom_get_value: {
+                charybdis_config_get_value(value_id_and_data);
+                break;
+            }
+            case id_custom_save: {
+                charybdis_config_save();
+                break;
+            }
+            default: {
+                // Unhandled message.
+                *command_id = id_unhandled;
+                break;
+            }
+        }
+        return;
+    }
+    *command_id = id_unhandled;
+}
