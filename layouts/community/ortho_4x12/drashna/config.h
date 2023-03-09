@@ -75,7 +75,9 @@
 #    elif defined(KEYBOARD_planck_ez)
 #        undef PRODUCT
 #        define PRODUCT "Drashna Hacked Planck EZ"
-#        define DYNAMIC_KEYMAP_EEPROM_MAX_ADDR 4095
+#        define WEAR_LEVELING_BACKING_SIZE 16384
+#        define WEAR_LEVELING_LOGICAL_SIZE 8192
+#        define DYNAMIC_KEYMAP_EEPROM_MAX_ADDR 8191
 #    endif
 #endif
 #undef NO_USB_STARTUP_CHECK
