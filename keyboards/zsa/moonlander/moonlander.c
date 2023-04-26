@@ -80,7 +80,10 @@ void moonlander_led_task(void) {
 #endif
 #if !defined(MOONLANDER_USER_LEDS)
     else {
-        layer_state_set_kb(layer_state);
+        static layer_state_t state = 0;
+        if (state != layer_state) {
+            state = layer_state_set_kb(layer_state);
+        }
     }
 #endif
 }
