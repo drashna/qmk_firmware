@@ -16,6 +16,11 @@
 
 #pragma once
 
+#define I2C_DRIVER        I2CD0
+#define I2C1_SCL_PIN      GP21
+#define I2C1_SDA_PIN      GP20
+
+
 /* OLED SPI Defines */
 #define OLED_DISPLAY_128X64
 #define OLED_IC OLED_IC_SH1106
