@@ -88,7 +88,7 @@ void                       shutdown_user(void) {
     rgb_matrix_update_pwm_buffers();
 #endif // RGB_MATRIX_ENABLE
 #ifdef OLED_ENABLE
-    oled_off();
+    oled_shutdown();
 #endif
 
     shutdown_keymap();
