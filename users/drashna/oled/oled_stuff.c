@@ -978,19 +978,17 @@ void housekeeping_task_oled(void) {
 
 void oled_shutdown(void) {
     oled_clear();
-#if defined(OLED_DISPLAY_128X128)
-    oled_set_cursor(0, 4);
+#    if defined(OLED_DISPLAY_128X128)
+    oled_set_cursor(0, 5);
     oled_write_raw_P(qmk_large_logo, sizeof(qmk_large_logo));
     oled_set_cursor(0, 15);
-#elif defined(OLED_DISPLAY_128X64)
-    oled_set_cursor(0, 4);
-#else
+#   else
     oled_set_cursor(0, 0);
-#endif
+#   endif
     if (oled_jump_to_bootloader) {
         oled_write_P(PSTR("Jumping to bootloader"), false);
     } else {
         oled_write_P(PSTR("Please stand by"), false);
     }
-    oled_render();
+    oled_render_dirty(true);
 }
