@@ -99,7 +99,7 @@ bool shutdown_user(bool jump_to_bootloader) {
     rgb_matrix_update_pwm_buffers();
 #endif // RGB_MATRIX_ENABLE
 #ifdef OLED_ENABLE
-    oled_shutdown();
+    oled_shutdown(jump_to_bootloader);
 #endif
 #ifdef CUSTOM_QUANTUM_PAINTER_ENABLE
     shutdown_quantum_painter();
@@ -321,11 +321,6 @@ void                       matrix_slave_scan_user(void) {
 
 __attribute__((weak)) void housekeeping_task_keymap(void) {}
 void                       housekeeping_task_user(void) {
-    static bool has_ran_yet;
-    if (!has_ran_yet) {
-        has_ran_yet = true;
-        startup_user();
-    }
 #ifdef TAP_DANCE_ENABLE // Run Diablo 3 macro checking code.
     run_diablo_macro_check();
 #endif // TAP_DANCE_ENABLE
