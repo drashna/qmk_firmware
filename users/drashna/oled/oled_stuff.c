@@ -29,7 +29,6 @@
 #endif
 
 bool is_oled_enabled = true, is_oled_locked = false, is_oled_force_off = false;
-bool oled_jump_to_bootloader;
 
 uint32_t oled_timer                                 = 0;
 char     oled_keylog_str[OLED_KEYLOGGER_LENGTH + 1] = {0};
@@ -130,8 +129,6 @@ bool process_record_user_oled(uint16_t keycode, keyrecord_t *record) {
             if (is_oled_locked) {
                 oled_on();
             }
-        } else if (keycode == QK_BOOTLOADER) {
-            oled_jump_to_bootloader = true;
         }
     }
     return true;
@@ -976,7 +973,7 @@ void housekeeping_task_oled(void) {
     }
 }
 
-void oled_shutdown(void) {
+void oled_shutdown(bool jump_to_bootloader) {
     oled_clear();
 #    if defined(OLED_DISPLAY_128X128)
     oled_set_cursor(0, 5);
@@ -985,7 +982,7 @@ void oled_shutdown(void) {
 #   else
     oled_set_cursor(0, 0);
 #   endif
-    if (oled_jump_to_bootloader) {
+    if (jump_to_bootloader) {
         oled_write_P(PSTR("Jumping to bootloader"), false);
     } else {
         oled_write_P(PSTR("Please stand by"), false);

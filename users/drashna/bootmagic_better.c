@@ -51,8 +51,6 @@ void bootmagic_lite(void) {
 #endif
 
     if (perform_reset) {
-        extern bool oled_jump_to_bootloader;
-        oled_jump_to_bootloader = true;
         reset_keyboard();
     }
 }
