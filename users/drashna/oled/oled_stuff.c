@@ -976,7 +976,7 @@ void housekeeping_task_oled(void) {
 void oled_shutdown(bool jump_to_bootloader) {
     oled_clear();
 #    if defined(OLED_DISPLAY_128X128)
-    oled_set_cursor(0, 5);
+    oled_set_cursor(0, 4);
     oled_write_raw_P(qmk_large_logo, sizeof(qmk_large_logo));
     oled_set_cursor(0, 15);
 #   else
@@ -985,7 +985,7 @@ void oled_shutdown(bool jump_to_bootloader) {
     if (jump_to_bootloader) {
         oled_write_P(PSTR("Jumping to bootloader"), false);
     } else {
-        oled_write_P(PSTR("Please stand by"), false);
+        oled_write_P(PSTR("   Please stand by   "), false);
     }
     oled_render_dirty(true);
 }
