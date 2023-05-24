@@ -7,10 +7,9 @@ QMK Firmware:
     GIT_SUBMODULE_STRATEGY: recursive
   tags:
     - linux
-  image: qmkfm/base_container
+  image: qmkfm/qmk_cli
   before_script:
-    - apt-get update -qy
-    - apt-get install -y build-essential avr-libc binutils-arm-none-eabi binutils-avr dfu-programmer dfu-util gcc gcc-arm-none-eabi git libnewlib-arm-none-eabi gcc-avr python3 unzip wget zip
+    - python3 -m pip install -r requirements-dev.txt
     - avr-gcc --version
     - uname -a
   script:
@@ -21,4 +20,5 @@ QMK Firmware:
     paths:
       - ./*.hex
       - ./*.bin
+      - ./*.uf2
     expire_in: 1 month
