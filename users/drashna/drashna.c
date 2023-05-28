@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "drashna.h"
+#include <string.h>
 #include <stdio.h>
 #include <ctype.h>
 
@@ -142,13 +143,16 @@ float autocorrect_song[][2] = SONG(MARIO_GAMEOVER);
 float autocorrect_song[][2] = SONG(PLOVER_GOODBYE_SOUND);
 #        endif
 #    endif
+// 2 strings, 2q chars each + null terminator. max autocorrect length is 19 chars but 128px/6 supports 21 chars
+char autocorrected_str[2][21] = {"    automatically\0", "      corrected\0"};
 
-bool apply_autocorrect(uint8_t backspaces, const char* str, char *typo, char *correct) {
+bool apply_autocorrect(uint8_t backspaces, const char *str, char *typo, char *correct) {
     if (layer_state_is(_GAMEPAD)) {
         return false;
     }
-    // TO-DO use unicode stuff for this.  Will probably have to reverse engineer
-    // send string to get working properly, to send char string.
+    center_text(typo, autocorrected_str[0], sizeof(autocorrected_str[0]) - 1);
+    center_text(correct, autocorrected_str[1], sizeof(autocorrected_str[1]) - 1);
+    // printf("Autocorrected %s to %s (original: %s)\n", typo, correct, str);
 
 #    if defined(AUDIO_ENABLE)
     PLAY_SONG(autocorrect_song);
@@ -318,4 +322,24 @@ const char *get_layer_name_string(layer_state_t state, bool alt_name) {
         default:
             return "Unknown";
     }
+}
+
+/**
+ * @brief Center text in a string. Useful for monospaced font rendering such as oled display feature.
+ *
+ * @param text pointer to input string to center
+ * @param output pointer to output string to write to
+ * @param width total width of the output string
+ */
+void center_text(const char *text, char *output, uint8_t width) {
+    /* If string is bigger than the available width, trim it */
+    if (strlen(text) > width) {
+        memcpy(output, text, width);
+        return;
+    }
+
+    /* Try to center the TEXT, TODO: Handle Even lengths*/
+    uint8_t padlen_l = (width - strlen(text)) / 2;
+    uint8_t padlen_r = (padlen_l * 2) + strlen(text) == width ? padlen_l : padlen_l + 1;
+    sprintf(output, "%*s%s%*s", padlen_l, "", text, padlen_r, "");
 }
