@@ -21,6 +21,9 @@ extern bool tap_toggling;
 #ifdef SWAP_HANDS_ENABLE
 extern bool swap_hands;
 #endif
+#ifdef CUSTOM_OLED_ENABLE
+#    include "oled/oled_stuff.h"
+#endif
 
 extern userspace_config_t userspace_config;
 
@@ -45,8 +48,17 @@ void user_config_sync(uint8_t initiator2target_buffer_size, const void* initiato
     }
 }
 
+#if defined(AUTOCORRECT_ENABLE)
+extern char autocorrected_str[2][22];
+_Static_assert(sizeof(autocorrected_str) <= RPC_M2S_BUFFER_SIZE, "Autocorrect array larger than buffer size!");
+
+void autocorrect_string_sync(uint8_t initiator2target_buffer_size, const void* initiator2target_buffer, uint8_t target2initiator_buffer_size, void* target2initiator_buffer) {
+    if (initiator2target_buffer_size == (sizeof(autocorrected_str))) {
+        memcpy(&autocorrected_str, initiator2target_buffer, initiator2target_buffer_size);
+    }
+}
+#endif
 #ifdef CUSTOM_OLED_DRIVER
-#    include "oled/oled_stuff.h"
 void keylogger_string_sync(uint8_t initiator2target_buffer_size, const void* initiator2target_buffer, uint8_t target2initiator_buffer_size, void* target2initiator_buffer) {
     if (initiator2target_buffer_size == (OLED_KEYLOGGER_LENGTH+1)) {
         memcpy(&oled_keylog_str, initiator2target_buffer, initiator2target_buffer_size);
@@ -59,6 +71,9 @@ void keyboard_post_init_transport_sync(void) {
     transaction_register_rpc(RPC_ID_USER_STATE_SYNC, user_state_sync);
     transaction_register_rpc(RPC_ID_USER_KEYMAP_SYNC, user_keymap_sync);
     transaction_register_rpc(RPC_ID_USER_CONFIG_SYNC, user_config_sync);
+#if defined(AUTOCORRECT_ENABLE)
+    transaction_register_rpc(RPC_ID_USER_AUTOCORRECT_STR, autocorrect_string_sync);
+#endif
 #ifdef CUSTOM_OLED_DRIVER
     transaction_register_rpc(RPC_ID_USER_OLED_KEYLOG_STR, keylogger_string_sync);
 #endif
@@ -109,10 +124,13 @@ void user_transport_sync(void) {
     if (is_keyboard_master()) {
         // Keep track of the last state, so that we can tell if we need to propagate to slave
         static uint16_t last_keymap = 0;
-        static uint32_t last_config = 0, last_sync[4], last_user_state = 0;
+        static uint32_t last_config = 0, last_sync[5], last_user_state = 0;
         bool            needs_sync = false;
 #ifdef CUSTOM_OLED_DRIVER
         static char keylog_temp[OLED_KEYLOGGER_LENGTH + 1] = {0};
+#endif
+#if defined(AUTOCORRECT_ENABLE)
+        static char temp_autocorrected_str[2][22] = {0};
 #endif
 
         // Check if the state values are different
@@ -185,6 +203,23 @@ void user_transport_sync(void) {
         if (needs_sync) {
             if (transaction_rpc_send(RPC_ID_USER_OLED_KEYLOG_STR, OLED_KEYLOGGER_LENGTH + 1, &oled_keylog_str)) {
                 last_sync[3] = timer_read32();
+            }
+            needs_sync = false;
+        }
+#endif
+#if defined(AUTOCORRECT_ENABLE)
+        if (memcmp(&autocorrected_str, &temp_autocorrected_str, sizeof(autocorrected_str))) {
+            needs_sync = true;
+            memcpy(&temp_autocorrected_str, &autocorrected_str, sizeof(autocorrected_str));
+        }
+        if (timer_elapsed32(last_sync[4]) > 250) {
+            needs_sync = true;
+        }
+
+        // Perform the sync if requested
+        if (needs_sync) {
+            if (transaction_rpc_send(RPC_ID_USER_AUTOCORRECT_STR, sizeof(autocorrected_str), &autocorrected_str)) {
+                last_sync[4] = timer_read32();
             }
             needs_sync = false;
         }

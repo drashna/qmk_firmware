@@ -720,6 +720,22 @@ void render_status_left(void) {
 #endif
 }
 
+void render_autocorrected_info(uint8_t col, uint8_t line) {
+#ifdef AUTOCORRECT_ENABLE
+    extern char autocorrected_str[2][21];
+
+    oled_set_cursor(col, line);
+    oled_write_ln_P(PSTR("Autocorrected:"), false);
+    oled_set_cursor(col, line + 1);
+    oled_write_ln(autocorrected_str[0], false);
+    oled_set_cursor(col, line + 2);
+    oled_write_ln_P(PSTR("to:"), false);
+    oled_set_cursor(col, line + 3);
+    oled_write_ln(autocorrected_str[1], false);
+#endif
+}
+
+#ifdef OLED_DISPLAY_128X128
 __attribute__((weak)) void oled_render_large_display(bool side) {
     if (side) {
         render_rgb_hsv(1, 7);
@@ -727,15 +743,12 @@ __attribute__((weak)) void oled_render_large_display(bool side) {
 
         render_wpm_graph(48, 72);
     } else {
-        oled_advance_page(true);
-        oled_advance_page(true);
-
-        oled_set_cursor(0, 9);
-        oled_write_raw_P(qmk_logo, 384); // is 3 rows of 128 pixels, so 384 bytes.
-
+        // oled_advance_page(true);
+        render_autocorrected_info(1, 7);
         render_unicode_mode(1, 14);
     }
 }
+#endif
 
 __attribute__((weak)) void render_oled_title(bool side) {
     oled_write_P(side ? PSTR("     Left    ") : PSTR("    Right    "), true);
@@ -832,13 +845,15 @@ void housekeeping_task_oled(void) {
 
 void oled_shutdown(void) {
     oled_clear();
-#    if defined(OLED_DISPLAY_128X128)
-    oled_set_cursor(0, 5);
+#if defined(OLED_DISPLAY_128X128)
+    oled_set_cursor(0, 4);
     oled_write_raw_P(qmk_large_logo, sizeof(qmk_large_logo));
     oled_set_cursor(0, 15);
-#   else
+#elif defined(OLED_DISPLAY_128X64)
+    oled_set_cursor(0, 4);
+#else
     oled_set_cursor(0, 0);
-#   endif
+#endif
     if (oled_jump_to_bootloader) {
         oled_write_P(PSTR("Jumping to bootloader"), false);
     } else {

@@ -86,6 +86,7 @@ bool mod_key_press(uint16_t code, uint16_t mod_code, bool pressed, uint16_t this
 bool hasAllBitsInMask(uint8_t value, uint8_t mask);
 void tap_code16_nomods(uint16_t kc);
 void format_layer_bitmap_string(char* buffer, layer_state_t state, layer_state_t default_state);
+void center_text(const char *text, char *output, uint8_t width);
 
 // clang-format off
 typedef union {
