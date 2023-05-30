@@ -140,4 +140,5 @@ ifeq ($(strip $(QUANTUM_PAINTER_ENABLE)), yes)
     include $(USER_PATH)/painter/painter.mk
 endif
 
+-include $(USER_PATH)/rtc/rtc.mk
 -include $(KEYMAP_PATH)/post_rules.mk

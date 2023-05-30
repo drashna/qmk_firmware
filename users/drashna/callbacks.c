@@ -13,6 +13,10 @@
 void housekeeping_task_i2c_scanner(void);
 void keyboard_post_init_i2c(void);
 #endif
+#ifdef RTC_ENABLE
+#    include "rtc/rtc.h"
+#endif
+
 static uint32_t matrix_timer           = 0;
 static uint32_t matrix_scan_count      = 0;
 static uint32_t last_matrix_scan_count = 0;
@@ -73,6 +77,9 @@ void                       keyboard_post_init_user(void) {
 #endif
 #if defined(OS_DETECTION_ENABLE) && defined(DEFERRED_EXEC_ENABLE)
     defer_exec(100, startup_exec, NULL);
+#endif
+#ifdef RTC_ENABLE
+    rtc_init();
 #endif
 
     keyboard_post_init_keymap();
@@ -338,6 +345,9 @@ void                       housekeeping_task_user(void) {
 #endif
 #ifdef CUSTOM_QUANTUM_PAINTER_ENABLE
     housekeeping_task_quantum_painter();
+#endif
+#ifdef RTC_ENABLE
+    rtc_task();
 #endif
     housekeeping_task_keymap();
 }
