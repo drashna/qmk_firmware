@@ -53,4 +53,6 @@ ifeq ($(strip $(OVERLOAD_FEATURES)), yes)
     TAP_DANCE_ENABLE                 = yes
     SWAP_HANDS_ENABLE                = yes
     WPM_ENABLE                       = yes
+    RTC_ENABLE                       = yes
+    RTC_DRIVER                       = ds3231
 endif

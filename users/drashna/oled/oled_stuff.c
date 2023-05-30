@@ -24,6 +24,13 @@
 #include <math.h>
 #include <stdio.h>
 
+#ifdef RTC_ENABLE
+#    include "rtc/rtc.h"
+#    ifdef DS3231_RTC_DRIVER_ENABLE
+#        include "rtc/ds3231.h"
+#    endif
+#endif
+
 #ifndef OLED_BRIGHTNESS_STEP
 #    define OLED_BRIGHTNESS_STEP 32
 #endif
@@ -861,16 +868,39 @@ __attribute__((weak)) void oled_render_large_display(bool side) {
 #    if 1
         render_autocorrected_info(1, 7);
 
-        oled_set_cursor(1, 13);
+        oled_set_cursor(1, 11);
         oled_write_P(PSTR("Mouse Jiggler: "), false);
         oled_write_P(userspace_config.mouse_jiggler ? PSTR("ON ") : PSTR("OFF"), false);
+
+        render_unicode_mode(1, 12);
+        oled_render_time(1, 13);
 #    else
         render_arasaka_logo(1, 7);
-#    endif
         render_unicode_mode(1, 14);
+#    endif
     }
 }
 #endif
+
+void oled_render_time(uint8_t col, uint8_t line) {
+#ifdef RTC_ENABLE
+    oled_set_cursor(col, line);
+    if (rtc_is_connected()) {
+#ifdef DS3231_RTC_DRIVER_ENABLE
+        oled_write_P(PSTR("RTC Temp: "), false);
+        oled_write(ds3231_read_temp_imperial_str(), false);
+        oled_write_char(0xF8, false);
+        oled_write_P(PSTR("F\n "), false);
+#else
+        oled_write_ln_P(PSTR("RTC Temp: N/A"), false);
+#endif
+        oled_write(rtc_read_date_time_str(), false);
+    } else {
+        oled_write_ln_P(PSTR("RTC not found"), false);
+        oled_advance_page(true);
+    }
+#endif
+}
 
 __attribute__((weak)) void render_oled_title(bool side) {
     oled_write_P(side ? PSTR("     Left    ") : PSTR("    Right    "), true);
