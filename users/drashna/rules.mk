@@ -77,6 +77,7 @@ ifeq ($(strip $(RGB_MATRIX_ENABLE)), yes)
     ifeq ($(strip $(CUSTOM_RGB_MATRIX)), yes)
         SRC += $(USER_PATH)/rgb/rgb_matrix_stuff.c
         OPT_DEFS += -DCUSTOM_RGB_MATRIX
+        RGB_MATRIX_CUSTOM_USER = yes
     endif
 endif
 
