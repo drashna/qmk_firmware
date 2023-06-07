@@ -10,9 +10,9 @@
   LAYOUT_rockon_bp_wrapper( \
     KC_ESC,  ________________NUMBER_LEFT________________, UC_FLIP,                      UC_TABL, ________________NUMBER_RIGHT_______________, UC_CLUE, \
     SH_TT,   K01,     K02,     K03,     K04,     K05,     TG_DBLO,                      _______, K06,     K07,     K08,     K09,     K0A,     SH_TT,   \
-    LALT_T(KC_TAB), K11, K12,  K13,     K14,     K15,     TG_GAME,                      _______, K16,     K17,     K18,     K19,     K1A,     RALT_T(K1B), \
+    LALT_T(KC_TAB), K11, K12,  K13,     K14,     K15,     BK_LWER,                      TG_GAME, K16,     K17,     K18,     K19,     K1A,     RALT_T(K1B), \
     OS_LSFT,CTL_T(K21),K22,    K23,    K24,      K25,     _______,                      _______, K26,     K27,     K28,     K29, RCTL_T(K2A), OS_RSFT, \
-                      KC_GRV, OS_LALT, OS_LGUI, KC_SPC,  BK_LWER, KC_MUTE,    UC_IRNY, DL_RAIS, KC_ENT,  OS_RGUI, OS_RALT, UC_IRNY\
+                      KC_GRV, OS_LALT, OS_LGUI, SP_LWER, BK_LWER, KC_MUTE,    UC_IRNY, DL_RAIS, KC_ENT,  OS_RGUI, OS_RALT, UC_IRNY\
     )
 
 #define LAYOUT_base_wrapper(...)       LAYOUT_rockon_bp_base(__VA_ARGS__)
@@ -44,7 +44,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [_GAMEPAD] = LAYOUT_rockon_bp(
         KC_ESC,  XXXXXXX, KC_1,    KC_2,    KC_3,    KC_4, HYPR(KC_Q),                       _______, KC_F9,   KC_F10,  KC_F11,  KC_F12,  XXXXXXX, KC_NO,
         KC_F1,   KC_K,    KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,                          UC_SHRG, UC_DISA, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, KC_NO,
-        KC_TAB,  KC_G,    KC_A,    KC_S,    KC_D,    KC_F,    _______,                       TG_GAME, KC_I,    KC_O,    XXXXXXX, XXXXXXX, XXXXXXX, KC_NO,
+        KC_TAB,  KC_G,    KC_A,    KC_S,    KC_D,    KC_F,    _______,                       _______, KC_I,    KC_O,    XXXXXXX, XXXXXXX, XXXXXXX, KC_NO,
         KC_LCTL, KC_LSFT, KC_Z,    KC_X,    KC_C,    KC_V,    _______,                       _______, KC_N,    KC_M,    XXXXXXX, XXXXXXX, XXXXXXX, KC_NO,
                           _______, _______, KC_V,    KC_SPC,  KC_H,    _______,     _______, _______, _______, _______, _______, _______
     ),
@@ -116,6 +116,8 @@ const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][NUM_DIRECTIONS] = {
 
 extern const char PROGMEM display_border[3];
 
+void render_rgb_mode(uint8_t col, uint8_t line);
+
 bool oled_task_keymap(void) {
     static const char PROGMEM header_image[] = {
         0, 192, 32, 16, 8, 4, 2, 1, 1, 1, 1, 1, 1, 1, 1, 3, 7, 15, 31, 63, 127, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 127, 63, 31, 15, 7, 3, 1, 1, 1, 1, 1, 1, 1, 1, 2, 4, 8, 16, 32, 192, 0,
@@ -140,9 +142,9 @@ bool oled_task_keymap(void) {
 
     render_mod_status(get_mods() | get_oneshot_mods(), 1, 10);
     render_keylock_status(host_keyboard_led_state(), 1, 11);
-    render_unicode_mode(1, 12);
 
-    render_rgb_hsv(1, 13);
+        render_rgb_hsv(1, 12);
+        render_rgb_mode(1, 13);
 
     render_keylogger_status(1, 14);
 
