@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "drashna.h"
+#include "oled/oled_driver.h"
+#include "rtc/rtc.h"
 
 // clang-format off
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
@@ -85,7 +87,16 @@ bool oled_task_keymap(void) {
 #endif
 
     l_render_keylock_status(host_keyboard_led_state(), 7, 5);
+    #ifdef RTC_ENABLE
+    oled_set_cursor(1, 6);
+    if (rtc_is_connected()) {
+        oled_write_ln(rtc_read_date_time_str(), false);
+    } else {
+        oled_write_ln_P(PSTR("RTC Disconnected"), false);
+    }
+    #else
     render_rgb_mode(1, 6);
+    #endif
 
     for (uint8_t i = 1; i < 7; i++) {
         oled_set_cursor(0, i);
