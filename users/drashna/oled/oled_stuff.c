@@ -854,34 +854,6 @@ void render_arasaka_logo(uint8_t col, uint8_t line) {
     }
 }
 
-#ifdef OLED_DISPLAY_128X128
-__attribute__((weak)) void oled_render_large_display(bool side) {
-    if (side) {
-        render_rgb_hsv(1, 6);
-        render_rgb_mode(1, 7);
-
-        render_arasaka_logo(0, 8);
-        render_wpm_graph(20, 107, 33, 88);
-
-    } else {
-        // oled_advance_page(true);
-#    if 1
-        render_autocorrected_info(1, 7);
-
-        oled_set_cursor(1, 11);
-        oled_write_P(PSTR("Mouse Jiggler: "), false);
-        oled_write_P(userspace_config.mouse_jiggler ? PSTR("ON ") : PSTR("OFF"), false);
-
-        render_unicode_mode(1, 12);
-        oled_render_time(1, 13);
-#    else
-        render_arasaka_logo(1, 7);
-        render_unicode_mode(1, 14);
-#    endif
-    }
-}
-#endif
-
 void oled_render_time(uint8_t col, uint8_t line) {
 #ifdef RTC_ENABLE
     oled_set_cursor(col, line);
@@ -901,6 +873,58 @@ void oled_render_time(uint8_t col, uint8_t line) {
     }
 #endif
 }
+
+void oled_render_time_small(uint8_t col, uint8_t line, uint8_t padding) {
+#ifdef RTC_ENABLE
+    oled_set_cursor(col, line);
+    if (rtc_is_connected()) {
+#    ifdef DS3231_RTC_DRIVER_ENABLE
+        oled_write_P(PSTR("RTC Temp: "), false);
+        oled_write(get_u8_str((uint8_t)(ds3231_read_temp()), ' '), false);
+        oled_write_char(0xF8, false);
+#    else
+        oled_write_ln_P(PSTR("RTC Temp: N/A"), false);
+#    endif
+        oled_set_cursor(col + padding, line + 1);
+        oled_write(rtc_read_date_str(), false);
+        oled_set_cursor(col + padding + 2, line + 2);
+        oled_write(rtc_read_time_str(), false);
+    } else {
+        oled_write_ln_P(PSTR("RTC not found"), false);
+        oled_set_cursor(col, line + 1);
+        oled_advance_page(true);
+        oled_set_cursor(col, line + 2);
+        oled_advance_page(true);
+    }
+#endif
+}
+
+#ifdef OLED_DISPLAY_128X128
+__attribute__((weak)) void oled_render_large_display(bool side) {
+    if (side) {
+        render_rgb_hsv(1, 6);
+        render_rgb_mode(1, 7);
+
+        render_arasaka_logo(0, 8);
+        render_wpm_graph(20, 107, 25, 96);
+    } else {
+        // oled_advance_page(true);
+#    if 1
+        render_autocorrected_info(1, 7);
+
+        oled_set_cursor(1, 11);
+        oled_write_P(PSTR("Mouse Jiggler: "), false);
+        oled_write_P(userspace_config.mouse_jiggler ? PSTR("ON ") : PSTR("OFF"), false);
+
+        render_unicode_mode(1, 12);
+        oled_render_time(1, 13);
+#    else
+        render_arasaka_logo(1, 7);
+        render_unicode_mode(1, 14);
+#    endif
+    }
+}
+#endif
 
 __attribute__((weak)) void render_oled_title(bool side) {
     oled_write_P(side ? PSTR("     Left    ") : PSTR("    Right    "), true);
