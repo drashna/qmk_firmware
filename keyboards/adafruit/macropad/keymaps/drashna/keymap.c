@@ -71,7 +71,7 @@ bool oled_task_keymap(void) {
 #    endif
 #endif
 
-    static const char PROGMEM cat_mode[3] = {0xF8, 0xF9, 0};
+    static const char PROGMEM cat_mode[3] = {0xF9, 0xFA, 0};
     oled_write_P(cat_mode, get_keyboard_lock());
 
 #ifdef RGB_MATIRX_ENABLE
@@ -80,7 +80,7 @@ bool oled_task_keymap(void) {
 #endif
 
 #ifdef HAPTIC_ENABLE
-    static const char PROGMEM nukem_good[2] = {0xFA, 0};
+    static const char PROGMEM nukem_good[2] = {0xFB, 0};
     oled_write_P(haptic_get_enable() ? nukem_good : PSTR(" "), false);
 #endif
 
