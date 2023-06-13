@@ -425,8 +425,8 @@ void render_user_status(uint8_t col, uint8_t line) {
 
     static const char PROGMEM rgb_layer_status[2][3] = {{0xEE, 0xEF, 0}, {0xF0, 0xF1, 0}};
     oled_write_P(rgb_layer_status[userspace_config.rgb_layer_change], false);
-    static const char PROGMEM cat_mode[2][3] = {{0xF8, 0xF9, 0}, {0xF6, 0xF7, 0}};
-    oled_write_P(cat_mode[0], get_keyboard_lock());
+    static const char PROGMEM cat_mode[3] = {0xF9, 0xFA, 0};
+    oled_write_P(cat_mode, get_keyboard_lock());
 #if defined(UNICODE_COMMON_ENABLE)
     static const char PROGMEM uc_mod_status[5][3] = {{0xEC, 0xED, 0}, {0x20, 0x20, 0}, {0x20, 0x20, 0}, {0x20, 0x20, 0}, {0xEA, 0xEB, 0}};
     oled_write_P(uc_mod_status[get_unicode_input_mode()], false);
@@ -435,7 +435,7 @@ void render_user_status(uint8_t col, uint8_t line) {
 #if !defined(OLED_DISPLAY_VERBOSE)
         oled_write_P(PSTR(" "), false);
 #endif
-        static const char PROGMEM nukem_good[2] = {0xFA, 0};
+        static const char PROGMEM nukem_good[2] = {0xFB, 0};
         oled_write_P(nukem_good, false);
 #if !defined(OLED_DISPLAY_VERBOSE)
         oled_advance_page(true);
