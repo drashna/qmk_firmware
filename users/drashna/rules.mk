@@ -9,6 +9,7 @@ SRC += $(USER_PATH)/drashna.c \
 DEBOUNCE_TYPE        = asym_eager_defer_pk
 DEFERRED_EXEC_ENABLE = yes
 OS_DETECTION_ENABLE  = yes
+DEBUG_MATRIX_SCAN_RATE_ENABLE := no
 
 ifeq ($(PLATFORM),CHIBIOS)
     # cortex-m4 has DSP+FPU support, so use hack to enable it for lib8tion
@@ -22,7 +23,6 @@ else
     SPACE_CADET_ENABLE    = no
     GRAVE_ESC_ENABLE      = no
 endif
-# DEBUG_MATRIX_SCAN_RATE_ENABLE = api
 
 -include $(USER_PATH)/../../../qmk_secrets/rules.mk
 

@@ -177,6 +177,12 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             }
             return false;
 #endif
+        case US_MATRIX_SCAN_RATE_PRINT:
+            if (record->event.pressed) {
+                userspace_config.matrix_scan_print ^= 1;
+                eeconfig_update_user_config(&userspace_config.raw);
+            }
+            break;
     }
     return true;
 }

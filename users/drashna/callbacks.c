@@ -10,6 +10,9 @@
 void housekeeping_task_i2c_scanner(void);
 void keyboard_post_init_i2c(void);
 #endif
+static uint32_t matrix_timer           = 0;
+static uint32_t matrix_scan_count      = 0;
+static uint32_t last_matrix_scan_count = 0;
 
 __attribute__((weak)) void keyboard_pre_init_keymap(void) {}
 void                       keyboard_pre_init_user(void) {
@@ -118,7 +121,25 @@ void                       suspend_wakeup_init_user(void) {
 // scan function
 __attribute__((weak)) void matrix_scan_keymap(void) {}
 void                       matrix_scan_user(void) {
+    matrix_scan_count++;
+
+    uint32_t timer_now = timer_read32();
+    if (TIMER_DIFF_32(timer_now, matrix_timer) >= 1000) {
+#if defined(CONSOLE_ENABLE)
+        if (userspace_config.matrix_scan_print) {
+            xprintf("matrix scan frequency: %lu\n", matrix_scan_count);
+        }
+#endif
+        last_matrix_scan_count = matrix_scan_count;
+        matrix_timer           = timer_now;
+        matrix_scan_count      = 0;
+    }
+
     matrix_scan_keymap();
+}
+
+uint32_t get_matrix_scan_rate(void) {
+    return last_matrix_scan_count;
 }
 
 #ifdef AUDIO_ENABLE

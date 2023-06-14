@@ -31,7 +31,6 @@ ifeq ($(strip $(OVERLOAD_FEATURES)), yes)
     AUTOCORRECT_ENABLE     = yes
     CAPS_WORD_ENABLE       = yes
     AUDIO_ENABLE           = no
-    DEBUG_MATRIX_SCAN_RATE_ENABLE = api
 else
     LTO_ENABLE             = yes
     BOOTLOADER             = qmk-hid
