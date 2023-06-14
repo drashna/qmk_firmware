@@ -60,6 +60,7 @@ enum userspace_custom_keycodes {
     DYN_MACRO_KEY14,
     DYN_MACRO_KEY15,
 
+    US_MATRIX_SCAN_RATE_PRINT,
     USER_SAFE_RANGE,
 };
 
@@ -148,3 +149,5 @@ We use custom codes here, so we can substitute the right stuff
 #define OL_LOCK OLED_LOCK
 #define OL_BINC OLED_BRIGHTNESS_INC
 #define OL_BDEC OLED_BRIGHTNESS_DEC
+
+#define US_MSRP US_MATRIX_SCAN_RATE_PRINT

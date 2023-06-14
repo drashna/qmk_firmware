@@ -15,6 +15,7 @@
  */
 
 #include "drashna.h"
+#include "keyrecords/process_records.h"
 
 // clang-format off
 #define LAYOUT_5x6_right_wrapper(...) LAYOUT_5x6_right(__VA_ARGS__)
@@ -126,7 +127,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         UC_NEXT, _________________ADJUST_L3_________________,                        _________________ADJUST_R3_________________, KC_MPLY,
                    TG(_DIABLOII), AUTO_CTN,                                                            TG_GAME, TG_DBLO,
                                             _______, QK_RBT,                                  KC_NUKE,
-                                                     HF_TOGG, _______,               _______,
+                                                     HF_TOGG, _______,               US_MSRP,
                                                      _______, _______,      KC_NUKE, _______
     ),
 };

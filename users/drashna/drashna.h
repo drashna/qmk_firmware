@@ -97,7 +97,8 @@ typedef union {
         bool     swapped_numbers      :1;
         bool     rgb_matrix_idle_anim :1;
         bool     mouse_jiggler        :1;
-        uint8_t  align_reserved       :2;
+        bool     matrix_scan_print    :1;
+        bool     align_reserved       :1;
         uint8_t  oled_brightness      :8;
         uint32_t reserved             :15;
         bool     check                :1;

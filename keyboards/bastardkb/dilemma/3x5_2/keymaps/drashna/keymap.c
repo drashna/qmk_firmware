@@ -111,7 +111,7 @@ bool oled_task_keymap(void) {
 #   if defined(POINTING_DEVICE_ENABLE)
     render_pointing_dpi_status(dilemma_get_pointer_sniping_enabled() ? dilemma_get_pointer_sniping_dpi() : dilemma_get_pointer_default_dpi(), 1, 7, 6);
     render_mouse_mode(17, 6);
-#    elif defined(WPM_ENABLE) && defined(DEBUG_MATRIX_SCAN_RATE)
+#    else
     render_matrix_scan_rate(1, 7, 6);
 #    endif
     render_bootmagic_status(7, 7);

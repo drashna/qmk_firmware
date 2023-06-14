@@ -269,7 +269,6 @@ void render_keylock_status(led_t led_usb_state, uint8_t col, uint8_t line) {
  *
  */
 void render_matrix_scan_rate(uint8_t padding, uint8_t col, uint8_t line) {
-#ifdef DEBUG_MATRIX_SCAN_RATE
     oled_set_cursor(col, line);
     oled_write_P(PSTR("MS:"), false);
     if (padding) {
@@ -278,7 +277,6 @@ void render_matrix_scan_rate(uint8_t padding, uint8_t col, uint8_t line) {
         }
     }
     oled_write(get_u16_str(get_matrix_scan_rate(), ' '), false);
-#endif
 }
 
 /**
@@ -695,13 +693,13 @@ void render_status_left(void) {
 
 #    if defined(WPM_ENABLE)
     render_wpm(1, 7, 1);
-#    elif defined(DEBUG_MATRIX_SCAN_RATE)
+#    else
     render_matrix_scan_rate(1, 7, 1);
 #    endif
 #    if (defined(KEYBOARD_bastardkb_charybdis) || defined(KEYBOARD_handwired_tractyl_manuform)) && defined(POINTING_DEVICE_ENABLE)
     render_pointing_dpi_status(charybdis_get_pointer_sniping_enabled() ? charybdis_get_pointer_sniping_dpi() : charybdis_get_pointer_default_dpi(), 1, 7, 2);
     render_mouse_mode(17, 1);
-#    elif defined(WPM_ENABLE) && defined(DEBUG_MATRIX_SCAN_RATE)
+#    elif defined(WPM_ENABLE)
     render_matrix_scan_rate(1, 7, 2);
 #    endif
     /* Show Keyboard Layout  */
