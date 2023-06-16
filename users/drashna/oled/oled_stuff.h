@@ -46,6 +46,7 @@ void            render_pet(uint8_t col, uint8_t line);
 void            render_unicode_mode(uint8_t col, uint8_t line);
 void            render_unicode_mode_small(uint8_t col, uint8_t line, bool invert);
 void            render_rgb_hsv(uint8_t col, uint8_t line);
+void            render_rgb_mode(uint8_t col, uint8_t line);
 void            render_mouse_mode(uint8_t col, uint8_t line);
 void            render_autocorrected_info(uint8_t col, uint8_t line);
 void            render_cyberpunk_logo(uint8_t col, uint8_t line);

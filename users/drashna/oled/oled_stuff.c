@@ -866,7 +866,8 @@ void oled_render_time(uint8_t col, uint8_t line) {
 #else
         oled_write_ln_P(PSTR("RTC Temp: N/A"), false);
 #endif
-        oled_write(rtc_read_date_time_str(), false);
+    oled_set_cursor(col, line+1);
+    oled_write(rtc_read_date_time_str(), false);
     } else {
         oled_write_ln_P(PSTR("RTC not found"), false);
         oled_advance_page(true);
