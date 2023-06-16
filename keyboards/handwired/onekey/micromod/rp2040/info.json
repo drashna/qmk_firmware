@@ -1,0 +1,15 @@
+{
+    "keyboard_name": "ATP MicroMod RP2040",
+    "processor": "RP2040",
+    "bootloader": "rp2040",
+    "matrix_pins": {
+        "cols": ["GP18"],
+        "rows": ["GP20"]
+    },
+    "backlight": {
+        "pin": "GP24"
+    },
+    "ws2812": {
+        "pin": "GP24"
+    }
+}
