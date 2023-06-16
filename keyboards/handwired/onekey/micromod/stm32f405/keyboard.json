@@ -1,0 +1,15 @@
+{
+    "keyboard_name": "ATP MicroMod STM32F405",
+    "processor": "STM32F405",
+    "bootloader": "stm32-dfu",
+    "matrix_pins": {
+        "cols": ["A0"],
+        "rows": ["C9"]
+    },
+    "backlight": {
+        "pin": "C7"
+    },
+    "ws2812": {
+        "pin": "C7"
+    }
+}
