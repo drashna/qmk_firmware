@@ -44,8 +44,11 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     if (IS_ENCODEREVENT(record->event)) {
         static bool ignore_next = true;
         if (ignore_next) {
-            ignore_next = false;
-            if (timer_elapsed32(0) < 100) return false;
+            if (timer_elapsed32(0) < 500) {
+                return false;
+            } else {
+                ignore_next = false;
+            }
         }
     }
 #endif
