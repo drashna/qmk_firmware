@@ -1,6 +1,6 @@
 BOOTMAGIC_ENABLE            = yes
 EXTRAKEY_ENABLE             = yes
-MOUSEKEY_ENABLE             = yes
+MOUSEKEY_ENABLE             = no
 TAP_DANCE_ENABLE            = no
 NKRO_ENABLE                 = yes
 RGBLIGHT_STARTUP_ANIMATION  = no
