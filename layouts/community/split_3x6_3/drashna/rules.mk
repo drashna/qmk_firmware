@@ -18,6 +18,14 @@ CUSTOM_UNICODE_ENABLE      = no
 CUSTOM_POINTING_DEVICE     = no
 CUSTOM_SPLIT_TRANSPORT_SYNC = no
 
+
+ifeq ($(strip $(KEYBOARD)), crkbd/rev1)
+    CONVERT_TO             = proton_c
+    OLED_ENABLE            = yes
+    RGB_MATRIX_ENABLE      = yes
+    HAPTIC_ENABLE          = no
+endif
+
 USE_ARM_CONFIG ?= no
 ifeq ($(strip $(CONVERT_TO)), proton_c)
     USE_ARM_CONFIG = yes
@@ -48,10 +56,4 @@ ifeq ($(strip $(USE_ARM_CONFIG)), yes)
     CUSTOM_UNICODE_ENABLE      = no
     CUSTOM_POINTING_DEVICE     = no
     CUSTOM_SPLIT_TRANSPORT_SYNC = no
-endif
-
-ifeq ($(strip $(KEYBOARD)), crkbd/rev1)
-    OLED_ENABLE            = yes
-    RGB_MATRIX_ENABLE      = yes
-    HAPTIC_ENABLE          = no
 endif
