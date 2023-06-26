@@ -19,5 +19,5 @@ MOUSEKEY_ENABLE = yes       # Mouse keys
 ENCODER_ENABLE := no
 OPTS_DEF += -DENCODER_ENABLE
 
-QUANTUM_LIB_SRC += analog.c i2c_slave.c
+QUANTUM_LIB_SRC += analog.c i2c_slave_r.c
 SRC += opt_encoder.c i2c_mouse.c
