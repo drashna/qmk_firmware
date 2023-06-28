@@ -1,0 +1,6 @@
+VIA_ENABLE = yes
+LTO_ENABLE = yes
+ENCODER_MAP_ENABLE = yes
+MAGIC_ENABLE       = no
+SPACE_CADET_ENABLE = no
+MIDI_ENABLE        = yes
