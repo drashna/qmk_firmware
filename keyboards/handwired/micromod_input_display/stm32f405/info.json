@@ -1,0 +1,12 @@
+{
+    "keyboard_name": "ATP MicroMod STM32F405",
+    "apa102": {
+        "clock_pin": "D2",
+        "data_pin": "A8"
+    },
+    "backlight": {
+        "pin": "C6"
+    },
+    "bootloader": "stm32-dfu",
+    "processor": "STM32F405"
+}
