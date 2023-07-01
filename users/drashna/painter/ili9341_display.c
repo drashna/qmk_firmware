@@ -1,11 +1,17 @@
 #include "drashna.h"
 #include <qp.h>
+#include "keycode_config.h"
+#include "painter/qp_comms.h"
 #include "qp_ili9341.h"
 #include "painter/fonts.qff.h"
 #include "painter/graphics.qgf.h"
-#ifdef RGB_MATRIX_ENABLE
+#if defined(RGB_MATRIX_ENABLE)
 #    include "rgb_matrix.h"
+#elif defined(RGBLIGHT_ENABLE)
+#    include "rgblight.h"
 #endif
+#include "qp_comms.h"
+#include "split/transport_sync.h"
 #include "keyboard.h"
 #include <math.h>
 #include <stdio.h>
@@ -30,46 +36,6 @@ char        keylog_str[KEYLOGGER_LENGTH] = {0};
 static bool klog_redraw                      = false;
 #endif
 
-//----------------------------------------------------------
-// RGB Matrix naming
-#include <rgb_matrix.h>
-
-#if defined(RGB_MATRIX_EFFECT)
-#    undef RGB_MATRIX_EFFECT
-#endif // defined(RGB_MATRIX_EFFECT)
-
-#define RGB_MATRIX_EFFECT(x) RGB_MATRIX_EFFECT_##x,
-enum {
-    RGB_MATRIX_EFFECT_NONE,
-#include "rgb_matrix_effects.inc"
-#undef RGB_MATRIX_EFFECT
-#ifdef RGB_MATRIX_CUSTOM_KB
-#    include "rgb_matrix_kb.inc"
-#endif
-#ifdef RGB_MATRIX_CUSTOM_USER
-#    include "rgb_matrix_user.inc"
-#endif
-};
-
-#define RGB_MATRIX_EFFECT(x)    \
-    case RGB_MATRIX_EFFECT_##x: \
-        return #x;
-const char* rgb_matrix_name(uint8_t effect) {
-    switch (effect) {
-        case RGB_MATRIX_EFFECT_NONE:
-            return "NONE";
-#include "rgb_matrix_effects.inc"
-#undef RGB_MATRIX_EFFECT
-#ifdef RGB_MATRIX_CUSTOM_KB
-#    include "rgb_matrix_kb.inc"
-#endif
-#ifdef RGB_MATRIX_CUSTOM_USER
-#    include "rgb_matrix_user.inc"
-#endif
-        default:
-            return "UNKNOWN";
-    }
-}
 
 void init_and_clear(painter_device_t device, painter_rotation_t rotation) {
     uint16_t width;
@@ -77,15 +43,25 @@ void init_and_clear(painter_device_t device, painter_rotation_t rotation) {
     qp_get_geometry(device, &width, &height, NULL, NULL, NULL);
 
     qp_init(device, rotation);
+    qp_comms_start(device);
+    qp_comms_command(device, 0x21);
+    qp_comms_stop(device);
     qp_rect(device, 0, 0, width - 1, height - 1, 0, 0, 0, true);
 }
 
 void draw_ui_user(void) {
-    bool            hue_redraw = false, cpi_redraw = false;
-    static uint16_t last_hue = 0xFFFF;
-    uint8_t         curr_hue = rgb_matrix_get_hue();
-    static uint16_t last_cpi = 0xFFFF;
-    uint16_t        curr_cpi = charybdis_get_pointer_sniping_enabled() ? charybdis_get_pointer_sniping_dpi() : charybdis_get_pointer_default_dpi();
+    bool            hue_redraw = false;
+    static uint16_t last_hue = {0xFFFF};
+#if defined(RGBLIGHT_ENABLE) || defined(RGB_MATRIX_ENABLE)
+    uint8_t         curr_hue                      = rgblight_get_hue();
+#endif
+
+#ifdef POINTING_DEVICE_ENABLE
+    static uint16_t last_cpi[ILI9341_NUM_DEVICES] = {0xFFFF};
+    uint16_t        curr_cpi                      = charybdis_get_pointer_sniping_enabled() ? charybdis_get_pointer_sniping_dpi() : charybdis_get_pointer_default_dpi();
+    bool            cpi_redraw                    = false;
+#endif
+
     uint16_t        width;
     uint16_t        height;
     qp_get_geometry(ili9341_display, &width, &height, NULL, NULL, NULL);
@@ -94,10 +70,12 @@ void draw_ui_user(void) {
         last_hue   = curr_hue;
         hue_redraw = true;
     }
+#ifdef POINTING_DEVICE_ENABLE
     if (last_cpi != curr_cpi) {
         last_cpi   = curr_cpi;
         cpi_redraw = true;
     }
+#endif
 
     bool            layer_state_redraw = false;
     static uint32_t last_layer_state   = 0;
@@ -120,6 +98,7 @@ void draw_ui_user(void) {
         ds_state_redraw = true;
     }
 
+#ifdef POINTING_DEVICE_ENABLE
     bool            sp_state_redraw = false;
     static uint32_t last_sp_state   = 0;
     if (last_sp_state != charybdis_get_pointer_sniping_enabled()) {
@@ -204,6 +183,7 @@ void draw_ui_user(void) {
         }
 #endif
 
+#ifdef POINTING_DEVICE_ENABLE
         if (hue_redraw || cpi_redraw) {
             static int max_cpi_xpos = 0;
             xpos                    = 110;
@@ -214,7 +194,6 @@ void draw_ui_user(void) {
             }
             qp_rect(ili9341_display, xpos, ypos, max_cpi_xpos, ypos + font->line_height, 0, 0, 0, true);
         }
-
         // if (hue_redraw) {
         //     xpos                    = 160;
         //     qp_rect(ili9341_display, xpos, ypos, xpos + 10, ypos + 10, 0, 0, 200, true);
@@ -254,13 +233,12 @@ void draw_ui_user(void) {
             }
             qp_rect(ili9341_display, xpos, ypos, max_sps_xpos, ypos + font->line_height, 0, 0, 0, true);
         }
+#endif
 
         ypos += font->line_height + 4;
         static keymap_config_t    last_keymap_config = {0};
-        static userspace_config_t last_user_config   = {0};
         if (hue_redraw || last_keymap_config.raw != keymap_config.raw) {
             last_keymap_config.raw  = keymap_config.raw;
-            last_user_config.raw    = userspace_config.raw;
             uint8_t    temp_pos     = 0;
             static int max_bpm_xpos = 0;
             xpos                    = cg_off->width + 5;
@@ -280,6 +258,7 @@ void draw_ui_user(void) {
             qp_rect(ili9341_display, xpos, ypos, max_bpm_xpos, ypos + font->line_height, 0, 0, 0, true);
         }
 
+#if 0
         ypos += font->line_height + 2;
         static user_runtime_config_t last_user_state = {0};
         if (hue_redraw || last_user_state.raw != user_state.raw) {
@@ -304,13 +283,17 @@ void draw_ui_user(void) {
             }
             qp_rect(ili9341_display, xpos, ypos, max_upm_xpos, ypos + font->line_height, 0, 0, 0, true);
         }
+#endif
 
         ypos += font->line_height + 4;
         if (hue_redraw || rgb_effect_redraw) {
             static int max_rgb_xpos = 0;
             xpos                    = 5;
+#if defined(RGB_MATRIX_ENABLE)
             snprintf(buf, sizeof(buf), "RGB: %s", rgb_matrix_name(curr_effect));
-
+#elif defined(RGBLIGHT_ENABLE)
+            snprintf(buf, sizeof(buf), "RGB: %s", rgblight_name(curr_effect));
+#endif
             for (int i = 5; i < sizeof(buf); ++i) {
                 if (buf[i] == 0)
                     break;
