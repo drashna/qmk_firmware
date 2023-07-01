@@ -1,0 +1,12 @@
+{
+    "keyboard_name": "Input and Display MicroMod STM32F405",
+    "apa102": {
+        "clock_pin": "D2",
+        "data_pin": "A8"
+    },
+    "backlight": {
+        "pin": "C6"
+    },
+    "bootloader": "tinyuf2",
+    "processor": "STM32F405"
+}
