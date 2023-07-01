@@ -1,0 +1,12 @@
+{
+    "keyboard_name": "ATP MicroMod RP2040",
+    "processor": "RP2040",
+    "bootloader": "rp2040",
+    "apa102": {
+        "clock_pin": "GP17",
+        "data_pin": "GP16"
+    },
+    "backlight": {
+        "pin": "GP13"
+    }
+}
