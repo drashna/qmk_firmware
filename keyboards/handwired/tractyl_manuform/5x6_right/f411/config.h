@@ -72,7 +72,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 /* eeprom config */
 #define EXTERNAL_EEPROM_SPI_SLAVE_SELECT_PIN A4
-#define EXTERNAL_EEPROM_SPI_CLOCK_DIVISOR    64
+#define EXTERNAL_EEPROM_SPI_CLOCK_DIVISOR    8
 
 /* pmw3360 config  */
 #define PMW33XX_CS_PIN                       B0
+
+#define PMW33XX_SPI_DIVISOR                 8
