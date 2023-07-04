@@ -50,7 +50,7 @@ ifeq ($(strip $(LTO_ENABLE)), yes)
         $(info Enabling LTO on arm_atsam-targeting boards is known to have a high likelihood of failure.)
         $(info If unsure, set LTO_ENABLE = no.)
     endif
-    CDEFS += -flto
+    CDEFS += -flto=8
     CDEFS += -DLTO_ENABLE
 endif
 
