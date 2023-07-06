@@ -66,6 +66,16 @@ __attribute__((weak)) bool get_retro_tapping(uint16_t keycode, keyrecord_t *reco
 }
 #endif
 
+#ifndef NO_ACTION_ONESHOT
+__attribute__((weak)) bool get_clear_oneshot_layer(uint16_t keycode, keyrecord_t *record, bool default_value) {
+    return default_value;
+}
+
+static bool should_clear_oneshot_layer(keyrecord_t *record, bool default_value) {
+    return get_clear_oneshot_layer(get_record_keycode(record, false), record, default_value);
+}
+#endif
+
 /** \brief Called to execute an action.
  *
  * FIXME: Needs documentation.
@@ -273,7 +283,7 @@ void process_record(keyrecord_t *record) {
 
     if (!process_record_quantum(record)) {
 #ifndef NO_ACTION_ONESHOT
-        if (is_oneshot_layer_active() && record->event.pressed && keymap_config.oneshot_enable) {
+        if (is_oneshot_layer_active() && record->event.pressed && keymap_config.oneshot_enable && should_clear_oneshot_layer(record, false)) {
             clear_oneshot_layer_state(ONESHOT_OTHER_KEY_PRESSED);
         }
 #endif
@@ -371,16 +381,16 @@ void process_action(keyrecord_t *record, action_t action) {
 #ifndef NO_ACTION_ONESHOT
     bool do_release_oneshot = false;
     // notice we only clear the one shot layer if the pressed key is not a modifier.
-    if (is_oneshot_layer_active() && event.pressed &&
+    if (is_oneshot_layer_active() && event.pressed && should_clear_oneshot_layer(record,
         (action.kind.id == ACT_USAGE || !(IS_MODIFIER_KEYCODE(action.key.code)
 #    ifndef NO_ACTION_TAPPING
                                           || ((action.kind.id == ACT_LMODS_TAP || action.kind.id == ACT_RMODS_TAP) && (action.layer_tap.code <= MODS_TAP_TOGGLE || tap_count == 0))
 #    endif
                                               ))
 #    ifdef SWAP_HANDS_ENABLE
-        && !(action.kind.id == ACT_SWAP_HANDS && action.swap.code == OP_SH_ONESHOT)
+                && !(action.kind.id == ACT_SWAP_HANDS && action.swap.code == OP_SH_ONESHOT)
 #    endif
-        && keymap_config.oneshot_enable) {
+    ) && keymap_config.oneshot_enable) {
         clear_oneshot_layer_state(ONESHOT_OTHER_KEY_PRESSED);
         do_release_oneshot = !is_oneshot_layer_active();
     }
