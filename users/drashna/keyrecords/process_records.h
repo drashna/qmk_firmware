@@ -151,3 +151,4 @@ We use custom codes here, so we can substitute the right stuff
 #define OL_BDEC OLED_BRIGHTNESS_DEC
 
 #define US_MSRP US_MATRIX_SCAN_RATE_PRINT
+#define PD_JIGG PD_JIGGLER

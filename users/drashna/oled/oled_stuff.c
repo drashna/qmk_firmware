@@ -745,6 +745,10 @@ __attribute__((weak)) void oled_render_large_display(bool side) {
     } else {
         // oled_advance_page(true);
         render_autocorrected_info(1, 7);
+
+        oled_set_cursor(1, 13);
+        oled_write_P(PSTR("Mouse Jiggler: "), false);
+        oled_write_P(userspace_config.mouse_jiggler ? PSTR("ON ") : PSTR("OFF"), false);
         render_unicode_mode(1, 14);
     }
 }
