@@ -111,6 +111,7 @@ bool is_mouse_record_user(uint16_t keycode, keyrecord_t* record) {
         case QK_KB ... QK_KB_MAX:
 #    endif
         case KC_ACCEL:
+        case PD_JIGGLER:
             return true;
     }
     return false;
