@@ -7,6 +7,7 @@
 #include <ctype.h>
 
 userspace_config_t userspace_config;
+static bool device_suspended = false;
 
 /**
  * @brief Handle registering a keycode, with optional modifer based on timed event
@@ -342,4 +343,23 @@ void center_text(const char *text, char *output, uint8_t width) {
     uint8_t padlen_l = (width - strlen(text)) / 2;
     uint8_t padlen_r = (padlen_l * 2) + strlen(text) == width ? padlen_l : padlen_l + 1;
     sprintf(output, "%*s%s%*s", padlen_l, "", text, padlen_r, "");
+}
+
+/**
+ * @brief Checks to see if device is suspended
+ *
+ * @return true
+ * @return false
+ */
+bool is_device_suspended(void) {
+    return device_suspended;
+}
+
+/**
+ * @brief Sets the local variable for device suspended
+ *
+ * @param status
+ */
+void set_is_device_suspended(bool status) {
+    device_suspended = status;
 }

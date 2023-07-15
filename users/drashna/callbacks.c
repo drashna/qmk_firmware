@@ -97,6 +97,7 @@ void                       shutdown_user(void) {
 __attribute__((weak)) void suspend_power_down_keymap(void) {}
 
 void suspend_power_down_user(void) {
+    set_is_device_suspended(true);
     if (layer_state_is(_GAMEPAD)) {
         layer_off(_GAMEPAD);
     }
@@ -114,6 +115,7 @@ void suspend_power_down_user(void) {
 
 __attribute__((weak)) void suspend_wakeup_init_keymap(void) {}
 void                       suspend_wakeup_init_user(void) {
+    set_is_device_suspended(false);
     suspend_wakeup_init_keymap();
 }
 

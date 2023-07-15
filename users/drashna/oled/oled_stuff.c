@@ -839,7 +839,7 @@ bool oled_task_user(void) {
 
 void housekeeping_task_oled(void) {
     is_oled_enabled = false;
-    if ((is_oled_locked || (last_input_activity_elapsed() < 60000)) && !is_oled_force_off) {
+    if ((is_oled_locked || (last_input_activity_elapsed() < 60000)) && !(is_oled_force_off || is_device_suspended())) {
         is_oled_enabled = true;
     }
     if (oled_get_brightness() != userspace_config.oled_brightness) {

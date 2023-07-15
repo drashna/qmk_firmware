@@ -98,7 +98,7 @@ void user_transport_update(void) {
         user_state.swap_hands = swap_hands;
 #endif
         user_state.host_driver_disabled = get_keyboard_lock();
-
+        user_state.is_device_suspended = is_device_suspended();
         transport_user_state = user_state.raw;
     } else {
         keymap_config.raw    = transport_keymap_config;
@@ -117,6 +117,7 @@ void user_transport_update(void) {
         swap_hands = user_state.swap_hands;
 #endif
         set_keyboard_lock(user_state.host_driver_disabled);
+        set_is_device_suspended(user_state.is_device_suspended);
     }
 }
 

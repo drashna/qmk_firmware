@@ -115,3 +115,6 @@ void        set_keyboard_lock(bool enable);
 bool        get_keyboard_lock(void);
 void        toggle_keyboard_lock(void);
 const char* get_layer_name_string(layer_state_t state, bool alt_name);
+
+bool is_device_suspended(void);
+void set_is_device_suspended(bool status);
