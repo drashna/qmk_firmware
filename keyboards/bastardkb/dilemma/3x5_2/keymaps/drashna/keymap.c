@@ -106,7 +106,7 @@ bool oled_task_keymap(void) {
 
     render_default_layer_state(1, 1);
     render_layer_state(1, 2);
-    render_kitty(0, 5);
+    render_pet(0, 5);
     render_wpm(1, 7, 5);
 #   if defined(POINTING_DEVICE_ENABLE)
     render_pointing_dpi_status(dilemma_get_pointer_sniping_enabled() ? dilemma_get_pointer_sniping_dpi() : dilemma_get_pointer_default_dpi(), 1, 7, 6);

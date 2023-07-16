@@ -41,8 +41,8 @@ void            render_pointing_dpi_status(uint16_t cpi, uint8_t padding, uint8_
 void            oled_driver_render_logo_left(void);
 void            oled_driver_render_logo_right(void);
 void            oled_render_large_display(bool side);
-void            render_wpm_graph(uint8_t max_lines_graph, uint8_t vertical_offset);
-void            render_kitty(uint8_t col, uint8_t line);
+void            render_wpm_graph(uint8_t start_offset, uint8_t cutoff, uint8_t max_lines_graph, uint8_t vertical_offset);
+void            render_pet(uint8_t col, uint8_t line);
 void            render_unicode_mode(uint8_t col, uint8_t line);
 void            render_rgb_hsv(uint8_t col, uint8_t line);
 void            render_mouse_mode(uint8_t col, uint8_t line);
