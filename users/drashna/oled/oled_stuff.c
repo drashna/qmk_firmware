@@ -19,14 +19,10 @@
 #include <ctype.h>
 #include <string.h>
 #include <stdio.h>
+#include <math.h>
 #include "lib/lib8tion/lib8tion.h"
-#ifdef UNICODE_COMMON_ENABLE
-#    include "process_unicode_common.h"
-#    include "keyrecords/unicode.h"
-#endif
-#ifdef AUDIO_CLICKY
-#    include "process_clicky.h"
-#endif
+#include <math.h>
+#include <stdio.h>
 
 #ifndef OLED_BRIGHTNESS_STEP
 #    define OLED_BRIGHTNESS_STEP 32
@@ -53,7 +49,7 @@ void oled_pan_section(bool left, uint16_t y_start, uint16_t y_end, uint16_t x_st
                 oled_dirty |= ((OLED_BLOCK_TYPE)1 << (i / OLED_BLOCK_SIZE));
             }
         } else {
-            for (uint16_t x = x_end - 1; x > 0; x--) {
+            for (uint16_t x = x_end - 1; x >= x_start; x--) {
                 i              = y * OLED_DISPLAY_WIDTH + x;
                 oled_buffer[i] = oled_buffer[i - 1];
                 oled_dirty |= ((OLED_BLOCK_TYPE)1 << (i / OLED_BLOCK_SIZE));
@@ -87,16 +83,25 @@ void add_keylog(uint16_t keycode, keyrecord_t *record) {
 
     if ((keycode == KC_BSPC) && mod_config(get_mods() | get_oneshot_mods()) & MOD_MASK_CTRL) {
         memset(oled_keylog_str, ' ', OLED_KEYLOGGER_LENGTH);
-        oled_keylog_str[OLED_KEYLOGGER_LENGTH] = 0x00;
+        oled_keylog_str[OLED_KEYLOGGER_LENGTH] = '\0';
         return;
     }
 
-    if (keycode > ARRAY_SIZE(code_to_name)) {
-        return;
+    char code = 0;
+    if (keycode < ARRAY_SIZE(code_to_name)) {
+        code = pgm_read_byte(&code_to_name[keycode]);
+    } else {
+        if (keycode == UC_IRNY) {
+            code = 0xFD;
+        } else if (keycode == UC_CLUE) {
+            code = 0xFE;
+        }
     }
 
-    memmove(oled_keylog_str, oled_keylog_str + 1, OLED_KEYLOGGER_LENGTH - 1);
-    oled_keylog_str[(OLED_KEYLOGGER_LENGTH - 1)] = pgm_read_byte(&code_to_name[keycode]);
+    if (code != 0) {
+        memmove(oled_keylog_str, oled_keylog_str + 1, OLED_KEYLOGGER_LENGTH - 1);
+        oled_keylog_str[(OLED_KEYLOGGER_LENGTH - 1)] = code;
+    }
 }
 
 /**
@@ -142,9 +147,6 @@ void render_keylogger_status(uint8_t col, uint8_t line) {
 #endif
     oled_write_P(PSTR(OLED_RENDER_KEYLOGGER), false);
     oled_write(oled_keylog_str, false);
-#ifdef OLED_DISPLAY_VERBOSE
-    oled_advance_page(true);
-#endif
 }
 
 /**
@@ -520,6 +522,8 @@ void render_wpm(uint8_t padding, uint8_t col, uint8_t line) {
 //=============  USER CONFIG PARAMS  ===============
 // wpm graph originally designed by john-ezra
 
+// start_offset              = 3;
+// cutoff                    = 125;
 // for 128x128:
 // max_lines_graph          = 54;
 // vertical_offset          = 64;
@@ -527,7 +531,15 @@ void render_wpm(uint8_t padding, uint8_t col, uint8_t line) {
 // max_lines_graph          = 64;
 // vertical_offset          = 0;
 
-void render_wpm_graph(uint8_t max_lines_graph, uint8_t vertical_offset) {
+/**
+ * @brief Renders dynamic WPM graph on screen
+ *
+ * @param start_offset horizontal pixel location (from left side of screen) to start rendering graph
+ * @param cutoff horizontal pixel location (from left side of screen) to stop rendering graph
+ * @param max_lines_graph vertical pixel height of graph
+ * @param vertical_offset vertial pixel location (from top) to start rendering graph
+ */
+void render_wpm_graph(uint8_t start_offset, uint8_t cutoff, uint8_t max_lines_graph, uint8_t vertical_offset) {
 #ifdef WPM_ENABLE
     static uint16_t timer   = 0;
     static uint8_t  x       = OLED_DISPLAY_HEIGHT - 1;
@@ -537,20 +549,20 @@ void render_wpm_graph(uint8_t max_lines_graph, uint8_t vertical_offset) {
     if (timer_elapsed(timer) > OLED_WPM_GRAPH_REFRESH_INTERVAL) {                  // check if it's been long enough before refreshing graph
         x = (max_lines_graph - 1) - ((currwpm / max_wpm) * (max_lines_graph - 1)); // main calculation to plot graph line
         for (uint8_t i = 0; i <= OLED_WPM_GRAPH_GRAPH_LINE_THICKNESS - 1; i++) {   // first draw actual value line
-            oled_write_pixel(3, x + i + vertical_offset, true);
+            oled_write_pixel(start_offset, x + i + vertical_offset, true);
         }
 #    ifdef OLED_WPM_GRAPH_VERTICAL_LINE
         static uint8_t vert_count = 0;
         if (vert_count == OLED_WPM_GRAPH_VERTCAL_LINE_INTERVAL) {
             vert_count = 0;
             while (x <= (max_lines_graph - 1)) {
-                oled_write_pixel(3, x + vertical_offset, true);
+                oled_write_pixel(start_offset, x + vertical_offset, true);
                 x++;
             }
         } else {
             for (uint8_t i = (max_lines_graph - 1); i > x; i--) {
                 if (i % OLED_WPM_GRAPH_AREA_FILL_INTERVAL == 0) {
-                    oled_write_pixel(3, i + vertical_offset, true);
+                    oled_write_pixel(start_offset, i + vertical_offset, true);
                 }
             }
             vert_count++;
@@ -558,14 +570,13 @@ void render_wpm_graph(uint8_t max_lines_graph, uint8_t vertical_offset) {
 #    else
         for (int i = (max_lines_graph - 1); i > x; i--) {
             if (i % OLED_WPM_GRAPH_AREA_FILL_INTERVAL == 0) {
-                oled_write_pixel(3, i + vertical_offset, true);
+                oled_write_pixel(start_offset, i + vertical_offset, true);
             }
         }
 #    endif
-#    include <math.h>
         uint8_t y_start  = ceil(vertical_offset / 8);
         uint8_t y_length = y_start + ceil(max_lines_graph / 8);
-        oled_pan_section(false, y_start, y_length, 3, 125); // then move the entire graph one pixel to the right
+        oled_pan_section(false, y_start, y_length, start_offset, cutoff); // then move the entire graph one pixel to the right
         timer = timer_read();                               // refresh the timer for the next iteration
     }
 #endif
@@ -586,17 +597,18 @@ void render_pointing_dpi_status(uint16_t cpi, uint8_t padding, uint8_t col, uint
 #endif
 
 // WPM-responsive animation stuff here
-#define OLED_SLEEP_FRAMES 2
-#define OLED_SLEEP_SPEED 10 // below this wpm value your animation will idle
-
-#define OLED_WAKE_FRAMES 2               // uncomment if >1
-#define OLED_WAKE_SPEED OLED_SLEEP_SPEED // below this wpm value your animation will idle
-
-#define OLED_KAKI_FRAMES 3
-#define OLED_KAKI_SPEED 40 // above this wpm value typing animation to triggere
-
-#define OLED_RTOGI_FRAMES 2
-// #define OLED_LTOGI_FRAMES 2
+#ifndef OLED_SLEEP_SPEED
+#define OLED_SLEEP_SPEED 10
+#endif
+#ifndef OLED_KAKI_SPEED
+#define OLED_KAKI_SPEED 40
+#endif
+#ifndef OLED_MATI_SPEED
+#define OLED_MATI_SPEED 60
+#endif
+#ifndef OLED_PET_ARRAY
+#define OLED_PET_ARRAY tora_the_cat_animation
+#endif
 
 // #define ANIM_FRAME_DURATION 500 // how long each frame lasts in ms
 //  #define SLEEP_TIMER 60000 // should sleep after this period of 0 wpm, needs fixing
@@ -607,27 +619,19 @@ void render_pointing_dpi_status(uint16_t cpi, uint8_t padding, uint8_t col, uint
 static uint8_t animation_frame = 0;
 static uint8_t animation_type  = 0;
 
-void render_kitty(uint8_t col, uint8_t line) {
+void render_pet(uint8_t col, uint8_t line) {
     for (uint8_t i = 0; i < 4; i++) {
         oled_set_cursor(col, line + i);
-        oled_write_raw_P(animation[animation_type][animation_frame][i], OLED_ANIM_SIZE);
+        oled_write_raw_P(OLED_PET_ARRAY[animation_type][animation_frame][i], OLED_ANIM_SIZE);
     }
 }
 
-void render_unicode_mode(uint8_t col, uint8_t line) {
-#if defined(CUSTOM_UNICODE_ENABLE) && defined(UNICODE_COMMON_ENABLE)
-    oled_set_cursor(col, line);
-    oled_write_P(PSTR("Unicode:"), false);
-    oled_write_P(unicode_mode_str[unicode_typing_mode], false);
-#endif
-}
-
-uint32_t kitty_animation_phases(uint32_t triger_time, void *cb_arg) {
+uint32_t pet_animation_phases(uint32_t triger_time, void *cb_arg) {
     static uint32_t anim_frame_duration = 500;
 #if defined(POINTING_DEVICE_ENABLE) && defined(POINTING_DEVICE_AUTO_MOUSE_ENABLE)
     if (get_auto_mouse_toggle()) {
         animation_frame     = (animation_frame + 1) % OLED_RTOGI_FRAMES;
-        animation_type      = 3;
+        animation_type      = 4;
         anim_frame_duration = 300;
     } else
 #endif
@@ -639,18 +643,38 @@ uint32_t kitty_animation_phases(uint32_t triger_time, void *cb_arg) {
             animation_type      = 0;
             anim_frame_duration = 500;
 #ifdef WPM_ENABLE
-        } else if (get_current_wpm() > OLED_WAKE_SPEED) {
-            animation_frame     = (animation_frame + 1) % OLED_WAKE_FRAMES;
-            animation_type      = 1;
-            anim_frame_duration = 800;
-        } else if (get_current_wpm() >= OLED_KAKI_SPEED) {
+        } else if (get_current_wpm() <= OLED_KAKI_SPEED) {
             animation_frame     = (animation_frame + 1) % OLED_KAKI_FRAMES;
+            animation_type      = 1;
+            anim_frame_duration = 500;
+        } else if (get_current_wpm() <= OLED_MATI_SPEED) {
+            animation_frame     = (animation_frame + 1) % OLED_MATI_FRAMES;
             animation_type      = 2;
             anim_frame_duration = 500;
+        } else {
+            animation_frame     = (animation_frame + 1) % OLED_AWAKE_FRAMES;
+            animation_type      = 3;
+            anim_frame_duration = 300;
         }
 #endif
     }
     return anim_frame_duration;
+}
+
+void render_unicode_mode(uint8_t col, uint8_t line) {
+#if defined(CUSTOM_UNICODE_ENABLE) && defined(UNICODE_COMMON_ENABLE)
+    oled_set_cursor(col, line);
+    oled_write_P(PSTR("Unicode:"), false);
+    oled_write_P(unicode_mode_str[unicode_typing_mode], false);
+#endif
+}
+
+void render_unicode_mode_small(uint8_t col, uint8_t line) {
+#if defined(CUSTOM_UNICODE_ENABLE) && defined(UNICODE_COMMON_ENABLE)
+    oled_set_cursor(col, line);
+    oled_write_P(PSTR("UC"), false);
+    oled_write_P(unicode_mode_str[unicode_typing_mode], false);
+#endif
 }
 
 void render_mouse_mode(uint8_t col, uint8_t line) {
@@ -692,7 +716,7 @@ void render_status_right(void) {
 
 void render_status_left(void) {
 #if defined(OLED_DISPLAY_VERBOSE)
-    render_kitty(0, 1);
+    render_pet(0, 1);
 
 #    if defined(WPM_ENABLE)
     render_wpm(1, 7, 1);
@@ -741,7 +765,10 @@ __attribute__((weak)) void oled_render_large_display(bool side) {
         render_rgb_hsv(1, 7);
         render_rgb_mode(1, 8);
 
-        render_wpm_graph(48, 72);
+        oled_set_cursor(0, 9);
+        oled_write_raw_P(qmk_logo, 384);
+        render_wpm_graph(20, 107, 25, 96);
+
     } else {
         // oled_advance_page(true);
         render_autocorrected_info(1, 7);
@@ -766,9 +793,10 @@ __attribute__((weak)) oled_rotation_t oled_init_keymap(oled_rotation_t rotation)
 oled_rotation_t oled_init_user(oled_rotation_t rotation) {
     if (is_keyboard_master()) {
         memset(oled_keylog_str, ' ', OLED_KEYLOGGER_LENGTH);
+        oled_keylog_str[OLED_KEYLOGGER_LENGTH] = '\0';
     }
 
-    kittoken = defer_exec(3000, kitty_animation_phases, NULL);
+    kittoken = defer_exec(3000, pet_animation_phases, NULL);
 
     oled_clear();
     oled_render();
@@ -831,7 +859,16 @@ bool oled_task_user(void) {
     }
 
     oled_set_cursor(0, num_of_rows);
+#    if defined(OLED_DISPLAY_128X128)
+    // static bool has_ran = false;
+    // if (!has_ran) {
+    //     has_ran = true;
+        oled_write_raw_P(footer_image2, sizeof(footer_image2));
+    // }
+
+#else
     oled_write_raw_P(footer_image, sizeof(footer_image));
+    #endif
 #endif
 
     return false;

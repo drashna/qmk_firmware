@@ -54,7 +54,7 @@ bool oled_task_keymap(void) {
     oled_set_cursor(4, 0);
     render_oled_title(false);
 
-    render_kitty(0, 2);
+    render_pet(0, 2);
     render_matrix_scan_rate(1, 7, 2);
 
 #ifdef AUDIO_ENABLE
