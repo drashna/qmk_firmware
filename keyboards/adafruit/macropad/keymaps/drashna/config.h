@@ -11,7 +11,7 @@
 #define DRV2605L_FB_LOOPGAIN        1 /* For  Low:0, Medium:1, High:2, Very High:3 */
 
 /* Please refer to your datasheet for the optimal setting for your specific motor. */
-#define DRV2605L_RATED_VOLTAGE      3
+#define DRV2605L_RATED_VOLTAGE      5
 #define DRV2605L_V_PEAK             5
 
 #define DRV2605L_GREETING       DRV2605L_EFFECT_750_MS_ALERT_100
