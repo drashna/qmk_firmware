@@ -1,0 +1,26 @@
+{
+    "keyboard_name": "Tractyl Manuform (5x6) Elite-Pi",
+    "bootloader": "rp2040",
+    "diode_direction": "COL2ROW",
+    "matrix_pins": {
+        "cols": ["GP4", "GP6", "GP7", "GP8", "GP9", "GP12"],
+        "rows": ["GP26", "GP27", "GP28", "GP29", "GP15", "GP16"]
+    },
+    "processor": "RP2040",
+    "encoder": {
+        "rotary": [
+            {"pin_a": "GP13", "pin_b": "GP14"}
+        ]
+    },
+    "rgblight": {
+        "led_count": 20,
+        "split_count": [10, 10]
+    },
+    "split": {
+        "soft_serial_pin": "GP1"
+    },
+    "ws2812": {
+        "driver": "vendor",
+        "pin": "GP0"
+    }
+}
