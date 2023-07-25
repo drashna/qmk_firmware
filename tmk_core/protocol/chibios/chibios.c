@@ -121,7 +121,6 @@ static host_driver_t *driver = NULL;
 
 void protocol_pre_init(void) {
     /* Init USB */
-    usb_event_queue_init();
     init_usb_driver(&USB_DRIVER);
 
 #ifdef MIDI_ENABLE
@@ -157,9 +156,10 @@ void protocol_post_init(void) {
 }
 
 void protocol_pre_task(void) {
+    usb_event_queue_task();
+
 #if !defined(NO_USB_STARTUP_CHECK)
     if (USB_DRIVER.state == USB_SUSPENDED) {
-        dprintln("suspending keyboard");
         while (USB_DRIVER.state == USB_SUSPENDED) {
             suspend_power_down();
             if ((USB_DRIVER.status & USB_GETSTATUS_REMOTE_WAKEUP_ENABLED) && suspend_wakeup_condition()) {
@@ -178,11 +178,10 @@ void protocol_pre_task(void) {
         }
         /* after a successful wakeup a USB_EVENT_WAKEUP is signaled to QMK by
          * ChibiOS, which triggers a wakeup callback that restores the state of
-         * the keyboard. Therefore we do nothing here. */
+         * the keyboard. We immedialty check for this after waking up. */
+        usb_event_queue_task();
     }
 #endif
-
-    usb_event_queue_task();
 }
 
 void protocol_post_task(void) {
