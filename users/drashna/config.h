@@ -31,6 +31,10 @@
 #    include "audio_config.h"
 #endif // AUDIO_ENABLE
 
+#ifdef RTC_ENABLE
+#   include "rtc/rtc_config.h"
+#endif
+
 #if defined(WPM_ENABLE)
 // #    define WPM_LAUNCH_CONTROL
 // #    define WPM_UNFILTERED
