@@ -307,14 +307,6 @@ void send_programmable_button(report_programmable_button_t *report) {
 #endif
 }
 
-void send_radio(report_radio_t *report) {
-#ifdef EXTRAKEY_ENABLE
-    if (usbInterruptIsReadyShared()) {
-        usbSetInterruptShared((void *)report, sizeof(report_radio_t));
-    }
-#endif
-}
-
 /*------------------------------------------------------------------*
  * Request from host                                                *
  *------------------------------------------------------------------*/
@@ -559,7 +551,7 @@ const PROGMEM uchar shared_hid_report[] = {
     0x95, 0x01,            //   Report Count (1)
     0x75, 0x01,            //   Report Size (1)
     0x81, 0x06,            //   Input (Data, Variable, Relative)
-    0x75, 0x07,            //   Report Size (7)
+    0x75, 0x0F,            //   Report Size (15)
     0x81, 0x03,            //   INPUT (Constant, Variable, Absolute)
     0xC0,                  // End Collection
 #endif

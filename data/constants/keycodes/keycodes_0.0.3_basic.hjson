@@ -1,7 +1,7 @@
 {
     "keycodes": {
-        "0x00E8": {
-            "group": "media",
+        "0x00C3": {
+            "group": "radio",
             "key": "KC_AIRPLANE_MODE",
             "label": "Toggle Airplane Mode",
             "aliases": [

@@ -166,13 +166,12 @@ void host_radio_send(bool state) {
      * !state means there's no change. */
     if (!state) return;
 
-    report_radio_t report = {
+    report_extra_t report = {
         .report_id = REPORT_ID_RADIO,
-        .state     = (uint8_t)state,
+        .usage     = (uint16_t)state,
     };
-    send_radio(&report);
+    (*driver->send_extra)(&report);
 }
-__attribute__((weak)) void send_radio(report_radio_t *report) {}
 
 #ifdef JOYSTICK_ENABLE
 void host_joystick_send(joystick_t *joystick) {

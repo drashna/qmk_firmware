@@ -924,10 +924,15 @@ __attribute__((weak)) void register_code(uint8_t code) {
 #ifdef EXTRAKEY_ENABLE
     } else if (IS_SYSTEM_KEYCODE(code)) {
         host_system_send(KEYCODE2SYSTEM(code));
+    } else if (code == KC_AIRPLANE_MODE) {
+        host_radio_send(true);
     } else if (IS_CONSUMER_KEYCODE(code)) {
         host_consumer_send(KEYCODE2CONSUMER(code));
 #endif
-
+#ifdef RADIOKEY_ENABLE
+    } else if (IS_RADIO_KEYCODE(code)) {
+        host_radio_send(KEYCODE2RADIO(code));
+#endif
     } else if (IS_MOUSE_KEYCODE(code)) {
         register_mouse(code, true);
     }

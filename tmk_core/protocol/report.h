@@ -200,11 +200,6 @@ typedef struct {
 } __attribute__((packed)) report_extra_t;
 
 typedef struct {
-    uint8_t report_id;
-    uint8_t state;
-} __attribute__((packed)) report_radio_t;
-
-typedef struct {
     uint8_t  report_id;
     uint32_t usage;
 } __attribute__((packed)) report_programmable_button_t;
