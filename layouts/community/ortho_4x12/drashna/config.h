@@ -18,7 +18,7 @@
 
 #if defined(RGBLIGHT_ENABLE) && !defined(RGBLED_NUM)
 #    if defined(KEYBOARD_planck_light)
-#        define RGB_DI_PIN A0
+#        define WS2812_DI_PIN A0
 #        define RGBLED_NUM 13  // Number of LEDs
 #    endif
 #    define RGBLIGHT_HUE_STEP 12
@@ -115,7 +115,7 @@
 #    define V_RMS 2.3
 #    define V_PEAK 3.30
 /* Library Selection */
-#    define LIB_SELECTION 4 /* For Empty:0' TS2200 library A to D:1-5, LRA Library: 6 */
+#    define DRV2605L_LIBRARY 4 /* For Empty:0' TS2200 library A to D:1-5, LRA Library: 6 */
 
 /* default 2V LRA voltage and library */
 #elif FB_ERM_LRA == 1
@@ -124,7 +124,7 @@
 #    define V_PEAK 2.85
 #    define F_LRA 200
 /* Library Selection */
-#    define LIB_SELECTION 6 /* For Empty:0' TS2200 library A to D:1-5, LRA Library: 6 */
+#    define DRV2605L_LIBRARY 6 /* For Empty:0' TS2200 library A to D:1-5, LRA Library: 6 */
 
 #endif
 

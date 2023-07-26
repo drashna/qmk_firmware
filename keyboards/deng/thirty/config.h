@@ -15,9 +15,11 @@
  */
 #pragma once
 
+#define BACKLIGHT_PWM_DRIVER PWMD2
+#define BACKLIGHT_PWM_CHANNEL 4
+
 /* RGB Matrix */
 #ifdef RGB_MATRIX_ENABLE
-#define RGB_DI_PIN B12
 #define RGB_MATRIX_LED_COUNT 30
 #define RGB_MATRIX_KEYPRESSES
 // #define RGB_MATRIX_KEYRELEASES
