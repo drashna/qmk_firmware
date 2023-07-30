@@ -10,6 +10,9 @@
         "pid": "0x5C46",
         "max_power": 100
     },
+    "build": {
+        "lto": true
+    },
     "features": {
         "bootmagic": true,
         "command": false,
