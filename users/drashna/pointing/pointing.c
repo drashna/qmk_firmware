@@ -87,7 +87,11 @@ bool has_mouse_report_changed(report_mouse_t* new_report, report_mouse_t* old_re
         mouse_jiggler_timer = timer_read();
         return true;
     }
-    return memcmp(new_report, old_report, sizeof(report_mouse_t));
+    return ((new_report->buttons != old_report->buttons) ||
+        (new_report->x != 0 && new_report->x != old_report->x) ||
+        (new_report->y != 0 && new_report->y != old_report->y) ||
+        (new_report->h != 0 && new_report->h != old_report->h) ||
+        (new_report->v != 0 && new_report->v != old_report->v));
 }
 
 void pointing_device_mouse_jiggler_toggle(void) {
