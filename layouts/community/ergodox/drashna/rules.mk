@@ -3,7 +3,7 @@ TAP_DANCE_ENABLE   = no
 COMMAND_ENABLE     = no  # Commands for debug and configuration
 CONSOLE_ENABLE     = no
 
-ifeq ($(strip $(KEYBOARD)), ergodox_ez)
+ifneq ($(filter $(KEYBOARD), ergodox_ez/base ergodox_ez/glow ergodox_ez/shine),)
     RGBLIGHT_ENABLE            = yes
     RGB_MATRIX_ENABLE          = yes
     INDICATOR_LIGHTS           = no
