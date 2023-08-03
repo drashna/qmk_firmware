@@ -26,6 +26,7 @@ extern bool swap_hands;
 #endif
 
 extern userspace_config_t userspace_config;
+_Static_assert(sizeof(userspace_config_t) <= RPC_M2S_BUFFER_SIZE, "userspace_config_t is larger than split buffer size!");
 
 uint16_t transport_keymap_config    = 0;
 uint32_t transport_userspace_config = 0, transport_user_state = 0;

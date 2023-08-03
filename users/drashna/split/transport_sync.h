@@ -22,7 +22,8 @@ typedef union {
     };
 } user_runtime_config_t;
 
-_Static_assert(sizeof(user_runtime_config_t) == sizeof(uint32_t), "user_runtime_config_t is not 4 bytes");
+_Static_assert(sizeof(user_runtime_config_t) == sizeof(uint32_t), "user_runtime_config_t is not 4 bytes.");
+_Static_assert(sizeof(user_runtime_config_t) <= RPC_M2S_BUFFER_SIZE, "user_runtime_config_t is larger than split buffer size!");
 
 extern user_runtime_config_t user_state;
 
