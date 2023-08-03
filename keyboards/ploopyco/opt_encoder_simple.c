@@ -15,6 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#ifdef ENCODER_ENABLE
 #include "opt_encoder.h"
 #include "util.h"
 #include <stdbool.h>
@@ -145,3 +146,4 @@ int8_t opt_encoder_handler(uint16_t encA, uint16_t encB) {
 
     return result;
 }
+#endif

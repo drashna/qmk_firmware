@@ -19,31 +19,10 @@
 
 #pragma once
 
-#include "quantum.h"
-#include "analog.h"
-#include "opt_encoder.h"
-
-// Sensor defs
-#define OPT_ENC1 F0
-#define OPT_ENC2 F4
-#define OPT_ENC1_MUX 0
-#define OPT_ENC2_MUX 4
-
-void process_wheel(void);
-
-typedef union {
-    uint32_t raw;
-    struct {
-        uint8_t dpi_config;
-    };
-} keyboard_config_t;
-
-extern keyboard_config_t keyboard_config;
-
-enum ploopy_keycodes {
-    DPI_CONFIG = QK_KB_0,
-    DRAG_SCROLL,
-};
-
-bool encoder_update_user(uint8_t index, bool clockwise);
-bool encoder_update_kb(uint8_t index, bool clockwise);
+#ifndef PLOOPY_DPI_OPTIONS
+#    define PLOOPY_DPI_OPTIONS \
+        { 600, 900, 1200, 1600 }
+#    ifndef PLOOPY_DPI_DEFAULT
+#        define PLOOPY_DPI_DEFAULT 1
+#    endif
+#endif
