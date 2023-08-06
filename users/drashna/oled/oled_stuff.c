@@ -669,11 +669,11 @@ void render_unicode_mode(uint8_t col, uint8_t line) {
 #endif
 }
 
-void render_unicode_mode_small(uint8_t col, uint8_t line) {
+void render_unicode_mode_small(uint8_t col, uint8_t line, bool invert) {
 #if defined(CUSTOM_UNICODE_ENABLE) && defined(UNICODE_COMMON_ENABLE)
     oled_set_cursor(col, line);
-    oled_write_P(PSTR("UC"), false);
-    oled_write_P(unicode_mode_str[unicode_typing_mode], false);
+    oled_write_P(PSTR("UC"), invert);
+    oled_write_P(unicode_mode_str[unicode_typing_mode], invert);
 #endif
 }
 
@@ -732,8 +732,6 @@ void render_status_left(void) {
     /* Show Keyboard Layout  */
     render_bootmagic_status(7, 3);
     render_user_status(1, 5);
-
-    render_keylogger_status(1, 6);
 #else
     render_default_layer_state(0, 0);
     /* Show Keyboard Layout  */
@@ -762,12 +760,12 @@ void render_autocorrected_info(uint8_t col, uint8_t line) {
 #ifdef OLED_DISPLAY_128X128
 __attribute__((weak)) void oled_render_large_display(bool side) {
     if (side) {
-        render_rgb_hsv(1, 7);
-        render_rgb_mode(1, 8);
+        render_rgb_hsv(1, 6);
+        render_rgb_mode(1, 7);
 
-        oled_set_cursor(0, 9);
+        oled_set_cursor(0, 8);
         oled_write_raw_P(qmk_logo, 384);
-        render_wpm_graph(20, 107, 25, 96);
+        render_wpm_graph(20, 107, 33, 88);
 
     } else {
         // oled_advance_page(true);
@@ -859,16 +857,14 @@ bool oled_task_user(void) {
     }
 
     oled_set_cursor(0, num_of_rows);
-#    if defined(OLED_DISPLAY_128X128)
-    // static bool has_ran = false;
-    // if (!has_ran) {
-    //     has_ran = true;
-        oled_write_raw_P(footer_image2, sizeof(footer_image2));
-    // }
+    oled_write_raw_P(footer_image2, sizeof(footer_image2));
 
-#else
-    oled_write_raw_P(footer_image, sizeof(footer_image));
-    #endif
+    if (is_keyboard_left()) {
+        oled_set_cursor(4, num_of_rows);
+        oled_write(oled_keylog_str, true);
+    } else {
+        render_unicode_mode_small(4, num_of_rows, true);
+    }
 #endif
 
     return false;
