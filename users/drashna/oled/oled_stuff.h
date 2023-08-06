@@ -44,8 +44,10 @@ void            oled_render_large_display(bool side);
 void            render_wpm_graph(uint8_t start_offset, uint8_t cutoff, uint8_t max_lines_graph, uint8_t vertical_offset);
 void            render_pet(uint8_t col, uint8_t line);
 void            render_unicode_mode(uint8_t col, uint8_t line);
+void            render_unicode_mode_small(uint8_t col, uint8_t line, bool invert);
 void            render_rgb_hsv(uint8_t col, uint8_t line);
 void            render_mouse_mode(uint8_t col, uint8_t line);
+void            render_autocorrected_info(uint8_t col, uint8_t line);
 void            housekeeping_task_oled(void);
 void            render_oled_title(bool side);
 void            oled_shutdown(void);
@@ -57,7 +59,7 @@ void oled_pan_section(bool left, uint16_t y_start, uint16_t y_end, uint16_t x_st
 
 #    define OLED_RENDER_KEYLOGGER "Keylogger: "
 #    ifndef OLED_KEYLOGGER_LENGTH
-#        define OLED_KEYLOGGER_LENGTH 9
+#        define OLED_KEYLOGGER_LENGTH 14
 #    endif
 #    define OLED_RENDER_LAYOUT_NAME "Layout: "
 #    define OLED_RENDER_LAYOUT_QWERTY "Qwerty"
