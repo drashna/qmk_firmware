@@ -1,9 +1,9 @@
 // Copyright 2020 QMK
 // SPDX-License-Identifier: GPL-2.0-or-later
-#include QMK_KEYBOARD_H
+#include "drashna.h"
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
-    [0] = LAYOUT_ortho_1x1(QK_BOOT)
+    [0] = LAYOUT_ortho_1x1(KC_A)
 };
 
 #if defined(ENCODER_MAP_ENABLE)
@@ -170,13 +170,13 @@ led_config_t g_led_config = { {
 #include "oled/oled_stuff.h"
 
 void oled_render_large_display(bool side) {
-        render_rgb_hsv(1, 7);
-        render_rgb_mode(1, 8);
+        render_rgb_hsv(1, 6);
+        render_rgb_mode(1, 7);
+        render_arasaka_logo(0, 8);
 
-       oled_render_time(1, 13);
-        // render_arasaka_logo_small(1, 11);
-        // render_unicode_mode_small(7, 11);
-        // oled_render_time_small(7, 12);
+        oled_render_time(1, 13);
+        render_unicode_mode(1, 12);
+
 
 }
 #endif
