@@ -242,21 +242,25 @@ uint32_t startup_exec(uint32_t trigger_time, void *cb_arg) {
                 case OS_WINDOWS:
                     xprintf("Windows Detected\n");
                     break;
+#    if 0
                 case OS_WINDOWS_UNSURE:
                     xprintf("Windows? Detected\n");
                     break;
+#    endif
                 case OS_MACOS:
                     xprintf("MacOS Detected\n");
                     break;
                 case OS_IOS:
                     xprintf("iOS Detected\n");
                     break;
+#    if 0
                 case OS_PS5:
                     xprintf("PlayStation 5 Detected\n");
                     break;
                 case OS_HANDHELD:
                     xprintf("Nintend Switch/Quest 2 Detected\n");
                     break;
+#    endif
             }
         }
     }
