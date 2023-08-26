@@ -52,14 +52,9 @@ void make_guess(void) {
     if (setups_data.count < 3) {
         return;
     }
-    if (setups_data.cnt_04 >= 1) {
-        if (setups_data.cnt_ff >= 2) {
-            detected_os = OS_WINDOWS;
-            return;
-        } else if (setups_data.cnt_ff) {
-            detected_os = OS_WINDOWS_UNSURE;
-            return;
-        }
+    if (setups_data.cnt_ff >= 2 && setups_data.cnt_04 >= 1) {
+        detected_os = OS_WINDOWS;
+        return;
     }
     if (setups_data.count == setups_data.cnt_ff) {
         // Linux has 3 packets with 0xFF.
@@ -77,12 +72,12 @@ void make_guess(void) {
     }
     if (setups_data.cnt_ff == 0 && setups_data.cnt_02 == 3 && setups_data.cnt_04 == 1) {
         // This is actually PS5.
-        detected_os = OS_PS5;
+        detected_os = OS_LINUX;
         return;
     }
     if (setups_data.cnt_ff >= 1 && setups_data.cnt_02 == 0 && setups_data.cnt_04 == 0) {
         // This is actually Quest 2 or Nintendo Switch.
-        detected_os = OS_HANDHELD;
+        detected_os = OS_LINUX;
         return;
     }
 }
