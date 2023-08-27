@@ -361,5 +361,8 @@ bool is_device_suspended(void) {
  * @param status
  */
 void set_is_device_suspended(bool status) {
+#if defined(SPLIT_KEYBOARD) && defined(SPLIT_TRANSACTION_IDS_USER)
+    send_device_suspend_state(status);
+#endif
     device_suspended = status;
 }
