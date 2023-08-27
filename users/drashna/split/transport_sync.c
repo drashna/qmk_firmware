@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "transport_sync.h"
+#include "drashna.h"
 #include "transactions.h"
 #include <string.h>
 
@@ -67,6 +68,20 @@ void keylogger_string_sync(uint8_t initiator2target_buffer_size, const void* ini
 }
 #endif
 
+void suspend_state_sync(uint8_t initiator2target_buffer_size, const void* initiator2target_buffer, uint8_t target2initiator_buffer_size, void* target2initiator_buffer) {
+    bool suspend_state;
+    memcpy(&suspend_state, initiator2target_buffer, initiator2target_buffer_size);
+    if (suspend_state != is_device_suspended()) {
+        set_is_device_suspended(suspend_state);
+    }
+}
+
+void send_device_suspend_state(bool status) {
+    if (is_device_suspended() != status) {
+        transaction_rpc_send(RPC_ID_USER_SUSPEND_STATE_SYNC, sizeof(bool), &status);
+    }
+}
+
 void keyboard_post_init_transport_sync(void) {
     // Register keyboard state sync split transaction
     transaction_register_rpc(RPC_ID_USER_STATE_SYNC, user_state_sync);
@@ -78,6 +93,7 @@ void keyboard_post_init_transport_sync(void) {
 #ifdef CUSTOM_OLED_DRIVER
     transaction_register_rpc(RPC_ID_USER_OLED_KEYLOG_STR, keylogger_string_sync);
 #endif
+    transaction_register_rpc(RPC_ID_USER_SUSPEND_STATE_SYNC, suspend_state_sync);
 }
 
 void user_transport_update(void) {
@@ -99,7 +115,6 @@ void user_transport_update(void) {
         user_state.swap_hands = swap_hands;
 #endif
         user_state.host_driver_disabled = get_keyboard_lock();
-        user_state.is_device_suspended = is_device_suspended();
         transport_user_state = user_state.raw;
     } else {
         keymap_config.raw    = transport_keymap_config;
@@ -118,7 +133,6 @@ void user_transport_update(void) {
         swap_hands = user_state.swap_hands;
 #endif
         set_keyboard_lock(user_state.host_driver_disabled);
-        set_is_device_suspended(user_state.is_device_suspended);
     }
 }
 
