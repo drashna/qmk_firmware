@@ -10,6 +10,8 @@ SWAP_HANDS_ENABLE                = no
 TAP_DANCE_ENABLE                 = no
 WPM_ENABLE                       = no
 
+MOUSE_SHARED_EP                  = no
+
 ifeq ($(strip $(KEYBOARD)), handwired/tractyl_manuform/5x6_right/elite_c)
     BOOTLOADER                       = qmk-hid
     BOOTLOADER_SIZE                  = 512
