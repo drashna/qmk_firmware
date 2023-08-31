@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "transport_sync.h"
+#include "_wait.h"
 #include "drashna.h"
 #include "transactions.h"
 #include <string.h>
@@ -77,8 +78,9 @@ void suspend_state_sync(uint8_t initiator2target_buffer_size, const void* initia
 }
 
 void send_device_suspend_state(bool status) {
-    if (is_device_suspended() != status) {
+    if (is_device_suspended() != status && is_keyboard_master()) {
         transaction_rpc_send(RPC_ID_USER_SUSPEND_STATE_SYNC, sizeof(bool), &status);
+        wait_ms(5);
     }
 }
 
