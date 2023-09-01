@@ -26,14 +26,17 @@ extern "C" {
 uint8_t bitpop(uint8_t bits);
 uint8_t bitpop16(uint16_t bits);
 uint8_t bitpop32(uint32_t bits);
+uint8_t bitpop64(uint64_t bits);
 
 uint8_t biton(uint8_t bits);
 uint8_t biton16(uint16_t bits);
 uint8_t biton32(uint32_t bits);
+uint8_t biton64(uint64_t bits);
 
 uint8_t  bitrev(uint8_t bits);
 uint16_t bitrev16(uint16_t bits);
 uint32_t bitrev32(uint32_t bits);
+uint64_t bitrev64(uint64_t bits);
 
 #ifdef __cplusplus
 }
