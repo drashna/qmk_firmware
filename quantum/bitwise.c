@@ -43,6 +43,13 @@ uint8_t bitpop32(uint32_t bits) {
     return c;
 }
 
+uint8_t bitpop64(uint64_t bits) {
+    uint8_t c;
+    for (c = 0; bits; c++)
+        bits &= bits - 1;
+    return c;
+}
+
 // most significant on-bit - return highest location of on-bit
 // NOTE: return 0 when bit0 is on or all bits are off
 __attribute__((noinline)) uint8_t biton(uint8_t bits) {
@@ -108,6 +115,35 @@ uint8_t biton32(uint32_t bits) {
     return n;
 }
 
+uint8_t biton64(uint64_t bits) {
+    uint8_t n = 0;
+    if (bits >> 32) {
+        bits >>= 32;
+        n += 32;
+    }
+    if (bits >> 16) {
+        bits >>= 16;
+        n += 16;
+    }
+    if (bits >> 8) {
+        bits >>= 8;
+        n += 8;
+    }
+    if (bits >> 4) {
+        bits >>= 4;
+        n += 4;
+    }
+    if (bits >> 2) {
+        bits >>= 2;
+        n += 2;
+    }
+    if (bits >> 1) {
+        bits >>= 1;
+        n += 1;
+    }
+    return n;
+}
+
 __attribute__((noinline)) uint8_t bitrev(uint8_t bits) {
     bits = (bits & 0x0f) << 4 | (bits & 0xf0) >> 4;
     bits = (bits & 0b00110011) << 2 | (bits & 0b11001100) >> 2;
@@ -122,5 +158,10 @@ uint16_t bitrev16(uint16_t bits) {
 
 uint32_t bitrev32(uint32_t bits) {
     bits = (uint32_t)bitrev16(bits & 0x0000ffff) << 16 | bitrev16((bits & 0xffff0000) >> 16);
+    return bits;
+}
+
+uint64_t bitrev64(uint64_t bits) {
+    bits = (uint64_t)bitrev32(bits & 0x00000000ffffffff) << 32 | bitrev32((bits & 0xffffffff00000000) >> 32);
     return bits;
 }
