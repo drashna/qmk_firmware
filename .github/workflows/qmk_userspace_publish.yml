@@ -1,0 +1,33 @@
+name: Build Binaries
+
+on:
+  workflow_call:
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    name: Publish
+    if: always() && !cancelled()
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Download binaries
+      if: always() && !cancelled()
+      uses: actions/download-artifact@v3
+
+    - name: Generate Release
+      uses: softprops/action-gh-release@v1
+      if: always() && !cancelled()
+      with:
+        token: ${{ github.token }}
+        name: Latest QMK Firmware
+        tag_name: latest
+        fail_on_unmatched_files: false
+        draft: false
+        prerelease: false
+        files: |
+          **/*.hex
+          **/*.bin
+          **/*.uf2
