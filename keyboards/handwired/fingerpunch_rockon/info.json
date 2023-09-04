@@ -35,7 +35,7 @@
     },
     "processor": "STM32F411",
     "rgb_matrix": {
-        "driver": "WS2812",
+        "driver": "ws2812",
         "layout": [
             {"matrix": [5, 0], "x": 7, "y": 1, "flags": 1},
             {"matrix": [0, 0], "x": 21, "y": 1, "flags": 4},
