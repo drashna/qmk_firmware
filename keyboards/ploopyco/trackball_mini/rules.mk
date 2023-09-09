@@ -16,4 +16,7 @@ MOUSEKEY_ENABLE = yes        # Mouse keys
 ENCODER_ENABLE = yes
 ENCODER_DRIVER = custom
 
+QUANTUM_LIB_SRC += analog.c
+SRC += opt_encoder.c
+
 DEFAULT_FOLDER = ploopyco/trackball_mini/rev1_001

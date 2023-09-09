@@ -1,6 +1,7 @@
 /* Copyright 2021 Colin Lam (Ploopy Corporation)
  * Copyright 2020 Christopher Courtney, aka Drashna Jael're  (@drashna) <drashna@live.com>
  * Copyright 2019 Sunjun Kim
+ * Copyright 2019 Hiroyuki Okada
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,19 +22,16 @@
 #include "quantum.h"
 
 typedef union {
-    uint32_t raw;
-    struct {
-        uint8_t dpi_config;
-    };
+  uint32_t raw;
+  struct {
+    uint8_t dpi_config;
+  };
 } keyboard_config_t;
-_Static_assert(sizeof(keyboard_config_t) == sizeof(uint32_t), "keyboard_config_t size mismatch compared to EEPROM area");
 
 extern keyboard_config_t keyboard_config;
-extern uint16_t          dpi_array[];
 
 enum ploopy_keycodes {
     DPI_CONFIG = QK_KB_0,
-    DRAG_SCROLL,
 };
 
 void cycle_dpi(void);

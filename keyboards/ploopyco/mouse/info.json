@@ -31,11 +31,6 @@
             ["D4", "D2", "E6", "B6", "D7", "C6", "C7", "B7"]
         ]
     },
-    "encoder": {
-        "rotary": [
-            {"pin_a": "F0", "pin_b": "F4"}
-        ]
-    },
     "layouts": {
         "LAYOUT": {
             "layout": [

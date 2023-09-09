@@ -14,11 +14,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifdef ENCODER_ENABLE
 #include "opt_encoder.h"
 #include <stdbool.h>
 
 enum State { HIHI, HILO, LOLO, LOHI };
+
 enum State state;
 
 /* Variables used for scroll wheel functionality. */
@@ -246,4 +246,3 @@ void incrementIndex(int* index, bool* ovflw) {
         *ovflw = true;
     }
 }
-#endif
