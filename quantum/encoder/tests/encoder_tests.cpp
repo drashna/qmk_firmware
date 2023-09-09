@@ -41,7 +41,7 @@ bool encoder_update_kb(uint8_t index, bool clockwise) {
 
 bool setAndRead(pin_t pin, bool val) {
     setPin(pin, val);
-    return encoder_task();
+    return encoder_read();
 }
 
 class EncoderTest : public ::testing::Test {};

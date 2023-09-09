@@ -21,12 +21,7 @@
         "mousekey": true,
         "nkro": true,
         "pointing_device": true,
-        "encoder": true
-    },
-    "encoder": {
-        "rotary": [
-            {"pin_a": "NO_PIN", "pin_b": "NO_PIN"}
-        ]
+        "encoder": false
     },
     "layouts": {
         "LAYOUT": {

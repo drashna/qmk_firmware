@@ -74,6 +74,8 @@ uint8_t  OptLowPin         = OPT_ENC1;
 bool     debug_encoder     = false;
 bool     is_drag_scroll    = false;
 
+__attribute__((weak)) bool encoder_update_user(uint8_t index, bool clockwise) { return true; }
+
 bool encoder_update_kb(uint8_t index, bool clockwise) {
     if (!encoder_update_user(index, clockwise)) {
         return false;
@@ -89,14 +91,7 @@ bool encoder_update_kb(uint8_t index, bool clockwise) {
     return true;
 }
 
-void encoder_driver_init(void) {
-    setPinInput(OPT_ENC1);
-    setPinInput(OPT_ENC2);
-
-    opt_encoder_init();
-}
-
-void encoder_driver_task(void) {
+void process_wheel(void) {
     uint16_t p1 = adc_read(OPT_ENC1_MUX);
     uint16_t p2 = adc_read(OPT_ENC2_MUX);
 
@@ -118,17 +113,21 @@ void encoder_driver_task(void) {
     }
 
     if (dir == 0) return;
-    encoder_queue_event(0, dir == 1);
+    encoder_update_kb(0, dir > 0);
 
     lastScroll = timer_read();
 }
 
 void pointing_device_init_kb(void) {
+    opt_encoder_init();
+
     // set the DPI.
     pointing_device_set_cpi(dpi_array[keyboard_config.dpi_config]);
 }
 
 report_mouse_t pointing_device_task_kb(report_mouse_t mouse_report) {
+    process_wheel();
+
     if (is_drag_scroll) {
         mouse_report.h = mouse_report.x;
 #ifdef PLOOPY_DRAGSCROLL_INVERT
@@ -180,6 +179,9 @@ void keyboard_pre_init_kb(void) {
     // debug_matrix = true;
     // debug_mouse = true;
     // debug_encoder = true;
+
+    setPinInput(OPT_ENC1);
+    setPinInput(OPT_ENC2);
 
     /* Ground all output pins connected to ground. This provides additional
      * pathways to ground. If you're messing with this, know this: driving ANY

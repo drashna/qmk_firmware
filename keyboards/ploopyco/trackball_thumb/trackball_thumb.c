@@ -17,7 +17,6 @@
  */
 
 #include "trackball_thumb.h"
-#include "encoder.h"
 
 #ifndef OPT_DEBOUNCE
 #    define OPT_DEBOUNCE 5  // (ms) 			Time between scroll events
@@ -58,6 +57,9 @@ uint16_t last_mid_click    = 0;  // Stops scrollwheel from being read if it was 
 bool     debug_encoder     = false;
 bool     is_drag_scroll    = false;
 
+// require, since core encoder.c (where is is normally defined isn't present
+__attribute__((weak)) bool encoder_update_user(uint8_t index, bool clockwise) { return true; }
+
 bool encoder_update_kb(uint8_t index, bool clockwise) {
     if (!encoder_update_user(index, clockwise)) {
         return false;
@@ -73,25 +75,25 @@ bool encoder_update_kb(uint8_t index, bool clockwise) {
     return true;
 }
 
-void encoder_driver_init(void) { opt_encoder_init(); }
+void encoder_init(void) { opt_encoder_init(); }
 
-void encoder_driver_task(void) {
+bool encoder_read(void) {
     // Lovingly ripped from the Ploopy Source
 
     // If the mouse wheel was just released, do not scroll.
     if (timer_elapsed(last_mid_click) < SCROLL_BUTT_DEBOUNCE) {
-        return;
+        return false;
     }
 
     // Limit the number of scrolls per unit time.
     if (timer_elapsed(last_scroll) < OPT_DEBOUNCE) {
-        return;
+        return false;
     }
 
     // Don't scroll if the middle button is depressed.
     if (is_scroll_clicked) {
 #ifndef IGNORE_SCROLL_CLICK
-        return;
+        return false;
 #endif
     }
 
@@ -102,8 +104,10 @@ void encoder_driver_task(void) {
 
     int dir = opt_encoder_handler(p1, p2);
 
-    if (dir == 0) return;
-    encoder_queue_event(0, dir == 1);
+    if (dir == 0) return false;
+    ;
+    encoder_update_kb(0, dir == 1);
+    return true;
 }
 
 report_mouse_t pointing_device_task_kb(report_mouse_t mouse_report) {
