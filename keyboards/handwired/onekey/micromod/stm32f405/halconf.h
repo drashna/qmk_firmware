@@ -24,4 +24,7 @@
 
 #define HAL_USE_SPI TRUE
 
+#define HAL_USE_GPT TRUE
+#define HAL_USE_DAC TRUE
+
 #include_next <halconf.h>
