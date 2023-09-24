@@ -258,7 +258,6 @@ static void debug_dilemma_config_to_console(dilemma_config_t* config) {
 
 bool process_record_kb(uint16_t keycode, keyrecord_t* record) {
     if (!process_record_user(keycode, record)) {
-        debug_dilemma_config_to_console(&g_dilemma_config);
         return false;
     }
 #    ifdef POINTING_DEVICE_ENABLE
@@ -307,7 +306,6 @@ bool process_record_kb(uint16_t keycode, keyrecord_t* record) {
     }
 #        endif // !NO_DILEMMA_KEYCODES
 #    endif     // POINTING_DEVICE_ENABLE
-    debug_dilemma_config_to_console(&g_dilemma_config);
     if (IS_QK_KB(keycode) || IS_MOUSEKEY(keycode)) {
         debug_dilemma_config_to_console(&g_dilemma_config);
     }
