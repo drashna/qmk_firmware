@@ -13,13 +13,18 @@ on:
         default: 'master'
         required: false
         type: string
+      keymap_name:
+        description: 'keymap name to build with'
+        default: ${{ github.actor }}
+        required: false
+        type: string
 
 permissions:
   contents: write
 
 jobs:
   build:
-    name: Build
+    name: Build ${{ inputs.keymap_name }}
     runs-on: ubuntu-latest
     container: qmkfm/base_container
 
@@ -72,7 +77,8 @@ jobs:
 
     - name: Build
       run: |
-        qmk mass-compile -e DUMP_CI_METADATA=yes -km ${{ github.repository_owner }} || touch .failed
+        rm -rfdv qmk_firmware/**/${{ inputs.keymap_name || github.actor }}/*
+        qmk mass-compile -e DUMP_CI_METADATA=yes -km ${{ inputs.keymap_name || github.actor }} || touch .failed
         # Generate the step summary markdown
         ./qmk_firmware/util/ci/generate_failure_markdown.sh > $GITHUB_STEP_SUMMARY || true
         # Truncate to a maximum of 1MB to deal with GitHub workflow limit
@@ -85,7 +91,7 @@ jobs:
       if: always() && !cancelled()
       continue-on-error: true
       with:
-        name: Firmware
+        name: Firmware-${{ inputs.keymap_name || github.actor }}
         path: |
           *.bin
           *.hex
