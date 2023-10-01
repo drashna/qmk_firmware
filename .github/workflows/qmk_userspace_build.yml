@@ -61,6 +61,7 @@ jobs:
     - name: Install QMK CLI
       run: |
         python3 -m pip install --upgrade qmk
+        python3 -m pip install mpire
         python3 -m pip install -r qmk_firmware/requirements.txt
 
     - name: Configure QMK CLI
@@ -89,28 +90,3 @@ jobs:
           *.bin
           *.hex
           *.uf2
-
-  publish:
-    name: Publish
-    needs: build
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Download binaries
-      if: always() && !cancelled()
-      uses: actions/download-artifact@v3
-
-    - name: Generate Release
-      uses: softprops/action-gh-release@v1
-      if: always() && !cancelled()
-      with:
-        token: "${{ github.token }}"
-        name: Latest Firmware
-        tag_name: latest
-        fail_on_unmatched_files: false
-        draft: false
-        prerelease: false
-        files: |
-          **/*.hex
-          **/*.bin
-          **/*.uf2
