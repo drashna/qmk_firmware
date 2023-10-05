@@ -1,0 +1,29 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema#",
+    "$id": "qmk.user_repo.v1",
+    "title": "User Repository Information",
+    "type": "object",
+    "required": [
+        "userspace_version",
+        "build_targets"
+    ],
+    "properties": {
+        "userspace_version": {
+            "type": "string",
+            "enum": ["1.0"]
+        },
+        "build_targets": {
+            "type": "array",
+            "items": {
+                "type": "array",
+                "minItems": 2,
+                "maxItems": 2,
+                "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "pattern": "^[0-9a-z][0-9a-z_/]*$"
+                }
+            }
+        }
+    }
+}

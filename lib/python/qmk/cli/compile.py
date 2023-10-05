@@ -9,20 +9,10 @@ from milc import cli
 import qmk.path
 from qmk.constants import QMK_FIRMWARE
 from qmk.decorators import automagic_keyboard, automagic_keymap
-from qmk.commands import compile_configurator_json, create_make_command, parse_configurator_json, build_environment
+from qmk.commands import compile_configurator_json, create_make_command, create_make_target, parse_configurator_json, build_environment
 from qmk.keyboard import keyboard_completer, keyboard_folder_or_all, is_all_keyboards
-from qmk.keymap import keymap_completer, locate_keymap
+from qmk.keymap import keymap_completer, is_keymap_target
 from qmk.cli.generate.compilation_database import write_compilation_database
-
-
-def _is_keymap_target(keyboard, keymap):
-    if keymap == 'all':
-        return True
-
-    if locate_keymap(keyboard, keymap):
-        return True
-
-    return False
 
 
 @cli.argument('filename', nargs='?', arg_only=True, type=qmk.path.FileType('r'), completer=FilesCompleter('.json'), help='The configurator export to compile')
@@ -32,6 +22,7 @@ def _is_keymap_target(keyboard, keymap):
 @cli.argument('-j', '--parallel', type=int, default=1, help="Set the number of parallel make jobs; 0 means unlimited.")
 @cli.argument('-e', '--env', arg_only=True, action='append', default=[], help="Set a variable to be passed to make. May be passed multiple times.")
 @cli.argument('-c', '--clean', arg_only=True, action='store_true', help="Remove object files before compiling.")
+@cli.argument('-t', '--target', type=str, default=None, help="Intended alternative build target, such as `production` in `make planck/rev4:default:production`.")
 @cli.argument('--compiledb', arg_only=True, action='store_true', help="Generates the clang compile_commands.json file during build. Implies --clean.")
 @cli.subcommand('Compile a QMK Firmware.')
 @automagic_keyboard
@@ -62,18 +53,18 @@ def compile(cli):
     if cli.args.filename:
         # If a configurator JSON was provided generate a keymap and compile it
         user_keymap = parse_configurator_json(cli.args.filename)
-        commands = [compile_configurator_json(user_keymap, parallel=cli.config.compile.parallel, clean=cli.args.clean, **envs)]
+        commands = [compile_configurator_json(user_keymap, target=cli.args.target, parallel=cli.config.compile.parallel, clean=cli.args.clean, **envs)]
 
     elif cli.config.compile.keyboard and cli.config.compile.keymap:
         # Generate the make command for a specific keyboard/keymap.
-        if not _is_keymap_target(cli.config.compile.keyboard, cli.config.compile.keymap):
+        if not is_keymap_target(cli.config.compile.keyboard, cli.config.compile.keymap):
             cli.log.error('Invalid keymap argument.')
             cli.print_help()
             return False
 
         if cli.args.clean:
-            commands.append(create_make_command(cli.config.compile.keyboard, cli.config.compile.keymap, 'clean', **envs))
-        commands.append(create_make_command(cli.config.compile.keyboard, cli.config.compile.keymap, parallel=cli.config.compile.parallel, **envs))
+            commands.append(create_make_target('clean'))
+        commands.append(create_make_command(cli.config.compile.keyboard, cli.config.compile.keymap, target=cli.args.target, parallel=cli.config.compile.parallel, **envs))
 
         current_keyboard = cli.config.compile.keyboard
         current_keymap = cli.config.compile.keymap

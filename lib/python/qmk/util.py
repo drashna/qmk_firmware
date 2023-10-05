@@ -1,9 +1,11 @@
 """Utility functions.
 """
 import contextlib
+import functools
 import multiprocessing
 
 from milc import cli
+from milc.subcommand import config
 
 
 @contextlib.contextmanager
@@ -21,7 +23,14 @@ def parallelize():
     else:
         parallel_search = cli.config.user.parallel_search
 
-    # Non-parallel searches use `map()`
+    # If we haven't already written a value, write it to the file
+    if cli.config.user.parallel_search != parallel_search:
+        cli.args.read_only = False
+        config.set_config('user', 'parallel_search', parallel_search)
+        cli.save_config()
+        cli.config.user.parallel_search = parallel_search
+
+    # Non-parallel searches use use `map()`
     if not parallel_search:
         yield map
         return
@@ -29,15 +38,8 @@ def parallelize():
     # Prefer mpire's `WorkerPool` if it's available
     with contextlib.suppress(ImportError):
         from mpire import WorkerPool
-        from mpire.utils import make_single_arguments
         with WorkerPool() as pool:
-
-            def _worker(func, *args):
-                # Ensure we don't unpack tuples -- mpire's `WorkerPool` tries to do so normally so we tell it not to.
-                for r in pool.imap_unordered(func, make_single_arguments(*args, generator=False), progress_bar=True):
-                    yield r
-
-            yield _worker
+            yield functools.partial(pool.imap_unordered, progress_bar=True)
         return
 
     # Otherwise fall back to multiprocessing's `Pool`
@@ -49,8 +51,4 @@ def parallel_map(*args, **kwargs):
     """Effectively runs `map()` but executes it in parallel if necessary.
     """
     with parallelize() as map_fn:
-        # This needs to be enclosed in a `list()` as some implementations return
-        # a generator function, which means the scope of the pool is closed off
-        # before the results are returned. Returning a list ensures results are
-        # materialised before any worker pool is shut down.
-        return list(map_fn(*args, **kwargs))
+        return map_fn(*args, **kwargs)

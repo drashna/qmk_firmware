@@ -10,6 +10,7 @@ from milc import cli
 from qmk.constants import QMK_FIRMWARE
 from qmk.commands import _find_make, get_make_parallel_args
 from qmk.search import search_keymap_targets, search_make_targets
+from qmk.commands import _find_make, get_make_parallel_args, create_make_command, build_environment
 
 
 def mass_compile_targets(targets, clean, dry_run, no_temp, parallel, env):
@@ -30,12 +31,18 @@ def mass_compile_targets(targets, clean, dry_run, no_temp, parallel, env):
 
         builddir.mkdir(parents=True, exist_ok=True)
         with open(makefile, "w") as f:
+
+            envs = build_environment(env)
+
             for target in sorted(targets):
                 keyboard_name = target[0]
                 keymap_name = target[1]
                 keyboard_safe = keyboard_name.replace('/', '_')
                 build_log = f"{QMK_FIRMWARE}/.build/build.log.{os.getpid()}.{keyboard_safe}.{keymap_name}"
                 failed_log = f"{QMK_FIRMWARE}/.build/failed.log.{os.getpid()}.{keyboard_safe}.{keymap_name}"
+
+                make_command = create_make_command(keyboard_name, keymap_name, make_override='+@$(MAKE)', **envs)
+                command_text = ' '.join(make_command)
                 # yapf: disable
                 f.write(
                     f"""\
@@ -43,7 +50,7 @@ all: {keyboard_safe}_{keymap_name}_binary
 {keyboard_safe}_{keymap_name}_binary:
 	@rm -f "{build_log}" || true
 	@echo "Compiling QMK Firmware for target: '{keyboard_name}:{keymap_name}'..." >>"{build_log}"
-	+@$(MAKE) -C "{QMK_FIRMWARE}" -f "{QMK_FIRMWARE}/builddefs/build_keyboard.mk" KEYBOARD="{keyboard_name}" KEYMAP="{keymap_name}" COLOR=true SILENT=false {' '.join(env)} \\
+	{command_text} \\
 		>>"{build_log}" 2>&1 \\
 		|| cp "{build_log}" "{failed_log}"
 	@{{ grep '\[ERRORS\]' "{build_log}" >/dev/null 2>&1 && printf "Build %-64s \e[1;31m[ERRORS]\e[0m\\n" "{keyboard_name}:{keymap_name}" ; }} \\
