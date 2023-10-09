@@ -99,6 +99,15 @@ bool get_auto_mouse_toggle(void) {
 }
 
 /**
+ * @brief get key tracker value
+ *
+ * @return bool of current layer_toggled state
+ */
+int8_t get_auto_mouse_key_tracker(void) {
+    return auto_mouse_context.status.mouse_key_tracker;
+}
+
+/**
  * @brief Reset auto mouse context
  *
  * Clear timers and status
@@ -161,6 +170,15 @@ void set_auto_mouse_debounce(uint8_t debounce) {
     if (auto_mouse_context.config.debounce == debounce) return;
     auto_mouse_context.config.debounce = debounce;
     auto_mouse_reset();
+}
+
+/**
+ * @brief Changes the timeout for the mouse auto layer to be disabled
+ *
+ * @param key_tracker
+ */
+void set_auto_mouse_key_tracker(int8_t key_tracker) {
+    auto_mouse_context.status.mouse_key_tracker = key_tracker;
 }
 
 /**
@@ -248,7 +266,7 @@ void pointing_device_task_auto_mouse(report_mouse_t mouse_report) {
         }
     } else if (layer_state_is((AUTO_MOUSE_TARGET_LAYER)) && timer_elapsed(auto_mouse_context.timer.active) > auto_mouse_context.config.timeout) {
         layer_off((AUTO_MOUSE_TARGET_LAYER));
-        auto_mouse_context.timer.active = 0;
+        auto_mouse_context.timer.active         = 0;
         auto_mouse_context.total_mouse_movement = (total_mouse_movement_t){.x = 0, .y = 0, .h = 0, .v = 0};
     }
 }
