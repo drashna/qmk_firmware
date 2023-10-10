@@ -283,6 +283,7 @@ enum qk_keycode_defines {
     KC_ASSISTANT = 0x00C0,
     KC_MISSION_CONTROL = 0x00C1,
     KC_LAUNCHPAD = 0x00C2,
+    KC_GLOBE = 0x00C3,
     KC_MS_UP = 0x00CD,
     KC_MS_DOWN = 0x00CE,
     KC_MS_LEFT = 0x00CF,
@@ -926,6 +927,7 @@ enum qk_keycode_defines {
     KC_ASST    = KC_ASSISTANT,
     KC_MCTL    = KC_MISSION_CONTROL,
     KC_LPAD    = KC_LAUNCHPAD,
+    KC_GLB     = KC_GLOBE,
     KC_MS_U    = KC_MS_UP,
     KC_MS_D    = KC_MS_DOWN,
     KC_MS_L    = KC_MS_LEFT,
@@ -1456,7 +1458,7 @@ enum qk_keycode_defines {
 #define IS_INTERNAL_KEYCODE(code) ((code) >= KC_NO && (code) <= KC_TRANSPARENT)
 #define IS_BASIC_KEYCODE(code) ((code) >= KC_A && (code) <= KC_EXSEL)
 #define IS_SYSTEM_KEYCODE(code) ((code) >= KC_SYSTEM_POWER && (code) <= KC_SYSTEM_WAKE)
-#define IS_CONSUMER_KEYCODE(code) ((code) >= KC_AUDIO_MUTE && (code) <= KC_LAUNCHPAD)
+#define IS_CONSUMER_KEYCODE(code) ((code) >= KC_AUDIO_MUTE && (code) <= KC_GLOBE)
 #define IS_MOUSE_KEYCODE(code) ((code) >= KC_MS_UP && (code) <= KC_MS_ACCEL2)
 #define IS_MODIFIER_KEYCODE(code) ((code) >= KC_LEFT_CTRL && (code) <= KC_RIGHT_GUI)
 #define IS_SWAP_HANDS_KEYCODE(code) ((code) >= QK_SWAP_HANDS_TOGGLE && (code) <= QK_SWAP_HANDS_ONE_SHOT)
@@ -1481,7 +1483,7 @@ enum qk_keycode_defines {
 #define INTERNAL_KEYCODE_RANGE              KC_NO ... KC_TRANSPARENT
 #define BASIC_KEYCODE_RANGE                 KC_A ... KC_EXSEL
 #define SYSTEM_KEYCODE_RANGE                KC_SYSTEM_POWER ... KC_SYSTEM_WAKE
-#define CONSUMER_KEYCODE_RANGE              KC_AUDIO_MUTE ... KC_LAUNCHPAD
+#define CONSUMER_KEYCODE_RANGE              KC_AUDIO_MUTE ... KC_GLOBE
 #define MOUSE_KEYCODE_RANGE                 KC_MS_UP ... KC_MS_ACCEL2
 #define MODIFIER_KEYCODE_RANGE              KC_LEFT_CTRL ... KC_RIGHT_GUI
 #define SWAP_HANDS_KEYCODE_RANGE            QK_SWAP_HANDS_TOGGLE ... QK_SWAP_HANDS_ONE_SHOT
