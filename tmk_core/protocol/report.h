@@ -104,6 +104,7 @@ enum consumer_usages {
     AC_STOP                = 0x226,
     AC_REFRESH             = 0x227,
     AC_BOOKMARKS           = 0x22A,
+    AC_GLOBE               = 0x29D,
     AC_MISSION_CONTROL     = 0x29F,
     AC_LAUNCHPAD           = 0x2A0
 };
@@ -324,6 +325,8 @@ static inline uint16_t KEYCODE2CONSUMER(uint8_t key) {
             return AC_MISSION_CONTROL;
         case KC_LAUNCHPAD:
             return AC_LAUNCHPAD;
+        case KC_GLOBE:
+            return AC_GLOBE;
         default:
             return 0;
     }
