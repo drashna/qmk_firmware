@@ -57,11 +57,9 @@ void eeconfig_init_quantum(void) {
     eeprom_update_byte(EECONFIG_AUDIO, 0xFF); // On by default
     eeprom_update_dword(EECONFIG_RGBLIGHT, 0);
     eeprom_update_byte(EECONFIG_RGBLIGHT_EXTENDED, 0);
-    eeprom_update_byte(EECONFIG_UNUSED, 0);
     eeprom_update_byte(EECONFIG_UNICODEMODE, 0);
     eeprom_update_byte(EECONFIG_STENOMODE, 0);
-    uint64_t dummy = 0;
-    eeprom_update_block(&dummy, EECONFIG_RGB_MATRIX, sizeof(uint64_t));
+    eeprom_write_qword(EECONFIG_RGB_MATRIX, 0);
     eeprom_update_dword(EECONFIG_HAPTIC, 0);
 #if defined(HAPTIC_ENABLE)
     haptic_reset();
