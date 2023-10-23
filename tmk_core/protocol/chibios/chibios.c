@@ -192,15 +192,14 @@ void protocol_pre_task(void) {
             /* Remote wakeup */
             if ((USB_DRIVER.status & USB_GETSTATUS_REMOTE_WAKEUP_ENABLED) && suspend_wakeup_condition()) {
                 usbWakeupHost(&USB_DRIVER);
-                restart_usb_driver(&USB_DRIVER);
             }
         }
-        /* Woken up */
-        // variables has been already cleared by the wakeup hook
-        send_keyboard_report();
-#    ifdef MOUSEKEY_ENABLE
-        mousekey_send();
-#    endif /* MOUSEKEY_ENABLE */
+//         /* Woken up */
+//         // variables has been already cleared by the wakeup hook
+//         send_keyboard_report();
+// #    ifdef MOUSEKEY_ENABLE
+//         mousekey_send();
+// #    endif /* MOUSEKEY_ENABLE */
     }
 #endif
 }
@@ -218,4 +217,5 @@ void protocol_post_task(void) {
 #ifdef RAW_ENABLE
     raw_hid_task();
 #endif
+    usb_idle_task();
 }

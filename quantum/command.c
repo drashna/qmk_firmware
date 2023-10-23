@@ -224,7 +224,6 @@ static void print_status(void) {
         "host_keyboard_leds(): %02X\n"
 #ifndef PROTOCOL_VUSB
         "keyboard_protocol: %02X\n"
-        "keyboard_idle: %02X\n"
 #endif
 #ifdef NKRO_ENABLE
         "keymap_config.nkro: %02X\n"
@@ -235,7 +234,6 @@ static void print_status(void) {
 #ifndef PROTOCOL_VUSB
         /* these aren't set on the V-USB protocol, so we just ignore them for now */
         , keyboard_protocol
-        , keyboard_idle
 #endif
 #ifdef NKRO_ENABLE
         , keymap_config.nkro
