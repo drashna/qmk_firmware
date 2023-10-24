@@ -1,0 +1,7 @@
+{
+    "development_board": "blackpill_f411",
+    "bootloader": "tinyuf2",
+    "eeprom": {
+        "driver": "spi"
+    }
+}
