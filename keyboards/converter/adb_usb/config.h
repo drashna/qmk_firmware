@@ -29,8 +29,5 @@ Ported to QMK by Peter Roe <pete@13bit.me>
 #define LOCKING_RESYNC_ENABLE
 
 /* ADB port setting */
-#define ADB_PORT        PORTD
-#define ADB_PIN         PIND
-#define ADB_DDR         DDRD
-#define ADB_DATA_BIT    0
-//#define ADB_PSW_BIT     1       // optional
+#define ADB_DATA_PIN D0
+// #define ADB_PSW_PIN D1
