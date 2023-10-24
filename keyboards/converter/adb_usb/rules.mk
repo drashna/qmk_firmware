@@ -1,5 +1,3 @@
-CUSTOM_MATRIX = yes
+CUSTOM_MATRIX = lite
 
 SRC += matrix.c adb.c led.c
-
-# OPT_DEFS += -DADB_MOUSE_ENABLE -DMOUSE_ENABLE
