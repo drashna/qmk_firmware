@@ -13,12 +13,12 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-Ported to QMK by Peter Roe <pete@13bit.me>
 */
 
-#pragma once
+#include <stdint.h>
+#include "adb.h"
+#include "led.h"
 
-/* matrix size */
-#define MATRIX_ROWS 16  // keycode bit: 3-0
-#define MATRIX_COLS 8   // keycode bit: 6-4
+void led_set(uint8_t usb_led) {
+    adb_host_kbd_led(~usb_led);
+}
