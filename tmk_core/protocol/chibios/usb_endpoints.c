@@ -35,7 +35,7 @@ usb_endpoint_in_t usb_endpoints_in[USB_ENDPOINT_IN_COUNT] = {
         QMK_USB_REPORT_STROAGE_ENTRY(REPORT_ID_PROGRAMMABLE_BUTTON, sizeof(report_programmable_button_t)),
 #endif
 #if defined(NKRO_ENABLE)
-        QMK_USB_REPORT_STROAGE_ENTRY(REPORT_ID_NKRO, sizeof(struct nkro_report)),
+        QMK_USB_REPORT_STROAGE_ENTRY(REPORT_ID_NKRO, sizeof(report_nkro_t)),
 #endif
 #if defined(JOYSTICK_SHARED_EP)
         QMK_USB_REPORT_STROAGE_ENTRY(REPORT_ID_JOYSTICK, sizeof(report_joystick_t)),

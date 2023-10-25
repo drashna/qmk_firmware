@@ -489,7 +489,7 @@ void send_keyboard(report_keyboard_t *report) {
 
 void send_nkro(report_nkro_t *report) {
 #ifdef NKRO_ENABLE
-    send_report(SHARED_IN_EPNUM, report, sizeof(report_nkro_t));
+    send_report(USB_ENDPOINT_IN_SHARED, report, sizeof(report_nkro_t));
 #endif
 }
 
