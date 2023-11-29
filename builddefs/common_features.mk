@@ -37,6 +37,11 @@ else
     include $(PLATFORM_PATH)/$(PLATFORM_KEY)/printf.mk
 endif
 
+ifeq ($(strip $(DEBUG_SEGGER_RTT_ENABLE)), yes)
+    include $(QUANTUM_PATH)/logging/rtt.mk
+    OPT_DEFS += -DSEGGER_RTT_ENABLE
+endif
+
 ifeq ($(strip $(DEBUG_MATRIX_SCAN_RATE_ENABLE)), yes)
     OPT_DEFS += -DDEBUG_MATRIX_SCAN_RATE
     CONSOLE_ENABLE = yes
