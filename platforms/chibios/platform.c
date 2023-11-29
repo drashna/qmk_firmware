@@ -15,8 +15,14 @@
  */
 
 #include "platform_deps.h"
+#if defined(SEGGER_RTT_ENABLE)
+#    include "SEGGER_RTT.h"
+#endif
 
 void platform_setup(void) {
+#if defined(SEGGER_RTT_ENABLE)
+    SEGGER_RTT_Init();
+#endif
     halInit();
     chSysInit();
 }
