@@ -20,6 +20,10 @@
 #    include "haptic.h"
 #endif
 
+#ifdef RGB_MATRIX_ENABLE
+void rgb_matrix_notify_usb_device_state_change(enum usb_device_state usb_device_state);
+#endif
+
 enum usb_device_state usb_device_state = USB_DEVICE_STATE_NO_INIT;
 
 __attribute__((weak)) void notify_usb_device_state_change_kb(enum usb_device_state usb_device_state) {
@@ -33,6 +37,10 @@ static void notify_usb_device_state_change(enum usb_device_state usb_device_stat
     haptic_notify_usb_device_state_change();
 #endif
     notify_usb_device_state_change_kb(usb_device_state);
+
+#ifdef RGB_MATRIX_ENABLE
+    rgb_matrix_notify_usb_device_state_change(usb_device_state);
+#endif
 }
 
 void usb_device_state_set_configuration(bool isConfigured, uint8_t configurationNumber) {

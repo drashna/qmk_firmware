@@ -23,6 +23,7 @@
 #include "keyboard.h"
 #include "sync_timer.h"
 #include "debug.h"
+#include "usb_device_state.h"
 #include <string.h>
 #include <math.h>
 #include <stdlib.h>
@@ -481,6 +482,15 @@ void rgb_matrix_set_suspend_state(bool state) {
 bool rgb_matrix_get_suspend_state(void) {
     return suspend_state;
 }
+
+void rgb_matrix_notify_usb_device_state_change(enum usb_device_state usb_device_state) {
+    if (usb_device_state == USB_DEVICE_STATE_CONFIGURED) {
+        rgb_matrix_set_suspend_state(false);
+    } else {
+        rgb_matrix_set_suspend_state(true);
+    }
+}
+
 
 void rgb_matrix_toggle_eeprom_helper(bool write_to_eeprom) {
     rgb_matrix_config.enable ^= 1;
