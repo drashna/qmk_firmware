@@ -534,7 +534,7 @@ void suspend_power_down_quantum(void) {
     led_matrix_set_suspend_state(true);
 #    endif
 #    if defined(RGB_MATRIX_ENABLE)
-    rgb_matrix_set_suspend_state(true);
+    // rgb_matrix_set_suspend_state(true);
 #    endif
 
 #    ifdef OLED_ENABLE
@@ -568,7 +568,7 @@ __attribute__((weak)) void suspend_wakeup_init_quantum(void) {
     led_matrix_set_suspend_state(false);
 #endif
 #if defined(RGB_MATRIX_ENABLE)
-    rgb_matrix_set_suspend_state(false);
+    // rgb_matrix_set_suspend_state(false);
 #endif
     suspend_wakeup_init_kb();
 }

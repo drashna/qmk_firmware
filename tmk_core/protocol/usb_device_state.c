@@ -23,6 +23,9 @@
 #ifdef OS_DETECTION_ENABLE
 #    include "os_detection.h"
 #endif
+#ifdef RGB_MATRIX_ENABLE
+void rgb_matrix_notify_usb_device_state_change(enum usb_device_state usb_device_state);
+#endif
 
 enum usb_device_state usb_device_state = USB_DEVICE_STATE_NO_INIT;
 
@@ -41,6 +44,10 @@ static void notify_usb_device_state_change(enum usb_device_state usb_device_stat
 
 #ifdef OS_DETECTION_ENABLE
     os_detection_notify_usb_device_state_change(usb_device_state);
+#endif
+
+#ifdef RGB_MATRIX_ENABLE
+    rgb_matrix_notify_usb_device_state_change(usb_device_state);
 #endif
 }
 
