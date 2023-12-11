@@ -25,7 +25,6 @@
 #include "print.h"
 #include "suspend.h"
 #include "wait.h"
-#include "sendchar.h"
 
 #ifdef SLEEP_LED_ENABLE
 #    include "sleep_led.h"
