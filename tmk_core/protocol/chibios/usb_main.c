@@ -914,7 +914,7 @@ void send_digitizer(report_digitizer_t *report) {
 
 #ifdef CONSOLE_ENABLE
 
-int8_t sendchar(uint8_t c) {
+int8_t console_write(uint8_t c) {
     static bool timed_out = false;
     /* The `timed_out` state is an approximation of the ideal `is_listener_disconnected?` state.
      *
