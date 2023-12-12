@@ -1,5 +1,5 @@
 {
-    "keyboard_name": "QMK87 PTIR ANSI",
+    "keyboard_name": "GK87 QMK OPTICAL_rgbmatrix_ansi_1.0.0",
     "usb": {
         "device_version": "1.0.0",
         "pid": "0x6087"
