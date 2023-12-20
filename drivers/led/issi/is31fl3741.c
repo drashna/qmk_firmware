@@ -62,6 +62,7 @@ uint8_t i2c_transfer_buffer[20] = {0xFF};
 // buffers and the transfers in is31fl3741_write_pwm_buffer() but it's
 // probably not worth the extra complexity.
 uint8_t g_pwm_buffer[IS31FL3741_DRIVER_COUNT][IS31FL3741_PWM_REGISTER_COUNT];
+uint8_t g_pwm_buffer_send[IS31FL3741_DRIVER_COUNT][IS31FL3741_PWM_REGISTER_COUNT];
 bool    g_pwm_buffer_update_required[IS31FL3741_DRIVER_COUNT]        = {false};
 bool    g_scaling_registers_update_required[IS31FL3741_DRIVER_COUNT] = {false};
 
@@ -231,9 +232,12 @@ void is31fl3741_set_led_control_register(uint8_t index, bool red, bool green, bo
 
 void is31fl3741_update_pwm_buffers(uint8_t addr, uint8_t index) {
     if (g_pwm_buffer_update_required[index]) {
-        is31fl3741_select_page(addr, IS31FL3741_COMMAND_PWM_0);
+        if (memcmp(g_pwm_buffer[index], g_pwm_buffer_send[index], sizeof(g_pwm_buffer[index])) != 0) {
+            memcpy(g_pwm_buffer_send[index], g_pwm_buffer[index], sizeof(g_pwm_buffer[index]));
+            is31fl3741_select_page(addr, IS31FL3741_COMMAND_PWM_0);
 
-        is31fl3741_write_pwm_buffer(addr, g_pwm_buffer[index]);
+            is31fl3741_write_pwm_buffer(addr, g_pwm_buffer_send[index]);
+        }
     }
 
     g_pwm_buffer_update_required[index] = false;
