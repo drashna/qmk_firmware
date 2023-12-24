@@ -110,6 +110,8 @@ struct rgb_matrix_limits_t rgb_matrix_get_limits(uint8_t iter);
 #define RGB_MATRIX_TEST_LED_FLAGS() \
     if (!HAS_ANY_FLAGS(g_led_config.flags[i], params->flags)) continue
 
+#define RGB_MATRIX_TIMEOUT_INFINITE (UINT32_MAX)
+
 enum rgb_matrix_effects {
     RGB_MATRIX_NONE = 0,
 
@@ -158,6 +160,10 @@ void rgb_matrix_indicators_advanced(effect_params_t *params);
 bool rgb_matrix_indicators_advanced_kb(uint8_t led_min, uint8_t led_max);
 bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max);
 
+void rgb_matrix_none_indicators(void);
+void rgb_matrix_none_indicators_kb(void);
+void rgb_matrix_none_indicators_user(void);
+
 void rgb_matrix_init(void);
 
 void rgb_matrix_reload_from_eeprom(void);
@@ -171,6 +177,7 @@ void        rgb_matrix_enable_noeeprom(void);
 void        rgb_matrix_disable(void);
 void        rgb_matrix_disable_noeeprom(void);
 uint8_t     rgb_matrix_is_enabled(void);
+uint8_t     rgb_matrix_is_enabled_eeprom(void);
 void        rgb_matrix_mode(uint8_t mode);
 void        rgb_matrix_mode_noeeprom(uint8_t mode);
 uint8_t     rgb_matrix_get_mode(void);
@@ -206,6 +213,16 @@ void        rgb_matrix_decrease_speed_noeeprom(void);
 led_flags_t rgb_matrix_get_flags(void);
 void        rgb_matrix_set_flags(led_flags_t flags);
 void        rgb_matrix_set_flags_noeeprom(led_flags_t flags);
+
+#if (RGB_MATRIX_TIMEOUT > 0)
+void rgb_matrix_disable_timeout_set(uint32_t timeout);
+void rgb_matrix_disable_time_reset(void);
+#endif
+#ifdef RGB_MATRIX_DRIVER_SHUTDOWN_ENABLE
+void rgb_matrix_driver_shutdown(void);
+bool rgb_matrix_is_driver_shutdown(void);
+bool rgb_matrix_driver_allow_shutdown(void);
+#endif
 
 #ifndef RGBLIGHT_ENABLE
 #    define eeconfig_update_rgblight_current eeconfig_update_rgb_matrix

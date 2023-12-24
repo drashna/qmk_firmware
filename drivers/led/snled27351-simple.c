@@ -107,6 +107,10 @@ bool snled27351_write_pwm_buffer(uint8_t addr, uint8_t *pwm_buffer) {
 
 void snled27351_init_drivers(void) {
     i2c_init();
+#if defined(SNLED27351_SHUTDOWN_PIN)
+    setPinOutput(SNLED27351_SHUTDOWN_PIN);
+    writePinHigh(SNLED27351_SHUTDOWN_PINn);
+#endif
 
     snled27351_init(SNLED27351_I2C_ADDRESS_1);
 #if defined(SNLED27351_I2C_ADDRESS_2)
@@ -269,4 +273,39 @@ void snled27351_sw_shutdown(uint8_t addr) {
     snled27351_write_register(addr, SNLED27351_FUNCTION_REG_SOFTWARE_SHUTDOWN, SNLED27351_SOFTWARE_SHUTDOWN_SSD_SHUTDOWN);
     // Write SW Sleep Register
     snled27351_write_register(addr, SNLED27351_FUNCTION_REG_SOFTWARE_SLEEP, SNLED27351_SOFTWARE_SLEEP_ENABLE);
+}
+
+
+void snled27351_shutdown(void) {
+#    if defined(SNLED27351_SHUTDOWN_PIN)
+    writePinLow(SNLED27351_SHUTDOWN_PIN);
+#    else
+    snled27351_sw_shutdown(SNLED27351_I2C_ADDRESS_1);
+#        if defined(SNLED27351_I2C_ADDRESS_2)
+    snled27351_sw_shutdown(SNLED27351_I2C_ADDRESS_2);
+#            if defined(SNLED27351_I2C_ADDRESS_3)
+    snled27351_sw_shutdown(SNLED27351_I2C_ADDRESS_3);
+#                if defined(SNLED27351_I2C_ADDRESS_4)
+    snled27351_sw_shutdown(SNLED27351_I2C_ADDRESS_4);
+#                endif
+#            endif
+#        endif
+#    endif
+}
+
+void snled27351_exit_shutdown(void) {
+#    if defined(SNLED27351_SHUTDOWN_PIN)
+    writePinHigh(SNLED27351_SHUTDOWN_PIN);
+#    else
+    snled27351_sw_return_normal(SNLED27351_I2C_ADDRESS_1);
+#        if defined(SNLED27351_I2C_ADDRESS_2)
+    snled27351_sw_return_normal(SNLED27351_I2C_ADDRESS_2);
+#            if defined(SNLED27351_I2C_ADDRESS_3)
+    snled27351_sw_return_normal(SNLED27351_I2C_ADDRESS_3);
+#                if defined(SNLED27351_I2C_ADDRESS_4)
+    snled27351_sw_return_normal(SNLED27351_I2C_ADDRESS_4);
+#                endif
+#            endif
+#        endif
+#    endif
 }

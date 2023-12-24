@@ -90,6 +90,8 @@ const rgb_matrix_driver_t rgb_matrix_driver = {
     .flush         = snled27351_flush,
     .set_color     = snled27351_set_color,
     .set_color_all = snled27351_set_color_all,
+    .shutdown      = snled27351_shutdown,
+    .exit_shutdown = snled27351_exit_shutdown,
 };
 
 #elif defined(RGB_MATRIX_AW20216S)
