@@ -93,6 +93,16 @@ BOOTLOADER_VIDS_PIDS = {
     'apm32-dfu': {("314b", "0106")},
     'gd32v-dfu': {("28e9", "0189")},
     'wb32-dfu': {("342d", "dfa0")},
+    'ignition': {
+        ("3297", "0791"),  # ZSA Voyager STM32 Bootloader
+        ("3297", "1791"),  # ZSA Voyager STM32 Bootloader
+        ("3297", "2000"),  # ZSA STM32 Bootloader
+        ("3297", "2001"),  # ZSA STM32 Bootloader
+        ("3297", "2002"),  # ZSA STM32 Bootloader
+        ("3297", "2010"),  # ZSA GD32 Bootloader
+        ("3297", "2011"),  # ZSA GD32 Bootloader
+        ("3297", "2012"),  # ZSA GD32 Bootloader
+    },
     'bootloadhid': {("16c0", "05df")},
     'usbasploader': {("16c0", "05dc")},
     'usbtinyisp': {("1782", "0c9f")},
