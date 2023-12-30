@@ -49,6 +49,13 @@
 #    include "os_detection.h"
 #endif
 
+#if !defined(SERIAL_NUMBER) && !defined(__AVR__)
+#    include "hardware_id.h"
+#    include <stdint.h>
+#    include <stdio.h>
+#    include "print.h"
+#endif
+
 // clang-format off
 
 /*
@@ -459,7 +466,7 @@ const USB_Descriptor_Device_t PROGMEM DeviceDescriptor = {
     .ReleaseNumber              = DEVICE_VER,
     .ManufacturerStrIndex       = 0x01,
     .ProductStrIndex            = 0x02,
-#if defined(SERIAL_NUMBER)
+#if defined(SERIAL_NUMBER) || !defined(__AVR__)
     .SerialNumStrIndex          = 0x03,
 #else
     .SerialNumStrIndex          = 0x00,
@@ -1087,6 +1094,53 @@ const USB_Descriptor_String_t PROGMEM SerialNumberString = {
     },
     .UnicodeString              = USBSTR(SERIAL_NUMBER)
 };
+#elif !defined(__AVR__)
+#    ifndef SERIAL_NUMBER_LEN
+#        define SERIAL_NUMBER_LEN (12+1)
+#    endif
+#    define SERIAL_NUMBER_LEN_WCHAR (SERIAL_NUMBER_LEN * 2)
+
+static wchar_t id_str[SERIAL_NUMBER_LEN] = {0};
+static char id_str_small[SERIAL_NUMBER_LEN] = {0};
+const wchar_t *get_serial_number_str(void) {
+    static bool computed = false;
+
+    if (computed) {
+        printf("%s\n", id_str_small);
+        return id_str;
+    }
+
+    uint8_t uid[12];
+    for (uint8_t index = 0; index < 12; index++) {
+        uid[index] = (uint8_t)(get_hardware_id().data[index / 4] >> ((index % 4) * 8));
+    }
+
+    uint8_t serial[6];
+    serial[0] = uid[11];
+    serial[1] = uid[10] + uid[2];
+    serial[2] = uid[9];
+    serial[3] = uid[8] + uid[0];
+    serial[4] = uid[7];
+    serial[5] = uid[6];
+
+    computed = true;
+
+    snprintf(id_str_small, SERIAL_NUMBER_LEN, "%02X%02X%02X%02X%02X%02X", serial[0], serial[1], serial[2], serial[3], serial[4], serial[5]);
+    for (size_t i = 0; i < SERIAL_NUMBER_LEN; ++i) {
+        id_str[i] = id_str_small[i];
+    }
+
+    xprintf("%s\n", id_str_small);
+    return id_str;
+}
+
+static USB_Descriptor_String_t SerialNumberString = {
+    .Header = {
+        .Size                   = SERIAL_NUMBER_LEN_WCHAR, // will always be 24 in this case, as it's 12 hex digits in wchar
+        .Type                   = DTYPE_String
+    },
+    .UnicodeString              = L"QMK Firmware"
+};
 #endif
 
 // clang-format on
@@ -1132,13 +1186,16 @@ uint16_t get_usb_descriptor(const uint16_t wValue, const uint16_t wIndex, const 
                     Size    = pgm_read_byte(&ProductString.Header.Size);
 
                     break;
-#if defined(SERIAL_NUMBER)
                 case 0x03:
+#if defined(SERIAL_NUMBER)
                     Address = &SerialNumberString;
                     Size    = pgm_read_byte(&SerialNumberString.Header.Size);
-
-                    break;
+#elif !defined(__AVR__)
+                    Address = &SerialNumberString;
+                    memcpy(SerialNumberString.UnicodeString, get_serial_number_str(), SerialNumberString.Header.Size);
+                    Size    = SerialNumberString.Header.Size;
 #endif
+                    break;
             }
 #ifdef OS_DETECTION_ENABLE
             process_wlength(wLength);
