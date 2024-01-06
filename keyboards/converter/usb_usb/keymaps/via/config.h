@@ -1,5 +1,5 @@
 /*
-Copyright 2017 Balz Guenat <balz.guenat@gmail.com>
+Copyright 2022 Jeff Shufelt <jshuf@puppyfish.com> @jshuf
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -14,12 +14,10 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #pragma once
 
-/* size of virtual matrix */
-#define MATRIX_ROWS 9
-#define MATRIX_COLS 16
-
-// power saving during suspended without remote wakeup disabled
-#define UHS2_POWER_SAVING
+// We have 1 2-bit layout option and 13 1-bit layout options
+// in the VIA usb_usb.json, so we need 15 bits (2 bytes)
+// of layout option storage.
+#define VIA_EEPROM_LAYOUT_OPTIONS_SIZE 2
+#define DYNAMIC_KEYMAP_LAYER_COUNT 3
