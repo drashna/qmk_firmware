@@ -29,7 +29,11 @@
 #endif
 
 #ifndef BLUEFRUIT_LE_SCK_DIVISOR
-#    define BLUEFRUIT_LE_SCK_DIVISOR 2 // 4MHz SCK/8MHz CPU, calculated for Feather 32U4 BLE
+#    ifdef __AVR__
+#        define BLUEFRUIT_LE_SCK_DIVISOR (F_CPU / 4000000) // 4MHz SCK/8MHz CPU, calculated for Feather 32U4 BLE
+#    else
+#        define BLUEFRUIT_LE_SCK_DIVISOR 16
+#    endif
 #endif
 
 #define SAMPLE_BATTERY
