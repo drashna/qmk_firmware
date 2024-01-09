@@ -184,15 +184,40 @@ static void raw_hid_task(void) {
  * Console
  ******************************************************************************/
 #ifdef CONSOLE_ENABLE
-/** \brief Console Tasks
+/** \brief Console Task
  *
  * FIXME: Needs doc
  */
-static void console_flush_task(void) {
+static void Console_Task(void) {
     /* Device must be connected and configured for the task to run */
     if (USB_DeviceState != DEVICE_STATE_Configured) return;
 
     uint8_t ep = Endpoint_GetCurrentEndpoint();
+
+#    if 0
+    // TODO: impl receivechar()/recvchar()
+    Endpoint_SelectEndpoint(CONSOLE_OUT_EPNUM);
+
+    /* Check to see if a packet has been sent from the host */
+    if (Endpoint_IsOUTReceived())
+    {
+        /* Check to see if the packet contains data */
+        if (Endpoint_IsReadWriteAllowed())
+        {
+            /* Create a temporary buffer to hold the read in report from the host */
+            uint8_t ConsoleData[CONSOLE_EPSIZE];
+
+            /* Read Console Report Data */
+            Endpoint_Read_Stream_LE(&ConsoleData, sizeof(ConsoleData), NULL);
+
+            /* Process Console Report Data */
+            //ProcessConsoleHIDReport(ConsoleData);
+        }
+
+        /* Finalize the stream transfer to send the last packet */
+        Endpoint_ClearOUT();
+    }
+#    endif
 
     /* IN packet */
     Endpoint_SelectEndpoint(CONSOLE_IN_EPNUM);
@@ -211,10 +236,6 @@ static void console_flush_task(void) {
     }
 
     Endpoint_SelectEndpoint(ep);
-}
-
-void console_task(void) {
-    // do nothing
 }
 #endif
 
@@ -320,7 +341,7 @@ void EVENT_USB_Device_StartOfFrame(void) {
     count = 0;
 
     if (!console_flush) return;
-    console_flush_task();
+    Console_Task();
     console_flush = false;
 }
 
@@ -360,6 +381,9 @@ void EVENT_USB_Device_ConfigurationChanged(void) {
 #ifdef CONSOLE_ENABLE
     /* Setup console endpoint */
     ConfigSuccess &= Endpoint_ConfigureEndpoint((CONSOLE_IN_EPNUM | ENDPOINT_DIR_IN), EP_TYPE_INTERRUPT, CONSOLE_EPSIZE, 1);
+#    if 0
+    ConfigSuccess &= Endpoint_ConfigureEndpoint((CONSOLE_OUT_EPNUM | ENDPOINT_DIR_OUT), EP_TYPE_INTERRUPT, CONSOLE_EPSIZE, 1);
+#    endif
 #endif
 
 #ifdef MIDI_ENABLE
@@ -603,7 +627,7 @@ int8_t sendchar(uint8_t c) {
     // The `timed_out` state is an approximation of the ideal `is_listener_disconnected?` state.
     static bool timed_out = false;
 
-    // prevents console_flush_task() from running during sendchar() runs.
+    // prevents Console_Task() from running during sendchar() runs.
     // or char will be lost. These two function is mutually exclusive.
     CONSOLE_FLUSH_SET(false);
 
@@ -788,7 +812,7 @@ static void setup_usb(void) {
 
     USB_Init();
 
-    // for console_flush_task
+    // for Console_Task
     USB_Device_EnableSOFEvents();
 }
 
@@ -852,10 +876,6 @@ void protocol_pre_task(void) {
 }
 
 void protocol_post_task(void) {
-#ifdef CONSOLE_ENABLE
-    console_task();
-#endif
-
 #ifdef MIDI_ENABLE
     MIDI_Device_USBTask(&USB_MIDI_Interface);
 #endif
