@@ -31,6 +31,7 @@ void init_usb_driver(USBDriver *usbp);
 
 /* Restart the USB driver and bus */
 void restart_usb_driver(USBDriver *usbp);
+void usb_start(USBDriver *usbp);
 
 bool send_report(usb_endpoint_in_lut_t endpoint, void *report, size_t size);
 

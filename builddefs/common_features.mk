@@ -452,6 +452,12 @@ ifeq ($(strip $(LED_MATRIX_ENABLE)), yes)
         SRC += snled27351-mono.c
     endif
 
+    ifeq ($(strip $(LED_MATRIX_DRIVER)), snled27351_spi)
+        SPI_DRIVER_REQUIRED = yes
+        COMMON_VPATH += $(DRIVER_PATH)/led
+        SRC += snled27351-mono-spi.c
+    endif
+
 endif
 
 # Deprecated driver names - do not use
@@ -464,7 +470,7 @@ endif
 
 RGB_MATRIX_ENABLE ?= no
 
-VALID_RGB_MATRIX_TYPES := aw20216s is31fl3218 is31fl3731 is31fl3733 is31fl3736 is31fl3737 is31fl3741 is31fl3742a is31fl3743a is31fl3745 is31fl3746a snled27351 ws2812 custom
+VALID_RGB_MATRIX_TYPES := aw20216s is31fl3218 is31fl3731 is31fl3733 is31fl3736 is31fl3737 is31fl3741 is31fl3742a is31fl3743a is31fl3745 is31fl3746a snled27351 snled27351_spi ws2812 custom
 ifeq ($(strip $(RGB_MATRIX_ENABLE)), yes)
     ifeq ($(filter $(RGB_MATRIX_DRIVER),$(VALID_RGB_MATRIX_TYPES)),)
         $(call CATASTROPHIC_ERROR,Invalid RGB_MATRIX_DRIVER,RGB_MATRIX_DRIVER="$(RGB_MATRIX_DRIVER)" is not a valid matrix type)
@@ -553,6 +559,12 @@ ifeq ($(strip $(RGB_MATRIX_ENABLE)), yes)
         I2C_DRIVER_REQUIRED = yes
         COMMON_VPATH += $(DRIVER_PATH)/led
         SRC += snled27351.c
+    endif
+
+    ifeq ($(strip $(RGB_MATRIX_DRIVER)), snled27351_spi)
+        SPI_DRIVER_REQUIRED = yes
+        COMMON_VPATH += $(DRIVER_PATH)/led
+        SRC += snled27351-spi.c
     endif
 
     ifeq ($(strip $(RGB_MATRIX_DRIVER)), ws2812)
@@ -894,7 +906,7 @@ ifeq ($(strip $(USBPD_ENABLE)), yes)
 endif
 
 BLUETOOTH_ENABLE ?= no
-VALID_BLUETOOTH_DRIVER_TYPES := bluefruit_le custom rn42
+VALID_BLUETOOTH_DRIVER_TYPES := bluefruit_le custom rn42 keychron
 ifeq ($(strip $(BLUETOOTH_ENABLE)), yes)
     ifeq ($(filter $(strip $(BLUETOOTH_DRIVER)),$(VALID_BLUETOOTH_DRIVER_TYPES)),)
         $(call CATASTROPHIC_ERROR,Invalid BLUETOOTH_DRIVER,BLUETOOTH_DRIVER="$(BLUETOOTH_DRIVER)" is not a valid Bluetooth driver type)
@@ -921,7 +933,7 @@ endif
 
 ENCODER_ENABLE ?= no
 ENCODER_DRIVER ?= graycode
-VALID_ENCODER_DRIVER_TYPES := graycode custom
+VALID_ENCODER_DRIVER_TYPES := interrupt graycode inerrupt custom
 ifeq ($(strip $(ENCODER_ENABLE)), yes)
     ifeq ($(filter $(ENCODER_DRIVER),$(VALID_ENCODER_DRIVER_TYPES)),)
         $(call CATASTROPHIC_ERROR,Invalid ENCODER_DRIVER,ENCODER_DRIVER="$(ENCODER_DRIVER)" is not a valid encoder driver)
