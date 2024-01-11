@@ -29,6 +29,8 @@
 #    include "is31fl3746a.h"
 #elif defined(RGB_MATRIX_SNLED27351)
 #    include "snled27351.h"
+#elif defined(RGB_MATRIX_SNLED27351_SPI)
+#    include "snled27351-spi.h"
 #elif defined(RGB_MATRIX_WS2812)
 #    include "ws2812.h"
 #endif
@@ -42,6 +44,12 @@ typedef struct {
     void (*set_color_all)(uint8_t r, uint8_t g, uint8_t b);
     /* Flush any buffered changes to the hardware. */
     void (*flush)(void);
+#ifdef RGB_MATRIX_DRIVER_SHUTDOWN_ENABLE
+    /* Shutdown the driver. */
+    void (*shutdown)(void);
+    /* Exit from shutdown state. */
+    void (*exit_shutdown)(void);
+#endif
 } rgb_matrix_driver_t;
 
 extern const rgb_matrix_driver_t rgb_matrix_driver;
