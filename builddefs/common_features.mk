@@ -894,7 +894,7 @@ ifeq ($(strip $(USBPD_ENABLE)), yes)
 endif
 
 BLUETOOTH_ENABLE ?= no
-VALID_BLUETOOTH_DRIVER_TYPES := bluefruit_le custom rn42 keychron
+VALID_BLUETOOTH_DRIVER_TYPES := bluefruit_le custom rn42
 ifeq ($(strip $(BLUETOOTH_ENABLE)), yes)
     ifeq ($(filter $(strip $(BLUETOOTH_DRIVER)),$(VALID_BLUETOOTH_DRIVER_TYPES)),)
         $(call CATASTROPHIC_ERROR,Invalid BLUETOOTH_DRIVER,BLUETOOTH_DRIVER="$(BLUETOOTH_DRIVER)" is not a valid Bluetooth driver type)
@@ -921,7 +921,7 @@ endif
 
 ENCODER_ENABLE ?= no
 ENCODER_DRIVER ?= graycode
-VALID_ENCODER_DRIVER_TYPES := interrupt graycode custom
+VALID_ENCODER_DRIVER_TYPES := graycode custom
 ifeq ($(strip $(ENCODER_ENABLE)), yes)
     ifeq ($(filter $(ENCODER_DRIVER),$(VALID_ENCODER_DRIVER_TYPES)),)
         $(call CATASTROPHIC_ERROR,Invalid ENCODER_DRIVER,ENCODER_DRIVER="$(ENCODER_DRIVER)" is not a valid encoder driver)

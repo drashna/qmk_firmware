@@ -39,12 +39,6 @@ typedef struct {
     void (*set_value_all)(uint8_t value);
     /* Flush any buffered changes to the hardware. */
     void (*flush)(void);
-#ifdef RGB_MATRIX_DRIVER_SHUTDOWN_ENABLE
-    /* Shutdown the driver. */
-    void (*shutdown)(void);
-    /* Exit from shutdown state. */
-    void (*exit_shutdown)(void);
-#endif
 } led_matrix_driver_t;
 
 extern const led_matrix_driver_t led_matrix_driver;
