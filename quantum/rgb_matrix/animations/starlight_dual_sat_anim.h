@@ -7,7 +7,7 @@ void set_starlight_dual_sat_color(int i, effect_params_t* params) {
     HSV      hsv  = rgb_matrix_config.hsv;
     hsv.v         = scale8(abs8(sin8(time) - 128) * 2, hsv.v);
     hsv.s         = hsv.s + (rand() % (30 + 1 - -30) + -30);
-    RGB rgb       = hsv_to_rgb(hsv);
+    RGB rgb       = rgb_matrix_hsv_to_rgb(hsv);
     rgb_matrix_set_color(i, rgb.r, rgb.g, rgb.b);
 }
 
