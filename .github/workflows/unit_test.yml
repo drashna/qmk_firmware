@@ -6,8 +6,7 @@ permissions:
 on:
   push:
     branches:
-    - master
-    - develop
+    - custom_drashna
   pull_request:
     paths:
     - 'builddefs/**'
