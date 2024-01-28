@@ -86,6 +86,8 @@
         "center_point": [120, 36],
         "driver": "is31fl3731",
         "max_brightness": 175,
+        "led_flush_limit": 26,
+        "led_process_limit": 5,
         "sleep": true
     },
     "processor": "STM32F303",
