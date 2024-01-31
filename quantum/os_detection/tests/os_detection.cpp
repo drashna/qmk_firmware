@@ -66,6 +66,7 @@ ChibiOS:
 Windows 10: [FF, FF, 4, 24, 4, 24, 4, FF, 24, FF, 4, FF, 24, 4, 24, 20A, 20A, 20A, 20A, 20A, 20A, 20A, 20A, 20A, 20A, 20A, 20A, 20A, 20A, 20A, 20A, 20A, 20A, 20A, 20A, 20A, 20A, 20A, 20A]
 Windows 10 (another host): [FF, FF, 4, 24, 4, 24, 4, 24, 4, 24, 4, 24]
 macOS 12.5: [2, 24, 2, 28, FF]
+[ 2, 42, 2, 1C, 2, 1A, FF, 2, 42, 2, 1C, 2, 1A, FF]
 iOS/iPadOS 15.6: [2, 24, 2, 28]
 Linux (including Android, Raspberry Pi and WebOS TV): [FF, FF, FF]
 PS5: [2, 4, 2, 28, 2, 24]
@@ -118,6 +119,13 @@ TEST_F(OsDetectionTest, TestChibiosMacos2) {
     os_detection_task();
     assert_not_reported();
 }
+
+TEST_F(OsDetectionTest, TestChibiosMacos3) {
+    EXPECT_EQ(check_sequence({ 0x2, 0x42, 0x2, 0x1C, 0x2, 0x1A, 0xFF, 0x2, 0x42, 0x2, 0x1C, 0x2, 0x1A, 0xFF}), OS_MACOS);
+    os_detection_task();
+    assert_not_reported();
+}
+
 
 TEST_F(OsDetectionTest, TestLufaMacos) {
     EXPECT_EQ(check_sequence({0x2, 0x10, 0x2, 0xE, 0xFF}), OS_MACOS);
