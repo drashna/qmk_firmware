@@ -3,5 +3,14 @@
         "0x52E0/0x001F": {
             "define": "QK_PERSISTENT_DEF_LAYER"
         }
+        "0x5300/0x000F": {
+            "define": "QK_POINTING_MODE_MO"
+        },
+        "0x5310/0x000F": {
+            "define": "QK_POINTING_MODE_TG"
+        },
+        "0x5320/0x0002": {
+            "define": "QK_POINTING_MODE_UTIL"
+        }
     }
 }
