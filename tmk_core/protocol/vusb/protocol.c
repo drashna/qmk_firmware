@@ -25,7 +25,6 @@
 #include "debug.h"
 #include "suspend.h"
 #include "wait.h"
-#include "sendchar.h"
 
 /* This is from main.c of USBaspLoader */
 static void initForUsbConnectivity(void) {
