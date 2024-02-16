@@ -16,22 +16,12 @@
  */
 #include <util/delay.h>
 #include "mschwingen.h"
-#include "uart.h"
 #include "print.h"
 #include "sendchar.h"
 #include "sleep_led.h"
 
 #ifdef KEYBOARD_ibm_model_m_mschwingen_led_ws2812
 #include "ws2812.h"
-#endif
-
-#ifdef UART_DEBUG
-#    undef sendchar
-static int8_t capture_sendchar(uint8_t c) {
-    //  sendchar(c);
-    uart_write(c);
-    return 0;
-}
 #endif
 
 static uint16_t blink_cycle_timer;
@@ -88,11 +78,6 @@ void keyboard_pre_init_kb(void) {
     gpio_set_pin_output(MODELM_STATUS_LED);
     gpio_write_pin_high(MODELM_STATUS_LED);
     _delay_ms(50);
-#ifdef UART_DEBUG
-    uart_init(115200);
-    print_set_sendchar(capture_sendchar);
-    uprintf("\r\nHello world!\r\n");
-#endif
 
     gpio_set_pin_output(SR_LOAD_PIN);
     gpio_set_pin_output(SR_CLK_PIN);
