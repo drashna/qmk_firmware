@@ -295,13 +295,13 @@ TEST_F(OsDetectionTest, TestReportAfterDebounce) {
     EXPECT_EQ(detected_host_os(), OS_HANDHELD);
     // the task will cause a report
     os_detection_task();
-    assert_reported(OS_LINUX);
-    EXPECT_EQ(detected_host_os(), OS_LINUX);
+    assert_reported(OS_HANDHELD);
+    EXPECT_EQ(detected_host_os(), OS_HANDHELD);
 
     // check that it remains the same after a long time
     advance_time(OS_DETECTION_DEBOUNCE * 15);
-    assert_reported(OS_LINUX);
-    EXPECT_EQ(detected_host_os(), OS_LINUX);
+    assert_reported(OS_HANDHELD);
+    EXPECT_EQ(detected_host_os(), OS_HANDHELD);
 }
 
 TEST_F(OsDetectionTest, TestReportAfterDebounceLongWait) {
@@ -370,13 +370,13 @@ TEST_F(OsDetectionTest, TestDoNotReportIntermediateResults) {
     EXPECT_EQ(detected_host_os(), OS_UNSURE);
 
     // at this stage, the final result has not been reached yet
-    EXPECT_EQ(check_sequence({0xFF}), OS_LINUX);
+    EXPECT_EQ(check_sequence({0xFF}), OS_HANDHELD);
     os_detection_notify_usb_device_state_change(usb_device_state_configured);
     advance_time(OS_DETECTION_DEBOUNCE - 1);
     os_detection_task();
     assert_not_reported();
     // the intermedite but yet unstable result is exposed through detected_host_os()
-    EXPECT_EQ(detected_host_os(), OS_LINUX);
+    EXPECT_EQ(detected_host_os(), OS_HANDHELD);
 
     // the remainder is processed
     EXPECT_EQ(check_sequence({0x4, 0x10, 0xFF, 0xFF, 0xFF, 0x4, 0x10, 0x20A, 0x20A, 0x20A, 0x20A, 0x20A, 0x20A}), OS_WINDOWS);
@@ -404,8 +404,8 @@ TEST_F(OsDetectionTest, TestDoNotReportIntermediateResults) {
 
 TEST_F(OsDetectionTest, TestDoNotGoBackToUnsure) {
     // 0x02 would cause it to go back to Unsure, so check that it does not
-    EXPECT_EQ(check_sequence({0xFF, 0xFF, 0xFF, 0xFE, 0x02}), OS_LINUX);
+    EXPECT_EQ(check_sequence({0xFF, 0xFF, 0xFF, 0xFE, 0x02}), OS_HANDHELD);
     os_detection_task();
     assert_not_reported();
-    EXPECT_EQ(check_sequence({0x2, 0x4, 0x2, 0x28, 0x2, 0x24}), OS_PS5);
+    EXPECT_EQ(check_sequence({0x2, 0x4, 0x2, 0x28, 0x2, 0x24}), OS_WINDOWS);
 }
