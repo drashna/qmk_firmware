@@ -69,94 +69,84 @@ bool process_rgb(const uint16_t keycode, const keyrecord_t *record) {
         uint8_t shifted = get_mods() & MOD_MASK_SHIFT;
 #endif
         switch (keycode) {
-            case QK_UNDERGLOW_TOGGLE:
 #if defined(RGBLIGHT_ENABLE) && !defined(RGBLIGHT_DISABLE_KEYCODES)
+            case QK_UNDERGLOW_TOGGLE:
                 rgblight_toggle();
-#endif
-#if defined(RGB_MATRIX_ENABLE) && !defined(RGB_MATRIX_DISABLE_KEYCODES)
-                rgb_matrix_toggle();
-#endif
                 return false;
             case QK_UNDERGLOW_MODE_NEXT:
-#if defined(RGBLIGHT_ENABLE) && !defined(RGBLIGHT_DISABLE_KEYCODES)
                 handleKeycodeRGB(shifted, rgblight_step, rgblight_step_reverse);
-#endif
-#if defined(RGB_MATRIX_ENABLE) && !defined(RGB_MATRIX_DISABLE_KEYCODES)
-                handleKeycodeRGB(shifted, rgb_matrix_step, rgb_matrix_step_reverse);
-#endif
                 return false;
             case QK_UNDERGLOW_MODE_PREVIOUS:
-#if defined(RGBLIGHT_ENABLE) && !defined(RGBLIGHT_DISABLE_KEYCODES)
                 handleKeycodeRGB(shifted, rgblight_step_reverse, rgblight_step);
-#endif
-#if defined(RGB_MATRIX_ENABLE) && !defined(RGB_MATRIX_DISABLE_KEYCODES)
-                handleKeycodeRGB(shifted, rgb_matrix_step_reverse, rgb_matrix_step);
-#endif
                 return false;
             case QK_UNDERGLOW_HUE_UP:
-#if defined(RGBLIGHT_ENABLE) && !defined(RGBLIGHT_DISABLE_KEYCODES)
                 handleKeycodeRGB(shifted, rgblight_increase_hue, rgblight_decrease_hue);
-#endif
-#if defined(RGB_MATRIX_ENABLE) && !defined(RGB_MATRIX_DISABLE_KEYCODES)
-                handleKeycodeRGB(shifted, rgb_matrix_increase_hue, rgb_matrix_decrease_hue);
-#endif
                 return false;
             case QK_UNDERGLOW_HUE_DOWN:
-#if defined(RGBLIGHT_ENABLE) && !defined(RGBLIGHT_DISABLE_KEYCODES)
                 handleKeycodeRGB(shifted, rgblight_decrease_hue, rgblight_increase_hue);
-#endif
-#if defined(RGB_MATRIX_ENABLE) && !defined(RGB_MATRIX_DISABLE_KEYCODES)
-                handleKeycodeRGB(shifted, rgb_matrix_decrease_hue, rgb_matrix_increase_hue);
-#endif
                 return false;
             case QK_UNDERGLOW_SATURATION_UP:
-#if defined(RGBLIGHT_ENABLE) && !defined(RGBLIGHT_DISABLE_KEYCODES)
                 handleKeycodeRGB(shifted, rgblight_increase_sat, rgblight_decrease_sat);
-#endif
-#if defined(RGB_MATRIX_ENABLE) && !defined(RGB_MATRIX_DISABLE_KEYCODES)
-                handleKeycodeRGB(shifted, rgb_matrix_increase_sat, rgb_matrix_decrease_sat);
-#endif
                 return false;
             case QK_UNDERGLOW_SATURATION_DOWN:
-#if defined(RGBLIGHT_ENABLE) && !defined(RGBLIGHT_DISABLE_KEYCODES)
                 handleKeycodeRGB(shifted, rgblight_decrease_sat, rgblight_increase_sat);
-#endif
-#if defined(RGB_MATRIX_ENABLE) && !defined(RGB_MATRIX_DISABLE_KEYCODES)
-                handleKeycodeRGB(shifted, rgb_matrix_decrease_sat, rgb_matrix_increase_sat);
-#endif
                 return false;
             case QK_UNDERGLOW_VALUE_UP:
-#if defined(RGBLIGHT_ENABLE) && !defined(RGBLIGHT_DISABLE_KEYCODES)
                 handleKeycodeRGB(shifted, rgblight_increase_val, rgblight_decrease_val);
-#endif
-#if defined(RGB_MATRIX_ENABLE) && !defined(RGB_MATRIX_DISABLE_KEYCODES)
-                handleKeycodeRGB(shifted, rgb_matrix_increase_val, rgb_matrix_decrease_val);
-#endif
                 return false;
             case QK_UNDERGLOW_VALUE_DOWN:
-#if defined(RGBLIGHT_ENABLE) && !defined(RGBLIGHT_DISABLE_KEYCODES)
                 handleKeycodeRGB(shifted, rgblight_decrease_val, rgblight_increase_val);
-#endif
-#if defined(RGB_MATRIX_ENABLE) && !defined(RGB_MATRIX_DISABLE_KEYCODES)
-                handleKeycodeRGB(shifted, rgb_matrix_decrease_val, rgb_matrix_increase_val);
-#endif
                 return false;
             case QK_UNDERGLOW_SPEED_UP:
-#if defined(RGBLIGHT_ENABLE) && !defined(RGBLIGHT_DISABLE_KEYCODES)
                 handleKeycodeRGB(shifted, rgblight_increase_speed, rgblight_decrease_speed);
-#endif
-#if defined(RGB_MATRIX_ENABLE) && !defined(RGB_MATRIX_DISABLE_KEYCODES)
-                handleKeycodeRGB(shifted, rgb_matrix_increase_speed, rgb_matrix_decrease_speed);
-#endif
                 return false;
             case QK_UNDERGLOW_SPEED_DOWN:
-#if defined(RGBLIGHT_ENABLE) && !defined(RGBLIGHT_DISABLE_KEYCODES)
                 handleKeycodeRGB(shifted, rgblight_decrease_speed, rgblight_increase_speed);
-#endif
-#if defined(RGB_MATRIX_ENABLE) && !defined(RGB_MATRIX_DISABLE_KEYCODES)
-                handleKeycodeRGB(shifted, rgb_matrix_decrease_speed, rgb_matrix_increase_speed);
-#endif
                 return false;
+#endif
+
+#if defined(RGB_MATRIX_ENABLE) && !defined(RGB_MATRIX_DISABLE_KEYCODES)
+            case QK_RGB_MATRIX_ON:
+                rgb_matrix_enable();
+                return false;
+            case QK_RGB_MATRIX_OFF:
+                rgb_matrix_disable();
+                return false;
+            case QK_RGB_MATRIX_TOGGLE:
+                rgb_matrix_toggle();
+                return false;
+            case QK_RGB_MATRIX_MODE_NEXT:
+                handleKeycodeRGB(shifted, rgb_matrix_step, rgb_matrix_step_reverse);
+                return false;
+            case QK_RGB_MATRIX_MODE_PREVIOUS:
+                handleKeycodeRGB(shifted, rgb_matrix_step_reverse, rgb_matrix_step);
+                return false;
+            case QK_RGB_MATRIX_HUE_UP:
+                handleKeycodeRGB(shifted, rgb_matrix_increase_hue, rgb_matrix_decrease_hue);
+                return false;
+            case QK_RGB_MATRIX_HUE_DOWN:
+                handleKeycodeRGB(shifted, rgb_matrix_decrease_hue, rgb_matrix_increase_hue);
+                return false;
+            case QK_RGB_MATRIX_SATURATION_UP:
+                handleKeycodeRGB(shifted, rgb_matrix_increase_sat, rgb_matrix_decrease_sat);
+                return false;
+            case QK_RGB_MATRIX_SATURATION_DOWN:
+                handleKeycodeRGB(shifted, rgb_matrix_decrease_sat, rgb_matrix_increase_sat);
+                return false;
+            case QK_RGB_MATRIX_VALUE_UP:
+                handleKeycodeRGB(shifted, rgb_matrix_increase_val, rgb_matrix_decrease_val);
+                return false;
+            case QK_RGB_MATRIX_VALUE_DOWN:
+                handleKeycodeRGB(shifted, rgb_matrix_decrease_val, rgb_matrix_increase_val);
+                return false;
+            case QK_RGB_MATRIX_SPEED_UP:
+                handleKeycodeRGB(shifted, rgb_matrix_increase_speed, rgb_matrix_decrease_speed);
+                return false;
+            case QK_RGB_MATRIX_SPEED_DOWN:
+                handleKeycodeRGB(shifted, rgb_matrix_decrease_speed, rgb_matrix_increase_speed);
+                return false;
+#endif
+
             case RGB_MODE_PLAIN:
 #if defined(RGBLIGHT_ENABLE) && !defined(RGBLIGHT_DISABLE_KEYCODES)
                 rgblight_mode(RGBLIGHT_MODE_STATIC_LIGHT);
