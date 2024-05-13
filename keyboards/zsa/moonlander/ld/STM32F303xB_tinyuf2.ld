@@ -27,11 +27,11 @@ MEMORY
     flash5 (rx) : org = 0x00000000, len = 0
     flash6 (rx) : org = 0x00000000, len = 0
     flash7 (rx) : org = 0x00000000, len = 0
-    ram0   (wx) : org = 0x20000000, len = 40k
+    ram0   (wx) : org = 0x20000000, len = 32k
     ram1   (wx) : org = 0x00000000, len = 0
     ram2   (wx) : org = 0x00000000, len = 0
     ram3   (wx) : org = 0x00000000, len = 0
-    ram4   (wx) : org = 0x10000000, len = 0
+    ram4   (wx) : org = 0x10000000, len = 8k
     ram5   (wx) : org = 0x00000000, len = 0
     ram6   (wx) : org = 0x00000000, len = 0
     ram7   (wx) : org = 0x00000000, len = 0
@@ -85,4 +85,4 @@ REGION_ALIAS("HEAP_RAM", ram0);
 INCLUDE rules.ld
 
 /* TinyUF2 bootloader reset support */
-_board_dfu_dbl_tap = ORIGIN(ram0) + 40k - 4; /* this is based off the linker file for tinyuf2 */
+_board_dfu_dbl_tap = ORIGIN(ram0) + 32k - 4; /* this is based off the linker file for tinyuf2 */
