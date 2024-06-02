@@ -24,8 +24,24 @@ bool usb_vbus_state(void) {
 }
 #endif
 
-void matrix_output_unselect_delay(uint8_t line, bool key_pressed) {
-    for (int32_t i = 0; i < 40; i++) {
-        __asm__ volatile("nop" ::: "memory");
-    }
+void user_button_init(void) {
+    // Pin needs to be configured as input low
+#ifdef USER_BUTTON_PIN
+    gpio_set_pin_input_low(USER_BUTTON_PIN);
+#endif // USER_BUTTON_PIN
+}
+
+bool check_user_button_state(void) {
+    gpio_write_pin(DEBUG_LED_PIN, is_keyboard_master());
+#ifdef USER_BUTTON_PIN
+    return gpio_read_pin(USER_BUTTON_PIN);
+#endif // USER_BUTTON_PIN
+    return false;
+}
+
+void board_init(void) {
+    // unset improper SPI pins
+    gpio_set_pin_input(A5);
+    gpio_set_pin_input(A6);
+    gpio_set_pin_input(A7);
 }
