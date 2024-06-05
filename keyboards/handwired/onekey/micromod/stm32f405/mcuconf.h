@@ -18,21 +18,32 @@
 
 #include_next <mcuconf.h>
 
+#if HAL_USE_ADC==TRUE
 #undef STM32_ADC_USE_ADC1
 #define STM32_ADC_USE_ADC1 TRUE
+#endif
 
+#if HAL_USE_I2C==TRUE
 #undef STM32_I2C_USE_I2C2
 #define STM32_I2C_USE_I2C2 TRUE
+#endif
 
+#if HAL_USE_SPI==TRUE
 #undef STM32_SPI_USE_SPI1
 #define STM32_SPI_USE_SPI1 TRUE
+#endif
 
+#ifdef WS2812_PWM
 #undef STM32_PWM_USE_TIM3
 #define STM32_PWM_USE_TIM3 TRUE
+#endif
 
+#ifdef AUDIO_DRIVER_PWM
 #undef STM32_PWM_USE_TIM8
 #define STM32_PWM_USE_TIM8 TRUE
+#endif
 
+#ifdef AUDIO_DRIVER_DAC
 #undef STM32_DAC_USE_DAC1_CH1
 #define STM32_DAC_USE_DAC1_CH1 TRUE
 #undef STM32_DAC_USE_DAC1_CH2
@@ -40,3 +51,4 @@
 
 #undef STM32_GPT_USE_TIM6
 #define STM32_GPT_USE_TIM6 TRUE
+#endif
