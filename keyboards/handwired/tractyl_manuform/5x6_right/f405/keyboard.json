@@ -1,5 +1,5 @@
 {
-    "keyboard_name": "Tractyl Manuform (5x6) BlackPill",
+    "keyboard_name": "Tractyl Manuform (5x6) WeAct STM32F405",
     "matrix_pins": {
         "cols": ["C0", "C1", "C2", "C3", "A0", "A1"],
         "rows": ["A2", "A3", "A6", "A7", "C4", "C5"]
