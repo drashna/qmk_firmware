@@ -18,8 +18,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
-// #define USB_VBUS_PIN        B10 // doesn't seem to work for me on one of my controllers... */
+// #define USB_VBUS_PIN        B12
 #define SPLIT_HAND_PIN      A13  // high = left, low = right
+#define USER_BUTTON_PIN     C13
 
 // WS2812 RGB LED strip input and number of LEDs
 #define WS2812_PWM_DRIVER   PWMD1  // default: PWMD2
@@ -31,7 +32,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define WS2812_PWM_DMA_CHANNEL  6                   // DMA Channel for TIMx_UP, see the respective reference manual for the appropriate values for your MCU.
 #define WS2812_PWM_TARGET_PERIOD 800000
 
-#define DEBUG_LED_PIN      C13
+//#define DEBUG_LED_PIN      B2
 
 /* Audio config */
 #define AUDIO_PIN          A4
@@ -67,12 +68,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 /* pmw3360 config  */
-#define PMW33XX_CS_PIN                       A4
+#define PMW33XX_CS_PIN                       C6
 
 // lcd
 /*
-RST C6
+RST C8
 DC  C7
-CS B12
+CS  C9
 
 */
