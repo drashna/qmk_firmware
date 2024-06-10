@@ -29,7 +29,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // clang-format off
 
 /* HID report IDs */
-enum hid_report_ids { 
+enum hid_report_ids {
     REPORT_ID_ALL = 0,
     REPORT_ID_KEYBOARD = 1,
     REPORT_ID_MOUSE,
@@ -38,6 +38,7 @@ enum hid_report_ids {
     REPORT_ID_PROGRAMMABLE_BUTTON,
     REPORT_ID_NKRO,
     REPORT_ID_JOYSTICK,
+    REPORT_ID_RADIAL_DIAL,
     REPORT_ID_DIGITIZER,
     REPORT_ID_COUNT = REPORT_ID_DIGITIZER
 };
@@ -244,6 +245,14 @@ typedef struct {
     uint8_t buttons[(JOYSTICK_BUTTON_COUNT - 1) / 8 + 1];
 #endif
 } PACKED report_joystick_t;
+
+typedef struct {
+#ifdef RADIAL_DIAL_SHARED_EP
+    uint8_t report_id;
+#endif
+    uint16_t button : 1;
+    int16_t  rotation : 15;
+} PACKED report_radial_dial_t;
 
 /* keycode to system usage */
 static inline uint16_t KEYCODE2SYSTEM(uint8_t key) {

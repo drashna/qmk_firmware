@@ -138,6 +138,13 @@ typedef struct {
     USB_Descriptor_Endpoint_t  Joystick_INEndpoint;
 #endif
 
+#if defined(RADIAL_DIAL_ENABLE) && !defined(RADIAL_DIAL_SHARED_EP)
+    // Mouse HID Interface
+    USB_Descriptor_Interface_t Radial_Dial_Interface;
+    USB_HID_Descriptor_HID_t   Radial_Dial_HID;
+    USB_Descriptor_Endpoint_t  Radial_Dial_INEndpoint;
+#endif
+
 #if defined(DIGITIZER_ENABLE) && !defined(DIGITIZER_SHARED_EP)
     // Digitizer HID Interface
     USB_Descriptor_Interface_t Digitizer_Interface;
@@ -188,6 +195,10 @@ enum usb_interfaces {
 
 #if defined(JOYSTICK_ENABLE) && !defined(JOYSTICK_SHARED_EP)
     JOYSTICK_INTERFACE,
+#endif
+
+#if defined(RADIAL_DIAL_ENABLE) && !defined(RADIAL_DIAL_SHARED_EP)
+    RADIAL_DIAL_INTERFACE,
 #endif
 
 #if defined(DIGITIZER_ENABLE) && !defined(DIGITIZER_SHARED_EP)
@@ -262,6 +273,14 @@ enum usb_endpoints {
 #    endif
 #endif
 
+#ifdef RADIAL_DIAL_ENABLE
+#    if !defined(RADIAL_DIAL_SHARED_EP)
+    RADIAL_DIAL_IN_EPNUM = NEXT_EPNUM,
+#    else
+#        define RADIAL_DIAL_IN_EPNUM SHARED_IN_EPNUM
+#    endif
+#endif
+
 #ifdef DIGITIZER_ENABLE
 #    if !defined(DIGITIZER_SHARED_EP)
     DIGITIZER_IN_EPNUM = NEXT_EPNUM,
@@ -294,6 +313,7 @@ enum usb_endpoints {
 #define CDC_NOTIFICATION_EPSIZE 8
 #define CDC_EPSIZE 16
 #define JOYSTICK_EPSIZE 8
+#define RADIAL_DIAL_EPSIZE 8
 #define DIGITIZER_EPSIZE 8
 
 uint16_t get_usb_descriptor(const uint16_t wValue, const uint16_t wIndex, const uint16_t wLength, const void** const DescriptorAddress);

@@ -40,6 +40,9 @@ usb_endpoint_in_t usb_endpoints_in[USB_ENDPOINT_IN_COUNT] = {
 #if defined(JOYSTICK_SHARED_EP)
         QMK_USB_REPORT_STROAGE_ENTRY(REPORT_ID_JOYSTICK, sizeof(report_joystick_t)),
 #endif
+#if defined(RADIAL_DIAL_SHARED_EP)
+        QMK_USB_REPORT_STROAGE_ENTRY(REPORT_ID_RADIAL_DIAL, sizeof(report_radial_dial_t)),
+#endif
 #if defined(DIGITIZER_SHARED_EP)
         QMK_USB_REPORT_STROAGE_ENTRY(REPORT_ID_DIGITIZER, sizeof(report_digitizer_t)),
 #endif
@@ -58,6 +61,10 @@ usb_endpoint_in_t usb_endpoints_in[USB_ENDPOINT_IN_COUNT] = {
 
 #if defined(JOYSTICK_ENABLE) && !defined(JOYSTICK_SHARED_EP)
     [USB_ENDPOINT_IN_JOYSTICK] = QMK_USB_ENDPOINT_IN(USB_EP_MODE_TYPE_INTR, JOYSTICK_EPSIZE, JOYSTICK_IN_EPNUM, JOYSTICK_IN_CAPACITY, NULL, QMK_USB_REPORT_STORAGE_DEFAULT(sizeof(report_joystick_t))),
+#endif
+
+#if defined(RADIAL_DIAL_ENABLE) && !defined(RADIAL_DIAL_SHARED_EP)
+    [USB_ENDPOINT_IN_RADIAL_DIAL] = QMK_USB_ENDPOINT_IN(USB_EP_MODE_TYPE_INTR, RADIAL_DIAL_EPSIZE, RADIAL_DIAL_IN_EPNUM, RADIAL_DIAL_IN_CAPACITY, NULL, QMK_USB_REPORT_STORAGE_DEFAULT(sizeof(report_radial_dial_t))),
 #endif
 
 #if defined(DIGITIZER_ENABLE) && !defined(DIGITIZER_SHARED_EP)
@@ -130,6 +137,10 @@ usb_endpoint_in_lut_t usb_endpoint_interface_lut[TOTAL_INTERFACES] = {
 
 #if defined(JOYSTICK_ENABLE) && !defined(JOYSTICK_SHARED_EP)
     [JOYSTICK_INTERFACE] = USB_ENDPOINT_IN_JOYSTICK,
+#endif
+
+#if defined(RADIAL_DIAL_ENABLE) && !defined(RADIAL_DIAL_SHARED_EP)
+    [RADIAL_DIAL_INTERFACE] = USB_ENDPOINT_IN_RADIAL_DIAL,
 #endif
 
 #if defined(DIGITIZER_ENABLE) && !defined(DIGITIZER_SHARED_EP)

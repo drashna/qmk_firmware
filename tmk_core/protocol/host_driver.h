@@ -32,5 +32,6 @@ typedef struct {
 } host_driver_t;
 
 void send_joystick(report_joystick_t *report);
+void send_radial_dial(report_radial_dial_t *report);
 void send_digitizer(report_digitizer_t *report);
 void send_programmable_button(report_programmable_button_t *report);

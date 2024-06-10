@@ -505,6 +505,12 @@ void send_joystick(report_joystick_t *report) {
 #endif
 }
 
+void send_radial_dial(report_radial_dial_t *report) {
+#ifdef RADIAL_DIAL_ENABLE
+    send_report(USB_ENDPOINT_IN_RADIAL_DIAL, report, sizeof(report_radial_dial_t));
+#endif
+}
+
 void send_digitizer(report_digitizer_t *report) {
 #ifdef DIGITIZER_ENABLE
     send_report(USB_ENDPOINT_IN_DIGITIZER, report, sizeof(report_digitizer_t));

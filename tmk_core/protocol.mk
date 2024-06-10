@@ -83,6 +83,19 @@ ifeq ($(strip $(JOYSTICK_ENABLE)), yes)
     endif
 endif
 
+ifeq ($(strip $(RADIAL_DIAL_SHARED_EP)), yes)
+    OPT_DEFS += -RADIAL_DIAL_SHARED_EP
+    SHARED_EP_ENABLE = yes
+endif
+
+ifeq ($(strip $(RADIAL_DIAL_ENABLE)), yes)
+    OPT_DEFS += -DRADIAL_DIAL_ENABLE
+    ifeq ($(strip $(SHARED_EP_ENABLE)), yes)
+        OPT_DEFS += -DRADIAL_DIAL_SHARED_EP
+        SHARED_EP_ENABLE = yes
+    endif
+endif
+
 ifeq ($(strip $(DIGITIZER_SHARED_EP)), yes)
     OPT_DEFS += -DDIGITIZER_SHARED_EP
     SHARED_EP_ENABLE = yes
