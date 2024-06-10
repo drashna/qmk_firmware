@@ -217,6 +217,17 @@ void host_joystick_send(joystick_t *joystick) {
 
 __attribute__((weak)) void send_joystick(report_joystick_t *report) {}
 
+#ifdef MULTI_AXIS_CONTROLLER_ENABLE
+void host_multi_axis_controller_send(report_multi_axis_controller_t *report) {
+#ifdef MULTI_AXIS_CONTROLLER_SHARED_EP
+    report->report_id = REPORT_ID_MULTI_AXIS_CONTROLLER;
+#endif
+    send_multi_axis_controller(report);
+}
+#endif
+
+__attribute__((weak)) void send_multi_axis_controller(report_multi_axis_controller_t *report) {}
+
 #ifdef DIGITIZER_ENABLE
 void host_digitizer_send(digitizer_t *digitizer) {
     report_digitizer_t report = {

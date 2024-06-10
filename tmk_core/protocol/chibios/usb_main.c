@@ -505,6 +505,12 @@ void send_joystick(report_joystick_t *report) {
 #endif
 }
 
+void send_multi_axis_controller(report_multi_axis_controller_t *report) {
+#ifdef MULTI_AXIS_CONTROLLER_ENABLE
+    send_report(USB_ENDPOINT_IN_MULTI_AXIS_CONTROLLER, report, sizeof(report_multi_axis_controller_t));
+#endif
+}
+
 void send_digitizer(report_digitizer_t *report) {
 #ifdef DIGITIZER_ENABLE
     send_report(USB_ENDPOINT_IN_DIGITIZER, report, sizeof(report_digitizer_t));
