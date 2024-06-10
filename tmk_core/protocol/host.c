@@ -217,6 +217,18 @@ void host_joystick_send(joystick_t *joystick) {
 
 __attribute__((weak)) void send_joystick(report_joystick_t *report) {}
 
+#ifdef RADIAL_DIAL_ENABLE
+void host_radial_dial_send(report_radial_dial_t *report) {
+#    ifdef RADIAL_DIAL_SHARED_EP
+    report->report_id = REPORT_ID_RADIAL_DIAL,
+#    endif
+
+    send_radial_dial(report);
+}
+#endif
+
+__attribute__((weak)) void send_radial_dial(report_radial_dial_t *report) {}
+
 #ifdef DIGITIZER_ENABLE
 void host_digitizer_send(digitizer_t *digitizer) {
     report_digitizer_t report = {
