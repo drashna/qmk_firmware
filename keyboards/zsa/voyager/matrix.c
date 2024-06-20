@@ -30,7 +30,7 @@ uint8_t         mcp23018_errors;
 
 bool io_expander_ready(void) {
     uint8_t tx;
-    return mcp23018_readPins(MCP23018_DEFAULT_ADDRESS, mcp23018_PORTA, &tx);
+    return mcp23018_read_pins(MCP23018_DEFAULT_ADDRESS, mcp23018_PORTA, &tx);
 }
 
 void matrix_init_custom(void) {
@@ -105,8 +105,7 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]) {
         // Selecting the row on the right side of the keyboard.
         if (!mcp23018_errors) {
             // select row
-            mcp23018_errors += !mcp23018_set_output(MCP23018_DEFAULT_ADDRESS, mcp23018_PORTA, 0b01111111 & ~(1 << (row)));
-            mcp23018_errors += !mcp23018_set_output(MCP23018_DEFAULT_ADDRESS, mcp23018_PORTB, ((uint8_t)!mcp23018_leds[1] << 6) | ((uint8_t)!mcp23018_leds[0] << 7));
+            mcp23018_errors += !mcp23018_set_output(MCP23018_DEFAULT_ADDRESS, 0b01111111 & ~(1 << (row)), ((uint8_t)!mcp23018_leds[1] << 6) | ((uint8_t)!mcp23018_leds[0] << 7));
         }
         // Reading the left side of the keyboard.
         if (row < MCP_ROWS_PER_HAND) {
@@ -153,7 +152,7 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]) {
                 __asm__("nop");
             }
             uint8_t rx;
-            mcp23018_errors += !mcp23018_readPins(MCP23018_DEFAULT_ADDRESS, mcp23018_PORTB, &rx);
+            mcp23018_errors += !mcp23018_read_pins(MCP23018_DEFAULT_ADDRESS, mcp23018_PORTB, &rx);
             data = ~(rx & 0b00111111);
             for (uint16_t i = 0; i < IO_EXPANDER_OP_DELAY; i++) {
                 __asm__("nop");
