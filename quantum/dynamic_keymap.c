@@ -125,6 +125,7 @@ void dynamic_keymap_set_keycode(uint8_t layer, uint8_t row, uint8_t column, uint
     // Big endian, so we can read/write EEPROM directly from host if we want
     eeprom_update_byte(address, (uint8_t)(keycode >> 8));
     eeprom_update_byte(address + 1, (uint8_t)(keycode & 0xFF));
+    dynamic_keymap_set_keycode_kb(layer, row, column, keycode);
 }
 
 #ifdef ENCODER_MAP_ENABLE
@@ -147,6 +148,7 @@ void dynamic_keymap_set_encoder(uint8_t layer, uint8_t encoder_id, bool clockwis
     // Big endian, so we can read/write EEPROM directly from host if we want
     eeprom_update_byte(address + (clockwise ? 0 : 2), (uint8_t)(keycode >> 8));
     eeprom_update_byte(address + (clockwise ? 0 : 2) + 1, (uint8_t)(keycode & 0xFF));
+    dynamic_keymap_set_encoder_kb(layer, encoder_id, !clockwise, keycode);
 }
 #endif // ENCODER_MAP_ENABLE
 
@@ -169,7 +171,7 @@ void dynamic_keymap_reset(void) {
 
 void dynamic_keymap_get_buffer(uint16_t offset, uint16_t size, uint8_t *data) {
     uint16_t dynamic_keymap_eeprom_size = DYNAMIC_KEYMAP_LAYER_COUNT * MATRIX_ROWS * MATRIX_COLS * 2;
-    void *   source                     = (void *)(DYNAMIC_KEYMAP_EEPROM_ADDR + offset);
+    void    *source                     = (void *)(DYNAMIC_KEYMAP_EEPROM_ADDR + offset);
     uint8_t *target                     = data;
     for (uint16_t i = 0; i < size; i++) {
         if (offset + i < dynamic_keymap_eeprom_size) {
@@ -184,7 +186,7 @@ void dynamic_keymap_get_buffer(uint16_t offset, uint16_t size, uint8_t *data) {
 
 void dynamic_keymap_set_buffer(uint16_t offset, uint16_t size, uint8_t *data) {
     uint16_t dynamic_keymap_eeprom_size = DYNAMIC_KEYMAP_LAYER_COUNT * MATRIX_ROWS * MATRIX_COLS * 2;
-    void *   target                     = (void *)(DYNAMIC_KEYMAP_EEPROM_ADDR + offset);
+    void    *target                     = (void *)(DYNAMIC_KEYMAP_EEPROM_ADDR + offset);
     uint8_t *source                     = data;
     for (uint16_t i = 0; i < size; i++) {
         if (offset + i < dynamic_keymap_eeprom_size) {
@@ -193,6 +195,7 @@ void dynamic_keymap_set_buffer(uint16_t offset, uint16_t size, uint8_t *data) {
         source++;
         target++;
     }
+    dynamic_keymap_set_buffer_kb(offset, size, data);
 }
 
 uint16_t keycode_at_keymap_location(uint8_t layer_num, uint8_t row, uint8_t column) {
@@ -220,7 +223,7 @@ uint16_t dynamic_keymap_macro_get_buffer_size(void) {
 }
 
 void dynamic_keymap_macro_get_buffer(uint16_t offset, uint16_t size, uint8_t *data) {
-    void *   source = (void *)(DYNAMIC_KEYMAP_MACRO_EEPROM_ADDR + offset);
+    void    *source = (void *)(DYNAMIC_KEYMAP_MACRO_EEPROM_ADDR + offset);
     uint8_t *target = data;
     for (uint16_t i = 0; i < size; i++) {
         if (offset + i < DYNAMIC_KEYMAP_MACRO_EEPROM_SIZE) {
@@ -234,7 +237,7 @@ void dynamic_keymap_macro_get_buffer(uint16_t offset, uint16_t size, uint8_t *da
 }
 
 void dynamic_keymap_macro_set_buffer(uint16_t offset, uint16_t size, uint8_t *data) {
-    void *   target = (void *)(DYNAMIC_KEYMAP_MACRO_EEPROM_ADDR + offset);
+    void    *target = (void *)(DYNAMIC_KEYMAP_MACRO_EEPROM_ADDR + offset);
     uint8_t *source = data;
     for (uint16_t i = 0; i < size; i++) {
         if (offset + i < DYNAMIC_KEYMAP_MACRO_EEPROM_SIZE) {
@@ -297,4 +300,25 @@ void dynamic_keymap_macro_send(uint8_t id) {
 
     send_string_eeprom_state_t state = {p};
     send_string_with_delay_impl(send_string_get_next_eeprom, &state, DYNAMIC_KEYMAP_MACRO_DELAY);
+}
+
+#ifdef ENCODER_MAP_ENABLE
+__attribute__((weak)) bool dynamic_keymap_set_encoder_kb(uint8_t layer, uint8_t encoder_id, bool clockwise, uint16_t keycode) {
+    return dynamic_keymap_set_encoder_user(layer, encoder_id, clockwise, keycode);
+}
+__attribute__((weak)) bool dynamic_keymap_set_encoder_user(uint8_t layer, uint8_t encoder_id, bool clockwise, uint16_t keycode) {
+    return true;
+}
+#endif // ENCODER_MAP_ENABLE
+__attribute__((weak)) bool dynamic_keymap_set_keycode_kb(uint8_t layer, uint8_t row, uint8_t column, uint16_t keycode) {
+    return dynamic_keymap_set_keycode_user(layer, row, column, keycode);
+}
+__attribute__((weak)) bool dynamic_keymap_set_keycode_user(uint8_t layer, uint8_t row, uint8_t column, uint16_t keycode) {
+    return true;
+}
+__attribute__((weak)) bool dynamic_keymap_set_buffer_kb(uint16_t offset, uint16_t size, uint8_t *data) {
+    return dynamic_keymap_set_buffer_user(offset, size, data);
+}
+__attribute__((weak)) bool dynamic_keymap_set_buffer_user(uint16_t offset, uint16_t size, uint8_t *data) {
+    return true;
 }
