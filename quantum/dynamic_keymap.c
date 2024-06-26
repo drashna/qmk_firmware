@@ -42,6 +42,7 @@ uint16_t dynamic_keymap_get_keycode(uint8_t layer, uint8_t row, uint8_t column) 
 
 void dynamic_keymap_set_keycode(uint8_t layer, uint8_t row, uint8_t column, uint16_t keycode) {
     nvm_dynamic_keymap_update_keycode(layer, row, column, keycode);
+    dynamic_keymap_set_keycode_kb(layer, row, column, keycode);
 }
 
 #ifdef ENCODER_MAP_ENABLE
@@ -51,6 +52,7 @@ uint16_t dynamic_keymap_get_encoder(uint8_t layer, uint8_t encoder_id, bool cloc
 
 void dynamic_keymap_set_encoder(uint8_t layer, uint8_t encoder_id, bool clockwise, uint16_t keycode) {
     nvm_dynamic_keymap_update_encoder(layer, encoder_id, clockwise, keycode);
+    dynamic_keymap_set_encoder_kb(layer, encoder_id, !clockwise, keycode);
 }
 #endif // ENCODER_MAP_ENABLE
 
@@ -168,4 +170,25 @@ void dynamic_keymap_macro_send(uint8_t id) {
 
     send_string_nvm_state_t state = {.offset = offset};
     send_string_with_delay_impl(send_string_get_next_nvm, &state, DYNAMIC_KEYMAP_MACRO_DELAY);
+}
+
+#ifdef ENCODER_MAP_ENABLE
+__attribute__((weak)) bool dynamic_keymap_set_encoder_kb(uint8_t layer, uint8_t encoder_id, bool clockwise, uint16_t keycode) {
+    return dynamic_keymap_set_encoder_user(layer, encoder_id, clockwise, keycode);
+}
+__attribute__((weak)) bool dynamic_keymap_set_encoder_user(uint8_t layer, uint8_t encoder_id, bool clockwise, uint16_t keycode) {
+    return true;
+}
+#endif // ENCODER_MAP_ENABLE
+__attribute__((weak)) bool dynamic_keymap_set_keycode_kb(uint8_t layer, uint8_t row, uint8_t column, uint16_t keycode) {
+    return dynamic_keymap_set_keycode_user(layer, row, column, keycode);
+}
+__attribute__((weak)) bool dynamic_keymap_set_keycode_user(uint8_t layer, uint8_t row, uint8_t column, uint16_t keycode) {
+    return true;
+}
+__attribute__((weak)) bool dynamic_keymap_set_buffer_kb(uint16_t offset, uint16_t size, uint8_t *data) {
+    return dynamic_keymap_set_buffer_user(offset, size, data);
+}
+__attribute__((weak)) bool dynamic_keymap_set_buffer_user(uint16_t offset, uint16_t size, uint8_t *data) {
+    return true;
 }
