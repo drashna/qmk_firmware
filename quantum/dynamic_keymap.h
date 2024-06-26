@@ -19,12 +19,16 @@
 #include <stdbool.h>
 
 uint8_t  dynamic_keymap_get_layer_count(void);
-void *   dynamic_keymap_key_to_eeprom_address(uint8_t layer, uint8_t row, uint8_t column);
+void    *dynamic_keymap_key_to_eeprom_address(uint8_t layer, uint8_t row, uint8_t column);
 uint16_t dynamic_keymap_get_keycode(uint8_t layer, uint8_t row, uint8_t column);
 void     dynamic_keymap_set_keycode(uint8_t layer, uint8_t row, uint8_t column, uint16_t keycode);
+bool     dynamic_keymap_set_keycode_kb(uint8_t layer, uint8_t row, uint8_t column, uint16_t keycode);
+bool     dynamic_keymap_set_keycode_user(uint8_t layer, uint8_t row, uint8_t column, uint16_t keycode);
 #ifdef ENCODER_MAP_ENABLE
 uint16_t dynamic_keymap_get_encoder(uint8_t layer, uint8_t encoder_id, bool clockwise);
 void     dynamic_keymap_set_encoder(uint8_t layer, uint8_t encoder_id, bool clockwise, uint16_t keycode);
+bool     dynamic_keymap_set_encoder_kb(uint8_t layer, uint8_t encoder_id, bool clockwise, uint16_t keycode);
+bool     dynamic_keymap_set_encoder_user(uint8_t layer, uint8_t encoder_id, bool clockwise, uint16_t keycode);
 #endif // ENCODER_MAP_ENABLE
 
 bool dynamic_keymap_is_valid(void);
@@ -40,6 +44,8 @@ void dynamic_keymap_reset(void);
 // a factor of 14.
 void dynamic_keymap_get_buffer(uint16_t offset, uint16_t size, uint8_t *data);
 void dynamic_keymap_set_buffer(uint16_t offset, uint16_t size, uint8_t *data);
+bool dynamic_keymap_set_buffer_kb(uint16_t offset, uint16_t size, uint8_t *data);
+bool dynamic_keymap_set_buffer_user(uint16_t offset, uint16_t size, uint8_t *data);
 
 // This overrides the one in quantum/keymap_common.c
 // uint16_t keymap_key_to_keycode(uint8_t layer, keypos_t key);
