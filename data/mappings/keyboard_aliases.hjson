@@ -36,6 +36,6 @@
         "target": "zsa/planck_ez/glow"
     },
     "voyager": {
-        "target": "zsa/moonlander"
+        "target": "zsa/voyager"
     }
 }
