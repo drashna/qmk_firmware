@@ -14,6 +14,11 @@ typedef struct key_cancellation_t {
 bool process_key_cancellation(uint16_t keycode, keyrecord_t *record);
 bool process_key_cancellation_user(uint16_t keycode, keyrecord_t *record);
 
+bool key_cancellation_recovery_is_enabled(void);
+void key_cancellation_recovery_enable(void);
+void key_cancellation_recovery_disable(void);
+void key_cancellation_recovery_toggle(void);
+
 bool key_cancellation_is_enabled(void);
 void key_cancellation_enable(void);
 void key_cancellation_disable(void);

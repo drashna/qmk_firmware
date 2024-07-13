@@ -178,3 +178,94 @@ TEST_F(KeyInterrupt, d_and_a_consecutive_key_cancellation) {
     run_one_scan_loop();
     VERIFY_AND_CLEAR(driver);
 }
+
+TEST_F(KeyInterrupt, key_interrupt_recovery_toggle) {
+    TestDriver driver;
+
+    EXPECT_EQ(key_cancellation_recovery_is_enabled(), false);
+
+    key_cancellation_recovery_toggle();
+    EXPECT_EQ(key_cancellation_recovery_is_enabled(), true);
+    key_cancellation_recovery_toggle();
+    EXPECT_EQ(key_cancellation_recovery_is_enabled(), false);
+
+    VERIFY_AND_CLEAR(driver);
+}
+
+TEST_F(KeyInterrupt, key_interrupt_recovery_a_d) {
+    TestDriver driver;
+
+    KeymapKey  key_a(0, 0, 0, KC_A);
+    KeymapKey  key_d(0, 1, 0, KC_D);
+
+    set_keymap({key_a, key_d});
+
+    key_cancellation_recovery_enable();
+
+    /* Press A key */
+    EXPECT_REPORT(driver, (KC_A));
+    key_a.press();
+    run_one_scan_loop();
+    VERIFY_AND_CLEAR(driver);
+
+    /* Press D key */
+    EXPECT_REPORT(driver, (KC_D));
+    key_d.press();
+    run_one_scan_loop();
+    VERIFY_AND_CLEAR(driver);
+
+    /* Release D key */
+    EXPECT_REPORT(driver, (KC_A));
+    key_d.release();
+    run_one_scan_loop();
+    VERIFY_AND_CLEAR(driver);
+}
+
+// Test that holding W, holding A, and then pressing D, does NOT release W, but only releases A
+TEST_F(KeyInterrupt, key_interrupt_recovery_w_a_d) {
+    TestDriver driver;
+
+    KeymapKey  key_a(0, 0, 0, KC_A);
+    KeymapKey  key_d(0, 1, 0, KC_D);
+    KeymapKey  key_w(0, 2, 0, KC_W);
+
+    set_keymap({key_a, key_d, key_w});
+
+    key_cancellation_recovery_enable();
+
+    /* Press W key */
+    EXPECT_REPORT(driver, (KC_W));
+    key_w.press();
+    run_one_scan_loop();
+    VERIFY_AND_CLEAR(driver);
+
+    /* Press A key */
+    EXPECT_REPORT(driver, (KC_A, KC_W));
+    key_a.press();
+    run_one_scan_loop();
+    VERIFY_AND_CLEAR(driver);
+
+    /* Press D key */
+    EXPECT_REPORT(driver, (KC_D, KC_W));
+    key_d.press();
+    run_one_scan_loop();
+    VERIFY_AND_CLEAR(driver);
+
+    /* Release D key */
+    EXPECT_REPORT(driver, (KC_A, KC_W));
+    key_d.release();
+    run_one_scan_loop();
+    VERIFY_AND_CLEAR(driver);
+
+    /* Press D key */
+    EXPECT_REPORT(driver, (KC_D, KC_W));
+    key_d.press();
+    run_one_scan_loop();
+    VERIFY_AND_CLEAR(driver);
+
+    /* Release D key */
+    EXPECT_REPORT(driver, (KC_A, KC_W));
+    key_d.release();
+    run_one_scan_loop();
+    VERIFY_AND_CLEAR(driver);
+}

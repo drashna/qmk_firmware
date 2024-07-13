@@ -20,6 +20,27 @@
             "aliases": [
                 "KX_CATG"
             ]
-        }
+        },
+        "0x7C7E": {
+            "group": "quantum",
+            "key": "QK_KEY_CANCELLATION_RECOVERY_ON",
+            "aliases": [
+                "KX_REON"
+            ]
+        },
+        "0x7C7F": {
+            "group": "quantum",
+            "key": "QK_KEY_CANCELLATION_RECOVERY_OFF",
+            "aliases": [
+                "KX_REOF"
+            ]
+        },
+        "0x7C80": {
+            "group": "quantum",
+            "key": "QK_KEY_CANCELLATION_RECOVERY_TOGGLE",
+            "aliases": [
+                "KX_RETG"
+            ]
+        },
     }
 }
