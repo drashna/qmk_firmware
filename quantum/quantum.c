@@ -72,6 +72,10 @@
 #    include "process_unicode_common.h"
 #endif
 
+#ifdef KEY_CANCELLATION_ENABLE
+#    include "process_key_cancellation.h"
+#endif
+
 #ifdef AUDIO_ENABLE
 #    ifndef GOODBYE_SONG
 #        define GOODBYE_SONG SONG(GOODBYE_SOUND)
@@ -394,6 +398,9 @@ bool process_record_quantum(keyrecord_t *record) {
 
 #ifdef TRI_LAYER_ENABLE
             process_tri_layer(keycode, record) &&
+#endif
+#ifdef KEY_CANCELLATION_ENABLE
+            process_key_cancellation(keycode, record) &&
 #endif
 #if defined(POINTING_DEVICE_ENABLE) && defined(POINTING_DEVICE_MODES_ENABLE)
             process_pointing_mode_records(keycode, record) &&
