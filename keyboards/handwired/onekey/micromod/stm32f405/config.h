@@ -33,9 +33,10 @@
 #define SPI_MISO_PIN A6
 
 /* OLED SPI Pins */
-#define OLED_DC_PIN C0
-#define OLED_RST_PIN C1
+#define OLED_DC_PIN C1
+#define OLED_RST_PIN C0
 #define OLED_CS_PIN C4
 
 /* Divisor for OLED */
 #define OLED_SPI_DIVISOR 4
+#define OLED_UPDATE_INTERVAL 1
