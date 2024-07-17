@@ -26,3 +26,18 @@
 
 #define ENCODERS_PAD_A { GP6 }
 #define ENCODERS_PAD_B { GP7 }
+
+
+#define SPI_DRIVER SPID0
+#define SPI_SCK_PIN GP22
+#define SPI_MOSI_PIN GP23
+#define SPI_MISO_PIN GP20
+
+/* OLED SPI Pins */
+#define OLED_DC_PIN GP7  // D1
+#define OLED_RST_PIN GP6 // D0
+#define OLED_CS_PIN GP21 // SPI_CS
+
+/* Divisor for OLED */
+#define OLED_SPI_DIVISOR 4
+#define OLED_UPDATE_INTERVAL 1
