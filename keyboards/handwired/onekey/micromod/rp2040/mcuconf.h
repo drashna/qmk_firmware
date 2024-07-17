@@ -15,3 +15,6 @@
 #define RP_I2C_USE_I2C0 TRUE
 
 #define RP_IRQ_RTC_PRIORITY 3
+
+#undef RP_SPI_USE_SPI0
+#define RP_SPI_USE_SPI0 TRUE
