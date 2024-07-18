@@ -62,9 +62,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define SPI_DRIVER        SPID2
 #define SPI_SCK_PIN       B13
 #define SPI_SCK_PAL_MODE  5
-#define SPI_MOSI_PIN      B14
+#define SPI_MOSI_PIN      B15
 #define SPI_MOSI_PAL_MODE 5
-#define SPI_MISO_PIN      B15
+#define SPI_MISO_PIN      B14
 #define SPI_MISO_PAL_MODE 5
 
 
@@ -80,5 +80,5 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define OLED_RST_PIN     DISPLAY_RST_PIN
 #define OLED_DC_PIN      DISPLAY_DC_PIN
 #define OLED_CS_PIN      DISPLAY_CS_PIN
-#define OLED_SPI_DIVISOR 4
+#define OLED_SPI_DIVISOR 2
 #endif
