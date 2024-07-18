@@ -33,6 +33,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define WS2812_PWM_COMPLEMENTARY_OUTPUT
 #define WS2812_EXTERNAL_PULLUP
 
+#define BACKLIGHT_PWM_DRIVER     PWMD3
+#define BACKLIGHT_PWM_CHANNEL    4
+#define BACKLIGHT_PAL_MODE       2
 
 /* Audio config */
 #define AUDIO_PIN               A4
@@ -50,8 +53,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define SERIAL_USART_SPEED       921600
 #define SERIAL_USART_FULL_DUPLEX
 
-#define CRC8_USE_TABLE
-#define CRC8_OPTIMIZE_SPEED
 
 /* i2c config for oleds */
 #define I2C_DRIVER        I2CD1
