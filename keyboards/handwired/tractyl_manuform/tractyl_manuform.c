@@ -344,6 +344,10 @@ __attribute__((weak)) bool check_user_button_state(void) {
 }
 
 void keyboard_post_init_kb(void) {
+#ifdef DEBUG_LED_PIN
+    gpio_set_pin_output(DEBUG_LED_PIN);
+    gpio_write_pin_low(DEBUG_LED_PIN);
+#endif // DEBUG_LED_PIN
     user_button_init();
 
 #ifdef POINTING_DEVICE_ENABLE
@@ -354,8 +358,10 @@ void keyboard_post_init_kb(void) {
 }
 
 void housekeeping_task_kb(void) {
-    if (check_user_button_state() && is_keyboard_master()) {
-        reset_keyboard();
+    if (check_user_button_state()) {
+       if (is_keyboard_master()) {
+            reset_keyboard();
+       }
     }
 
 #ifdef POINTING_DEVICE_ENABLE

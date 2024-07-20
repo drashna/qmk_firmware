@@ -18,10 +18,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
-#define USB_VBUS_PIN        B12
+// #define USB_VBUS_PIN        B12
 #define SPLIT_HAND_PIN      A13  // high = left, low = right
 #define USER_BUTTON_PIN     C13
-// #define DEBUG_LED_PIN       B2
+#define DEBUG_LED_PIN       B2
 
 // WS2812 RGB LED strip input and number of LEDs
 #define WS2812_PWM_DRIVER        PWMD1
@@ -45,9 +45,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 /* serial.c configuration for split keyboard */
 #define SERIAL_USART_DRIVER      SD1
-#define SERIAL_USART_TX_PIN      A9
+#define SERIAL_USART_TX_PIN      A10
 #define SERIAL_USART_TX_PAL_MODE 7
-#define SERIAL_USART_RX_PIN      A10
+#define SERIAL_USART_RX_PIN      A9
 #define SERIAL_USART_RX_PAL_MODE 7
 #define SERIAL_USART_TIMEOUT     10
 #define SERIAL_USART_SPEED       921600
@@ -71,6 +71,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 /* pmw3360 config  */
 #define POINTING_DEVICE_CS_PIN C6
+#define PMW33XX_SPI_DIVISOR 2
 
 // lcd
 #define DISPLAY_RST_PIN C8
