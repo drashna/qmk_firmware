@@ -1,38 +1,50 @@
-# Drashna's Blackpill Tractyl Manuform (5x6) with a right side trackball
+A0  - Column Pin 5
+A1  - Column Pin 6
+A2  - Column Pin 1
+A3  - Column Pin 2
+A4  - DAC Audio
+A5  - DAC Aduio
+A6  - Column Pin 3
+A7  - Column Pin 4
+A8  - 
+A9  - VBUS Sense -- Don't use - USART TX
+A10 - USART RX
+A11 - USB D-
+A12 - USB D+
+A13 - SWD DIO
+A14 - SWD CLK
+A15 - Split Hand Pin
 
-* System Timer on TIM5
-* VBUS mod, using PB10 -- does work, but not on my tractyl... bad soldering probably
-* Split Hand Pin, using PC14
-* Full Duplex Serial/USART using PA2 and PA3 on USART2
-* PWM Audio using PB1 and TIM3 and GPT on TIM4
-* PWM WS2812 RGB using PA1 TIM2
-* 8KB SPI EEPROM chip sharing PA5-PA7 on SPI1 with PA4 as CS pin
-* pmw3360 sensor sharing PA5-PA7 on SPI1, with B0 as CS pin
-* Encoder using PA13 and PA14
-* SSD1306 OLED display (128x64) using PB8-PB9 on I2C1
-* Pull-up resistor (22k) on PA10 to fix reset issue.
-* Pull-up resistor (5.1k) on PA1 for WS2812 LED support, and wire it's VCC to the 5V pin.
-* Pins PA9 is meant for VBUS sense, and has an internal pulldown resistor. A 5.1k pullup resistor can work (but should be avoided)
-* Pins PA11 and A12 are not useable because they're used for USB connection, and can't be shared. 
-* Pin PB2 is used by BOOT1, and is unusable
+B0  - WS2812 Pin (PWM)
+B1  - Backlight Pin (PWM)
+B2  - Boot1 - user LED
+B3  -
+B4  - Encoder A pin
+B5  - Encoder B Pin
+B6  - I2C SCL
+B7  - I2C SDA
+B8  - Display RST Pin
+B9  - Display DC Pin
+B10 - 
+B11 - Audio Enable Pin
+B12 - Manual VBUS Detect Pin
+B13 - SPI SCK
+B14 - SPI MISO
+B15 - SPI MOSI
 
-## Keyboard Info
-
-* Keyboard Maintainer: [Drashna Jael're](https://github.com/drashna)
-* Hardware Supported: [Design files](https://gitlab.com/keyboards1/dm_r_track/-/tree/master/boolean), [WeAct BlackPill (F411)](https://github.com/WeActStudio/WeActStudio.MiniSTM32F4x1), [PMW3360 Optical Sensor](https://www.tindie.com/products/jkicklighter/pmw3360-motion-sensor/)
-
-Make example for this keyboard (after setting up your build environment):
-
-    make handwired/tractyl_manuform/5x6_right/f411:default
-
-Flashing example for this keyboard:
-
-    make handwired/tractyl_manuform/5x6_right/f411:default:flash
-
-See the [build environment setup](https://docs.qmk.fm/#/getting_started_build_tools) and the [make instructions](https://docs.qmk.fm/#/getting_started_make_guide) for more information. Brand new to QMK? Start with our [Complete Newbs Guide](https://docs.qmk.fm/#/newbs).
-
-## Bootloader 
-
-* **Bootmagic reset**: Hold down the top right key on the right side, or the top left key on the left side while plugging in.
-* **Physical reset button**: Briefly press the "USER" button on the BlackPill
-* **Keycode in layout**: Press the key mapped to `QK_BOOT`.
+C0  - Column Pin 1
+C1  - Column Pin 2
+C2  - Column Pin 3
+C3  - Column Pin 4
+C4  - Row Pin 5
+C5  - Row Pin 6
+C6  - Optical Sensor CS Pin
+C7  - Display CS Pin
+C8  - TF Interface
+C9  - TF Interface
+C10 - TF Interface
+C11 - TF Interface
+C12 - TF Interface
+C13 - User Button
+C14 - LSE Crystal
+C15 - LSE Crystal

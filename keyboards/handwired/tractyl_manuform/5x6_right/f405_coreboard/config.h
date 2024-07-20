@@ -19,7 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #pragma once
 
 // #define USB_VBUS_PIN        B12
-#define SPLIT_HAND_PIN      A13  // high = left, low = right
+#define SPLIT_HAND_PIN      A15  // high = left, low = right
 #define USER_BUTTON_PIN     C13
 #define DEBUG_LED_PIN       B2
 
@@ -74,9 +74,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define PMW33XX_SPI_DIVISOR 2
 
 // lcd
-#define DISPLAY_RST_PIN C8
-#define DISPLAY_DC_PIN  C7
-#define DISPLAY_CS_PIN  C9
+#define DISPLAY_RST_PIN B8
+#define DISPLAY_DC_PIN  B9
+#define DISPLAY_CS_PIN  C7
 
 #if defined(OLED_ENABLE) && defined(OLED_TRANSPORT_SPI)
 #define OLED_RST_PIN     DISPLAY_RST_PIN
