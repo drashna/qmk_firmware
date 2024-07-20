@@ -7,7 +7,7 @@
         "rows": ["GP20"]
     },
     "backlight": {
-        "pin": "GP24"
+        "pin": "GP13"
     },
     "ws2812": {
         "pin": "GP24"
