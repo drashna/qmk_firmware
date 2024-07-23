@@ -38,6 +38,7 @@ void user_button_init(void) {
 }
 
 bool check_user_button_state(void) {
+    gpio_write_pin(DEBUG_LED_PIN, is_keyboard_master());
 #ifdef USER_BUTTON_PIN
     return gpio_read_pin(USER_BUTTON_PIN);
 #endif // USER_BUTTON_PIN
