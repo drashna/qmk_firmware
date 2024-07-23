@@ -8,7 +8,7 @@ A6  - Column Pin 3
 A7  - Column Pin 4
 A8  - 
 A9  - VBUS Sense -- Don't use - USART TX
-A10 - USART RX
+A10 - USART RX (weak internal pullup)
 A11 - USB D-
 A12 - USB D+
 A13 - SWD DIO
@@ -25,9 +25,9 @@ B6  - I2C SCL
 B7  - I2C SDA
 B8  - Display RST Pin
 B9  - Display DC Pin
-B10 - 
+B10 - Manual VBUS Detect Pin
 B11 - Audio Enable Pin
-B12 - Manual VBUS Detect Pin
+B12 - (weak internal pullup)
 B13 - SPI SCK
 B14 - SPI MISO
 B15 - SPI MOSI
