@@ -18,7 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
-#define USB_VBUS_PIN        B10
+// #define USB_VBUS_PIN        B10  // Nope doesn't work...
 #define SPLIT_HAND_PIN      B11  // high = left, low = right
 #define USER_BUTTON_PIN     C13
 #define DEBUG_LED_PIN       B2
