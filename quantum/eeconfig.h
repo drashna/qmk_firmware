@@ -173,7 +173,7 @@ void eeconfig_update_user_datablock(const void *data);
 void eeconfig_init_user_datablock(void);
 #endif // (EECONFIG_USER_DATA_SIZE) > 0
 
-// Any "checked" debounce variant used requires implementation of:
+// Any "checked" variant used requires implementation of:
 //    -- bool eeconfig_check_valid_##name(void)
 //    -- void eeconfig_post_flush_##name(void)
 #define EECONFIG_DEBOUNCE_HELPER_CHECKED(name, offset, config)          \
