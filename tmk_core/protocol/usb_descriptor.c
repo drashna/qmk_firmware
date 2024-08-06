@@ -1186,7 +1186,7 @@ const wchar_t *get_serial_number_str(void) {
         id_str[i] = id_str_small[i];
     }
 
-    xprintf("%s\n", id_str_small);
+    dprintf("Serial Number: %s\n", id_str_small);
     return id_str;
 }
 
