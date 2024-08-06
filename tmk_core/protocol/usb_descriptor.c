@@ -1162,7 +1162,7 @@ const wchar_t *get_serial_number_str(void) {
     static bool computed = false;
 
     if (computed) {
-        printf("%s\n", id_str_small);
+        // printf("%s\n", id_str_small);
         return id_str;
     }
 
@@ -1186,7 +1186,7 @@ const wchar_t *get_serial_number_str(void) {
         id_str[i] = id_str_small[i];
     }
 
-    dprintf("Serial Number: %s\n", id_str_small);
+    // xprintf("%s\n", id_str_small);
     return id_str;
 }
 
