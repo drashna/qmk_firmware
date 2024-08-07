@@ -37,6 +37,11 @@
 #define OLED_RST_PIN C0
 #define OLED_CS_PIN C4
 
+#define DISPLAY_CS_PIN C4 // SPI CS
+#define DISPLAY_DC_PIN C0 // D0
+#define DISPLAY_RST_PIN C1 // D1
+#define DISPLAY_SPI_DIVIDER 16
+
 /* Divisor for OLED */
 #define OLED_SPI_DIVISOR 4
 #define OLED_UPDATE_INTERVAL 1
