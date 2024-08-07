@@ -246,10 +246,13 @@ def list_drives():
 
 
 def write_file(name, buf):
-    with open(name, "wb") as f:
-        f.write(buf)
-    print("Wrote %d bytes to %s" % (len(buf), name))
-
+    try:
+        with open(name, "wb") as f:
+            f.write(buf)
+        print("Wrote %d bytes to %s" % (len(buf), name))
+    except IOError as e:
+        print(f"Failed to write to {name}: {e}")
+        print("Still may have wrote %d bytes to %s" % (len(buf), name))
 
 def load_families():
     # The expectation is that the `uf2families.json` file is in the same
