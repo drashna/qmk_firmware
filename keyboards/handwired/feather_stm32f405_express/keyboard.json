@@ -7,26 +7,31 @@
     "features": {
         "bootmagic": true,
         "command": false,
-        "console": false,
+        "console": true,
         "extrakey": true,
+        "haptic": true,
         "mousekey": true,
-        "nkro": true
+        "nkro": true,
+        "oled": true
+    },
+    "haptic": {
+        "driver": "drv2605l"
     },
     "matrix_pins": {
         "cols": [null, null, null, null],
         "rows": [null, null, null, null]
     },
     "processor": "STM32F405",
+    "rgblight": {
+        "led_count": 1,
+        "pin": "C0",
+        "sleep": true
+    },
     "url": "",
     "usb": {
         "device_version": "1.0.0",
         "pid": "0x0000",
         "vid": "0xFEED"
-    },
-    "rgblight": {
-        "led_count": 1,
-        "pin": "C0",
-        "sleep": true
     },
     "layouts": {
         "LAYOUT_ortho_4x4": {
