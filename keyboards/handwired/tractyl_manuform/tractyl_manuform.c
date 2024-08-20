@@ -348,13 +348,17 @@ void keyboard_post_init_kb(void) {
     gpio_set_pin_output(DEBUG_LED_PIN);
     gpio_write_pin_low(DEBUG_LED_PIN);
 #endif // DEBUG_LED_PIN
-    user_button_init();
 
 #ifdef POINTING_DEVICE_ENABLE
     maybe_update_pointing_device_cpi(&g_charybdis_config);
     transaction_register_rpc(RPC_ID_KB_CONFIG_SYNC, charybdis_config_sync_handler);
 #endif // POINTING_DEVICE_ENABLE
     keyboard_post_init_user();
+}
+
+void keyboard_pre_init_kb(void) {
+    user_button_init();
+    keyboard_pre_init_user();
 }
 
 void housekeeping_task_kb(void) {
