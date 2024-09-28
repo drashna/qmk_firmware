@@ -5,6 +5,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include "pointing_device.h"
 
 typedef struct {
     int16_t x;
