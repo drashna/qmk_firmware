@@ -456,6 +456,9 @@ endif
 ifneq ("$(wildcard $(KEYBOARD_PATH_5)/post_rules.mk)","")
     include $(KEYBOARD_PATH_5)/post_rules.mk
 endif
+ifneq ("$(wildcard $(USER_PATH)/post_rules.mk)","")
+    include $(USER_PATH)/post_rules.mk
+endif
 
 ifneq ("$(wildcard $(KEYMAP_PATH)/config.h)","")
     CONFIG_H += $(KEYMAP_PATH)/config.h
