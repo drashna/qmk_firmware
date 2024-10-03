@@ -1,0 +1,19 @@
+{
+    "keyboard_name": "Onekey STM32F407VE",
+    "processor": "STM32F407",
+    "bootloader": "stm32-dfu",
+    "matrix_pins": {
+        "cols": ["A2"],
+        "rows": ["A1"]
+    },
+    "backlight": {
+        "pin": "B8"
+    },
+    "ws2812": {
+        "pin": "A0"
+    },
+    "apa102": {
+        "data_pin": "A0",
+        "clock_pin": "B13"
+    }
+}
