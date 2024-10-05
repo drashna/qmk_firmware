@@ -1,7 +1,7 @@
 [submodule "lib/chibios"]
 	path = lib/chibios
-	url = https://github.com/qmk/ChibiOS
-	branch = master
+	url = https://github.com/drashna/ChibiOS
+	branch = qmk-develop
 [submodule "lib/chibios-contrib"]
 	path = lib/chibios-contrib
 	url = https://github.com/qmk/ChibiOS-Contrib
