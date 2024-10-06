@@ -1,0 +1,60 @@
+{
+    "keyboard_name": "Tractyl Manuform (5x6) STM32F407",
+    "audio": {
+        "driver": "dac_additive",
+        "power_control": {
+            "pin": "A3"
+        }
+    },
+    "backlight": {
+        "levels": 16,
+        "pin": "C7"
+    },
+    "bootloader": "tinyuf2",
+    "build": {
+        "debounce_type": "asym_eager_defer_pk"
+    },
+    "diode_direction": "COL2ROW",
+    "encoder": {
+        "rotary": [
+            {"pin_a": "A14", "pin_b": "C0"}
+        ]
+    },
+    "features": {
+        "haptic": true
+    },
+    "haptic": {
+        "driver": "drv2605l"
+    },
+    "matrix_pins": {
+        "cols": ["C1", "C2", "C3", "A0", "A1", "A2"],
+        "rows": ["A6", "A7", "C4", "C5", "B0", "B1"]
+    },
+    "processor": "STM32F407",
+    "rgblight": {
+        "led_count": 24,
+        "split": true
+    },
+    "split": {
+        "serial": {
+            "driver": "usart"
+        },
+        "transport": {
+            "sync": {
+                "activity": true,
+                "haptic": true,
+                "matrix_state": true
+            }
+        }
+    },
+    "usb": {
+        "shared_endpoint": {
+            "keyboard": true,
+            "mouse": true
+        }
+    },
+    "ws2812": {
+        "driver": "pwm",
+        "pin": "C6"
+    }
+}
