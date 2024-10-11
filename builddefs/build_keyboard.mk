@@ -542,7 +542,7 @@ $(INTERMEDIATE_OUTPUT)_INC :=  $(VPATH) $(EXTRAINCDIRS) $(KEYBOARD_PATHS)
 $(INTERMEDIATE_OUTPUT)_CONFIG := $(CONFIG_H) $(POST_CONFIG_H)
 
 # Default target.
-all: build check-size
+all: build check-size sizeafter
 
 build: elf cpfirmware
 check-size: build
