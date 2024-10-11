@@ -24,8 +24,8 @@ bool usb_vbus_state(void) {
 }
 #endif
 
-void matrix_output_unselect_delay(uint8_t line, bool key_pressed) {
-    for (int32_t i = 0; i < 40; i++) {
+__attribute__((weak)) void matrix_output_unselect_delay(uint8_t line, bool key_pressed) {
+    for (int32_t i = 0; i < 20; i++) {
         __asm__ volatile("nop" ::: "memory");
     }
 }
