@@ -31,7 +31,10 @@ bool soft_serial_transaction(int sstd_index);
 #ifdef SERIAL_DEBUG
 #    include <debug.h>
 #    include <print.h>
-#    define serial_dprintf(...) dprintf(__VA_ARGS__)
+#    define serial_dprintf(fmt, ...)                                     \
+        do {                                                      \
+            if (debug_config.serial) xprintf(fmt, ##__VA_ARGS__); \
+        } while (0)
 #else
 #    define serial_dprintf(...) \
         do {                    \

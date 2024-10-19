@@ -6,7 +6,10 @@
 #ifdef POINTING_DEVICE_DEBUG
 #    include "debug.h"
 #    include "print.h"
-#    define pd_dprintf(...) dprintf(__VA_ARGS__)
+#    define pd_dprintf(fmt, ...)                                     \
+        do {                                                      \
+            if (debug_config.pointing) xprintf(fmt, ##__VA_ARGS__); \
+        } while (0)
 #else
 #    define pd_dprintf(...) \
         do {                \
