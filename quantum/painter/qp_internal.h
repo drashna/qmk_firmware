@@ -19,7 +19,10 @@
 #ifdef QUANTUM_PAINTER_DEBUG
 #    include <debug.h>
 #    include <print.h>
-#    define qp_dprintf(...) dprintf(__VA_ARGS__)
+#    define qp_dprintf(fmt, ...)                                     \
+        do {                                                      \
+            if (debug_config.quantum_painter) xprintf(fmt, ##__VA_ARGS__); \
+        } while (0)
 #else
 #    define qp_dprintf(...) \
         do {                \

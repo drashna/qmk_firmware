@@ -317,7 +317,7 @@ void process_record_handler(keyrecord_t *record) {
     action_t action = store_or_get_action(record->event.pressed, record->event.key);
 #endif
     ac_dprintf("ACTION: ");
-    debug_action(action);
+    debug_action_fn(action);
 #ifndef NO_ACTION_LAYER
     ac_dprintf(" layer_state: ");
     layer_debug();
@@ -1219,7 +1219,7 @@ void debug_record(keyrecord_t record) {
  *
  * FIXME: Needs documentation.
  */
-void debug_action(action_t action) {
+void debug_action_fn(action_t action) {
     switch (action.kind.id) {
         case ACT_LMODS:
             ac_dprintf("ACT_LMODS");

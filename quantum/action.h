@@ -143,7 +143,10 @@ uint16_t get_record_keycode(keyrecord_t *record, bool update_layer_cache);
 #ifdef ACTION_DEBUG
 #    include "debug.h"
 #    include "print.h"
-#    define ac_dprintf(...) dprintf(__VA_ARGS__)
+#    define ac_dprintf(fmt, ...)                                     \
+        do {                                                      \
+            if (debug_config.action) xprintf(fmt, ##__VA_ARGS__); \
+        } while (0)
 #else
 #    define ac_dprintf(...) \
         do {                \
@@ -153,7 +156,7 @@ uint16_t get_record_keycode(keyrecord_t *record, bool update_layer_cache);
 /* debug */
 void debug_event(keyevent_t event);
 void debug_record(keyrecord_t record);
-void debug_action(action_t action);
+void debug_action_fn(action_t action);
 
 #ifdef __cplusplus
 }
