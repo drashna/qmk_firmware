@@ -34,7 +34,12 @@ typedef union {
         bool    matrix : 1;
         bool    keyboard : 1;
         bool    mouse : 1;
-        uint8_t reserved : 4;
+        bool    pointing :1;
+        bool    action : 1;
+        bool    serial: 1;
+        bool    quantum_painter : 1;
+        // bool backing_store : 1;
+        // bool wear_leveling : 1;
     };
     uint8_t raw;
 } debug_config_t;
@@ -50,7 +55,10 @@ extern debug_config_t debug_config;
 #define debug_matrix (debug_config.matrix)
 #define debug_keyboard (debug_config.keyboard)
 #define debug_mouse (debug_config.mouse)
-
+#define debug_pointing (debug_config.pointing)
+#define debug_action (debug_config.action)
+#define debug_serial (debug_config.serial)
+#define debug_quantum_painter (debug_config.quantum_painter)
 /*
  * Debug print utils
  */
