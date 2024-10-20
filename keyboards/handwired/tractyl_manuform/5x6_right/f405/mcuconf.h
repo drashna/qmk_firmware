@@ -60,13 +60,13 @@
 #endif // HAL_USE_I2C
 
 #ifdef WS2812_PWM
-#    undef STM32_PWM_USE_TIM8
-#    define STM32_PWM_USE_TIM8 TRUE
+#    undef STM32_PWM_USE_TIM3
+#    define STM32_PWM_USE_TIM3 TRUE
 #endif // WS2812_PWM
 
 #ifdef BACKLIGHT_PWM
-#    undef STM32_PWM_USE_TIM3
-#    define STM32_PWM_USE_TIM3 TRUE
+#    undef STM32_PWM_USE_TIM8
+#    define STM32_PWM_USE_TIM8 TRUE
 #endif
 
 #if HAL_USE_SPI == TRUE
