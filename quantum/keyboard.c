@@ -504,6 +504,11 @@ void switch_events(uint8_t row, uint8_t col, bool pressed) {
 #if defined(RGB_MATRIX_ENABLE)
     rgb_matrix_handle_key_event(row, col, pressed);
 #endif
+#if defined(HAPTIC_ENABLE) && defined(SPLIT_HAPTIC_ENABLE)
+    void haptic_handle_key_event(uint8_t row, uint8_t col, bool pressed);
+    haptic_handle_key_event(row, col, pressed);
+#endif // HAPTIC_ENABLE && SPLIT_HAPTIC_ENABLE
+
     wakeup_matrix_handle_key_event(row, col, pressed);
 }
 
