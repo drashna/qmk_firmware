@@ -817,7 +817,6 @@ static void watchdog_handlers_slave(matrix_row_t master_matrix[], matrix_row_t s
 
 #if defined(HAPTIC_ENABLE) && defined(SPLIT_HAPTIC_ENABLE)
 
-uint8_t                split_haptic_play = 0xFF;
 extern haptic_config_t haptic_config;
 
 static bool haptic_handlers_master(matrix_row_t master_matrix[], matrix_row_t slave_matrix[]) {
@@ -825,22 +824,12 @@ static bool haptic_handlers_master(matrix_row_t master_matrix[], matrix_row_t sl
     split_slave_haptic_sync_t haptic_sync;
 
     memcpy(&haptic_sync.haptic_config, &haptic_config, sizeof(haptic_config_t));
-    haptic_sync.haptic_play = split_haptic_play;
 
-    bool okay = send_if_data_mismatch(PUT_HAPTIC, &last_update, &haptic_sync, &split_shmem->haptic_sync, sizeof(haptic_sync));
-
-    split_haptic_play = 0xFF;
-
-    return okay;
+    return send_if_data_mismatch(PUT_HAPTIC, &last_update, &haptic_sync, &split_shmem->haptic_sync, sizeof(haptic_sync));
 }
 
 static void haptic_handlers_slave(matrix_row_t master_matrix[], matrix_row_t slave_matrix[]) {
     memcpy(&haptic_config, &split_shmem->haptic_sync.haptic_config, sizeof(haptic_config_t));
-
-    if (split_shmem->haptic_sync.haptic_play != 0xFF) {
-        haptic_set_mode(split_shmem->haptic_sync.haptic_play);
-        haptic_play();
-    }
 }
 
 // clang-format off

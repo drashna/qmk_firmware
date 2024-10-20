@@ -145,3 +145,29 @@ bool process_haptic(uint16_t keycode, keyrecord_t *record) {
 
     return true;
 }
+
+
+
+void haptic_handle_key_event(uint8_t row, uint8_t col, bool pressed) {
+    if (is_keyboard_master()) {
+        return;
+    }
+    keyevent_t event = MAKE_KEYEVENT(row, col, pressed);
+    keyrecord_t record = {.event = event};
+    uint16_t keycode = get_event_keycode(event, false);
+
+    if (haptic_get_enable() && ((!HAPTIC_OFF_IN_LOW_POWER) || (usb_device_state_get_configure_state() == USB_DEVICE_STATE_CONFIGURED))) {
+        if (record.event.pressed) {
+            // keypress
+            if (haptic_get_feedback() < 2 && get_haptic_enabled_key(keycode, &record)) {
+                haptic_play();
+            }
+        } else {
+            // keyrelease
+            if (haptic_get_feedback() > 0 && get_haptic_enabled_key(keycode, &record)) {
+                haptic_play();
+            }
+        }
+    }
+
+}
