@@ -29,7 +29,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define WS2812_PWM_PAL_MODE      2
 #define WS2812_PWM_DMA_STREAM    STM32_DMA1_STREAM2
 #define WS2812_PWM_DMA_CHANNEL   5
-#define WS2812_PWM_TARGET_PERIOD 800000
 #define WS2812_EXTERNAL_PULLUP
 
 #define BACKLIGHT_PWM_DRIVER     PWMD8
