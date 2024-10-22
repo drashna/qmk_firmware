@@ -1,0 +1,9 @@
+{
+    "keyboard_name": "Onekey WeAct STM32F405 + USB3300",
+    "processor": "STM32F405",
+    "bootloader": "stm32-dfu",
+    "matrix_pins": {
+        "cols": ["A1"],
+        "rows": ["A2"]
+    }
+}
