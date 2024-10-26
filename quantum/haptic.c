@@ -334,17 +334,26 @@ void haptic_play(void) {
     uint8_t play_eff = 0;
     play_eff         = haptic_config.mode;
     drv2605l_pulse(play_eff);
-#    if defined(SPLIT_KEYBOARD) && defined(SPLIT_HAPTIC_ENABLE)
-    split_haptic_play = haptic_config.mode;
-#    endif
 #endif
 #ifdef HAPTIC_SOLENOID
     solenoid_fire_handler();
-#    if defined(SPLIT_KEYBOARD) && defined(SPLIT_HAPTIC_ENABLE)
-    split_haptic_play = 1;
-#    endif
 #endif
 }
+
+#if defined(SPLIT_KEYBOARD) && defined(SPLIT_HAPTIC_ENABLE)
+void set_haptic_split_play(uint8_t mode) {
+    split_haptic_play = mode;
+}
+
+void split_haptic_play_effect(uint8_t mode) {
+#ifdef HAPTIC_DRV2605L
+    drv2605l_pulse(mode);
+#endif // HAPTIC_DRV2605L
+#ifdef HAPTIC_SOLENOID
+    solenoid_fire_handler();
+#endif // HAPTIC_SOLENOID
+}
+#endif
 
 void haptic_shutdown(void) {
 #ifdef HAPTIC_SOLENOID
