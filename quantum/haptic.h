@@ -77,6 +77,11 @@ void    haptic_cont_increase(void);
 void    haptic_cont_decrease(void);
 
 void haptic_play(void);
+#if defined(SPLIT_KEYBOARD) && defined(SPLIT_HAPTIC_ENABLE)
+void set_haptic_split_play(uint8_t mode);
+void split_haptic_play_effect(uint8_t mode);
+#endif
+
 void haptic_shutdown(void);
 void haptic_notify_usb_device_state_change(void);
 
