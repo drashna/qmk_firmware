@@ -835,8 +835,7 @@ static void haptic_handlers_slave(matrix_row_t master_matrix[], matrix_row_t sla
     memcpy(&haptic_config, &split_shmem->haptic_sync.haptic_config, sizeof(haptic_config_t));
 
     if (split_shmem->haptic_sync.haptic_play != 0xFF) {
-        haptic_set_mode(split_shmem->haptic_sync.haptic_play);
-        haptic_play();
+        split_haptic_play_effect(split_shmem->haptic_sync.haptic_play);
     }
 }
 
