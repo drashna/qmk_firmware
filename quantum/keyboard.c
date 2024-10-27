@@ -32,6 +32,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "sendchar.h"
 #include "eeconfig.h"
 #include "action_layer.h"
+#include "suspend.h"
 #ifdef BOOTMAGIC_ENABLE
 #    include "bootmagic.h"
 #endif
@@ -563,6 +564,7 @@ void switch_events(uint8_t row, uint8_t col, bool pressed) {
     void haptic_handle_key_event(uint8_t row, uint8_t col, bool pressed);
     haptic_handle_key_event(row, col, pressed);
 #endif // HAPTIC_ENABLE && SPLIT_HAPTIC_ENABLE
+    wakeup_matrix_handle_key_event(row, col, pressed);
 }
 
 /**
@@ -626,7 +628,7 @@ static bool matrix_task(void) {
             if (row_changes & col_mask) {
                 const bool key_pressed = current_row & col_mask;
 
-                if (process_keypress) {
+                if (process_keypress && !keypress_is_wakeup_key(row, col)) {
                     action_exec(MAKE_KEYEVENT(row, col, key_pressed));
                 }
 
