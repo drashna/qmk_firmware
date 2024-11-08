@@ -11,3 +11,6 @@ pygments
 pyserial
 pyusb
 pillow
+mpire
+tqdm
+rich
