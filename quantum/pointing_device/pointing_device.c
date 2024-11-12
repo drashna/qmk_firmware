@@ -195,7 +195,7 @@ __attribute__((weak)) bool pointing_device_send(void) {
         host_mouse_send(&local_mouse_report);
     }
     // send it and 0 it out except for buttons, so those stay until they are explicity over-ridden using update_pointing_device
-    uint8_t buttons = local_mouse_report.buttons;
+    uint32_t buttons = local_mouse_report.buttons;
     memset(&local_mouse_report, 0, sizeof(local_mouse_report));
     local_mouse_report.buttons = buttons;
 
@@ -278,7 +278,7 @@ __attribute__((weak)) bool pointing_device_task(void) {
 
 #if defined(SPLIT_POINTING_ENABLE)
 #    if defined(POINTING_DEVICE_COMBINED)
-        static uint8_t old_buttons = 0;
+        static uint32_t old_buttons = 0;
         local_mouse_report.buttons = old_buttons;
         local_mouse_report         = pointing_device_driver->get_report(local_mouse_report);
         old_buttons                = local_mouse_report.buttons;

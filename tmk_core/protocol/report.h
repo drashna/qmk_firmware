@@ -29,7 +29,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // clang-format off
 
 /* HID report IDs */
-enum hid_report_ids { 
+enum hid_report_ids {
     REPORT_ID_ALL = 0,
     REPORT_ID_KEYBOARD = 1,
     REPORT_ID_MOUSE,
@@ -209,7 +209,7 @@ typedef struct {
 #ifdef MOUSE_SHARED_EP
     uint8_t report_id;
 #endif
-    uint8_t buttons;
+    uint32_t buttons;
 #ifdef MOUSE_EXTENDED_REPORT
     int8_t boot_x;
     int8_t boot_y;

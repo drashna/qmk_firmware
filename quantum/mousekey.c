@@ -655,7 +655,7 @@ void mousekey_clear(void) {
 static void mousekey_debug(void) {
     if (!debug_mouse) return;
     print("mousekey [btn|x y v h](rep/acl): [");
-    print_hex8(mouse_report.buttons);
+    print_hex32(mouse_report.buttons);
     print("|");
     print_decs(mouse_report.x);
     print(" ");
