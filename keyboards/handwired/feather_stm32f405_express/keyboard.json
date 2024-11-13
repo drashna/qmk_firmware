@@ -17,6 +17,13 @@
     "haptic": {
         "driver": "drv2605l"
     },
+    "eeprom": {
+        "wear_leveling": {
+            "driver": "spi_flash",
+            "logical_size": 16384,
+            "backing_size": 65536
+        }
+    },
     "matrix_pins": {
         "cols": [null, null, null, null],
         "rows": [null, null, null, null]
