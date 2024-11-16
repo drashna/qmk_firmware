@@ -16,7 +16,9 @@
 
 #include "tractyl_manuform.h"
 #include "keyboard.h"
+#ifdef POINTING_DEVICE_ENABLE
 #include "pointing_device.h"
+#endif
 #include "quantum.h"
 #include "transactions.h"
 #include <string.h>
