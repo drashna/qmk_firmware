@@ -611,27 +611,27 @@ See also: [MIDI](features/midi)
 
 See also: [Mouse Keys](features/mouse_keys)
 
-|Key                      |Aliases  |Description                |
-|-------------------------|---------|---------------------------|
-|`QK_MOUSE_CURSOR_UP`     |`MS_UP`  |Mouse cursor up            |
-|`QK_MOUSE_CURSOR_DOWN`   |`MS_DOWN`|Mouse cursor down          |
-|`QK_MOUSE_CURSOR_LEFT`   |`MS_LEFT`|Mouse cursor left          |
-|`QK_MOUSE_CURSOR_RIGHT`  |`MS_RGHT`|Mouse cursor right         |
-|`QK_MOUSE_BUTTON_1`      |`MS_BTN1`|Mouse button 1             |
-|`QK_MOUSE_BUTTON_2`      |`MS_BTN2`|Mouse button 2             |
-|`QK_MOUSE_BUTTON_3`      |`MS_BTN3`|Mouse button 3             |
-|`QK_MOUSE_BUTTON_4`      |`MS_BTN4`|Mouse button 4             |
-|`QK_MOUSE_BUTTON_5`      |`MS_BTN5`|Mouse button 5             |
-|`QK_MOUSE_BUTTON_6`      |`MS_BTN6`|Mouse button 6             |
-|`QK_MOUSE_BUTTON_7`      |`MS_BTN7`|Mouse button 7             |
-|`QK_MOUSE_BUTTON_8`      |`MS_BTN8`|Mouse button 8             |
-|`QK_MOUSE_WHEEL_UP`      |`MS_WHLU`|Mouse wheel up             |
-|`QK_MOUSE_WHEEL_DOWN`    |`MS_WHLD`|Mouse wheel down           |
-|`QK_MOUSE_WHEEL_LEFT`    |`MS_WHLL`|Mouse wheel left           |
-|`QK_MOUSE_WHEEL_RIGHT`   |`MS_WHLR`|Mouse wheel right          |
-|`QK_MOUSE_ACCELERATION_0`|`MS_ACL0`|Set mouse acceleration to 0|
-|`QK_MOUSE_ACCELERATION_1`|`MS_ACL1`|Set mouse acceleration to 1|
-|`QK_MOUSE_ACCELERATION_2`|`MS_ACL2`|Set mouse acceleration to 2|
+|Key                      |Aliases  |Description                       |
+|-------------------------|---------|----------------------------------|
+|`QK_MOUSE_CURSOR_UP`     |`MS_UP`  |Mouse cursor up                   |
+|`QK_MOUSE_CURSOR_DOWN`   |`MS_DOWN`|Mouse cursor down                 |
+|`QK_MOUSE_CURSOR_LEFT`   |`MS_LEFT`|Mouse cursor left                 |
+|`QK_MOUSE_CURSOR_RIGHT`  |`MS_RGHT`|Mouse cursor right                |
+|`QK_MOUSE_BUTTON_1`      |`MS_BTN1`|Mouse button 1 (Left Click)       |
+|`QK_MOUSE_BUTTON_2`      |`MS_BTN2`|Mouse button 2 (Right Click)      |
+|`QK_MOUSE_BUTTON_3`      |`MS_BTN3`|Mouse button 3 (Middle Click)     |
+|`QK_MOUSE_BUTTON_4`      |`MS_BTN4`|Mouse button 4 ("Back" button)    |
+|`QK_MOUSE_BUTTON_5`      |`MS_BTN5`|Mouse button 5 ("Forward" button) |
+|`QK_MOUSE_BUTTON_6`      |`MS_BTN6`|Mouse button 6                    |
+|`QK_MOUSE_BUTTON_7`      |`MS_BTN7`|Mouse button 7                    |
+|`QK_MOUSE_BUTTON_8`      |`MS_BTN8`|Mouse button 8                    |
+|`QK_MOUSE_WHEEL_UP`      |`MS_WHLU`|Mouse wheel up                    |
+|`QK_MOUSE_WHEEL_DOWN`    |`MS_WHLD`|Mouse wheel down                  |
+|`QK_MOUSE_WHEEL_LEFT`    |`MS_WHLL`|Mouse wheel left                  |
+|`QK_MOUSE_WHEEL_RIGHT`   |`MS_WHLR`|Mouse wheel right                 |
+|`QK_MOUSE_ACCELERATION_0`|`MS_ACL0`|Set mouse acceleration to 0       |
+|`QK_MOUSE_ACCELERATION_1`|`MS_ACL1`|Set mouse acceleration to 1       |
+|`QK_MOUSE_ACCELERATION_2`|`MS_ACL2`|Set mouse acceleration to 2       |
 
 ## Modifiers {#modifiers}
 
