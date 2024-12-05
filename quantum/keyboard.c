@@ -449,6 +449,46 @@ void quantum_init(void) {
     layer_state_set_kb((layer_state_t)layer_state);
 }
 
+#ifdef MULTITHREADED_LIGHTING_ENABLE
+static THD_WORKING_AREA(waLightingThread, 256);
+static THD_FUNCTION(LightingThread, arg) {
+    (void)arg;
+    chRegSetThreadName("lighting");
+#    ifdef LED_MATRIX_ENABLE
+    led_matrix_init();
+#    endif
+#    ifdef RGB_MATRIX_ENABLE
+    rgb_matrix_init();
+#    endif
+#    ifdef RGBLIGHT_ENABLE
+    rgblight_init();
+#    endif
+#    ifdef BACKLIGHT_ENABLE
+    backlight_init();
+    backlight_init_ports();
+#    endif
+
+    while (true) {
+#    if defined(RGBLIGHT_ENABLE)
+        rgblight_task();
+#    endif
+
+#    ifdef LED_MATRIX_ENABLE
+        led_matrix_task();
+#    endif
+#    ifdef RGB_MATRIX_ENABLE
+        rgb_matrix_task();
+#    endif
+#    if defined(BACKLIGHT_ENABLE)
+#        if defined(BACKLIGHT_PIN) || defined(BACKLIGHT_PINS)
+        backlight_task();
+#        endif
+#    endif
+        chThdSleepMicroseconds(500);
+    }
+}
+#endif // MULTITHREADED_EFFECTS_ENABLE
+
 /** \brief keyboard_init
  *
  * FIXME: needs doc
@@ -472,17 +512,18 @@ void keyboard_init(void) {
 #endif
     host_init();
     led_init_ports();
-#ifdef BACKLIGHT_ENABLE
-    backlight_init_ports();
-#endif
 #ifdef AUDIO_ENABLE
     audio_init();
 #endif
-#ifdef LED_MATRIX_ENABLE
+#ifdef MULTITHREADED_LIGHTING_ENABLE
+    chThdCreateStatic(waLightingThread, sizeof(waLightingThread), HIGHPRIO, LightingThread, NULL);
+#else
+#    ifdef LED_MATRIX_ENABLE
     led_matrix_init();
-#endif
-#ifdef RGB_MATRIX_ENABLE
+#    endif
+#    ifdef RGB_MATRIX_ENABLE
     rgb_matrix_init();
+#    endif
 #endif
 #if defined(UNICODE_COMMON_ENABLE)
     unicode_input_mode_init();
@@ -499,11 +540,14 @@ void keyboard_init(void) {
 #ifdef PS2_MOUSE_ENABLE
     ps2_mouse_init();
 #endif
-#ifdef BACKLIGHT_ENABLE
+#ifndef MULTITHREADED_LIGHTING_ENABLE
+#    ifdef BACKLIGHT_ENABLE
     backlight_init();
-#endif
-#ifdef RGBLIGHT_ENABLE
+    backlight_init_ports();
+#    endif
+#    ifdef RGBLIGHT_ENABLE
     rgblight_init();
+#    endif
 #endif
 #ifdef STENO_ENABLE_ALL
     steno_init();
@@ -722,20 +766,22 @@ void keyboard_task(void) {
     split_watchdog_task();
 #endif
 
-#if defined(RGBLIGHT_ENABLE)
+#ifndef MULTITHREADED_LIGHTING_ENABLE
+#    if defined(RGBLIGHT_ENABLE)
     rgblight_task();
-#endif
+#    endif
 
-#ifdef LED_MATRIX_ENABLE
+#    ifdef LED_MATRIX_ENABLE
     led_matrix_task();
-#endif
-#ifdef RGB_MATRIX_ENABLE
+#    endif
+#    ifdef RGB_MATRIX_ENABLE
     rgb_matrix_task();
-#endif
+#    endif
 
-#if defined(BACKLIGHT_ENABLE)
-#    if defined(BACKLIGHT_PIN) || defined(BACKLIGHT_PINS)
+#    if defined(BACKLIGHT_ENABLE)
+#        if defined(BACKLIGHT_PIN) || defined(BACKLIGHT_PINS)
     backlight_task();
+#        endif
 #    endif
 #endif
 
