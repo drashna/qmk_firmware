@@ -959,6 +959,10 @@ ifeq ($(strip $(DIP_SWITCH_ENABLE)), yes)
     endif
 endif
 
+ifeq ($(strip $(MULTITHREADED_LIGHTING_ENABLE)), yes)
+    OPT_DEFS += -DMULTITHREADED_LIGHTING_ENABLE
+endif
+
 VALID_WS2812_DRIVER_TYPES := bitbang custom i2c pwm spi vendor
 
 WS2812_DRIVER ?= bitbang
