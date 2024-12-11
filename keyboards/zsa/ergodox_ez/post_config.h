@@ -40,3 +40,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #    define WS2812_LED_COUNT 15
 #    define RGBLIGHT_LED_COUNT 15  // Number of LEDs
 #endif
+
+#ifndef IS31FL3731_I2C_TIMEOUT
+#    define IS31FL3731_I2C_TIMEOUT 3
+#endif

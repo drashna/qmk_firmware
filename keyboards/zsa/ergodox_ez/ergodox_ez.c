@@ -19,60 +19,131 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "ergodox_ez.h"
-
-extern inline void ergodox_board_led_on(void);
-extern inline void ergodox_right_led_1_on(void);
-extern inline void ergodox_right_led_2_on(void);
-extern inline void ergodox_right_led_3_on(void);
-
-extern inline void ergodox_board_led_off(void);
-extern inline void ergodox_right_led_1_off(void);
-extern inline void ergodox_right_led_2_off(void);
-extern inline void ergodox_right_led_3_off(void);
-
-extern inline void ergodox_led_all_on(void);
-extern inline void ergodox_led_all_off(void);
-
-extern inline void ergodox_right_led_1_set(uint8_t n);
-extern inline void ergodox_right_led_2_set(uint8_t n);
-extern inline void ergodox_right_led_3_set(uint8_t n);
-extern inline void ergodox_right_led_set(uint8_t led, uint8_t n);
-
-extern inline void ergodox_led_all_set(uint8_t n);
+#include "gpio.h"
 
 keyboard_config_t keyboard_config;
 
 bool         i2c_initialized = 0;
 i2c_status_t mcp23018_status = 0x20;
 
-void matrix_init_kb(void) {
-    // keyboard LEDs (see "PWM on ports OC1(A|B|C)" in "teensy-2-0.md")
-    TCCR1A = 0b10101001;  // set and configure fast PWM
-    TCCR1B = 0b00001001;  // set and configure fast PWM
+__attribute__((weak)) void keyboard_post_init_sub(void) {
+    gpio_set_pin_output(ERGODOX_LED_1_PIN);
+    gpio_set_pin_output(ERGODOX_LED_2_PIN);
+    gpio_set_pin_output(ERGODOX_LED_3_PIN);
+}
 
-    // (tied to Vcc for hardware convenience)
-    gpio_set_pin_input(B4); // set B(4) as input, internal pull-up disabled
-
-    // unused pins - C7, D4, D5, E6
-    // set as input with internal pull-up enabled
-    gpio_set_pin_input_high(C7);
-    gpio_set_pin_input_high(D4);
-    gpio_set_pin_input_high(D5);
-    gpio_set_pin_input_high(E6);
+void keyboard_post_init_kb(void) {
+    keyboard_post_init_sub();
+#ifdef ERGODOX_LED_SHUTOFF_PIN
+    gpio_set_pin_output(ERGODOX_LED_SHUTOFF_PIN);
+#endif
 
     keyboard_config.raw = eeconfig_read_kb();
     ergodox_led_all_set((uint8_t)keyboard_config.led_level * 255 / 4);
-#ifdef RGB_MATRIX_ENABLE
-    if (keyboard_config.rgb_matrix_enable) {
-        rgb_matrix_set_flags(LED_FLAG_ALL);
-    } else {
-        rgb_matrix_set_flags(LED_FLAG_NONE);
-    }
-#endif
-
     ergodox_blink_all_leds();
+#    if defined(RGB_MATRIX_ENABLE)
+    if (rgb_matrix_get_mode() >= RGB_MATRIX_EFFECT_MAX) {
+            rgb_matrix_mode(RGB_MATRIX_NONE);
+    }
+#    endif
 
-    matrix_init_user();
+    keyboard_post_init_user();
+}
+
+void ergodox_board_led_on(void) {
+#ifdef ERGODOX_LED_SHUTOFF_PIN
+    gpio_write_pin_high(ERGODOX_LED_SHUTOFF_PIN);
+#endif
+}
+
+__attribute__((weak)) void ergodox_right_led_1_on(void) {
+    gpio_set_pin_output(ERGODOX_LED_1_PIN);
+    gpio_write_pin_high(ERGODOX_LED_1_PIN);
+}
+
+__attribute__((weak)) void ergodox_right_led_2_on(void) {
+    gpio_set_pin_output(ERGODOX_LED_2_PIN);
+    gpio_write_pin_high(ERGODOX_LED_2_PIN);
+}
+
+__attribute__((weak)) void ergodox_right_led_3_on(void) {
+    gpio_set_pin_output(ERGODOX_LED_3_PIN);
+    gpio_write_pin_high(ERGODOX_LED_3_PIN);
+}
+
+void ergodox_board_led_off(void) {
+#ifdef ERGODOX_LED_SHUTOFF_PIN
+    gpio_write_pin_low(ERGODOX_LED_SHUTOFF_PIN);
+#else
+    ergodox_right_led_1_off();
+    ergodox_right_led_2_off();
+    ergodox_right_led_3_off();
+#endif
+}
+
+__attribute__((weak)) void ergodox_right_led_1_off(void) {
+    gpio_set_pin_input(ERGODOX_LED_1_PIN);
+    gpio_write_pin_low(ERGODOX_LED_1_PIN);
+}
+
+__attribute__((weak)) void ergodox_right_led_2_off(void) {
+    gpio_set_pin_input(ERGODOX_LED_2_PIN);
+    gpio_write_pin_low(ERGODOX_LED_2_PIN);
+}
+
+__attribute__((weak)) void ergodox_right_led_3_off(void) {
+    gpio_set_pin_input(ERGODOX_LED_3_PIN);
+    gpio_write_pin_low(ERGODOX_LED_3_PIN);
+}
+
+void ergodox_right_led_on(uint8_t led) {
+    if (led == 1) {
+        ergodox_right_led_1_on();
+    } else if (led == 2) {
+        ergodox_right_led_2_on();
+    } else if (led == 3) {
+        ergodox_right_led_3_on();
+    }
+}
+
+void ergodox_right_led_off(uint8_t led) {
+    if (led == 1) {
+        ergodox_right_led_1_off();
+    } else if (led == 2) {
+        ergodox_right_led_2_off();
+    } else if (led == 3) {
+        ergodox_right_led_3_off();
+    }
+}
+
+void ergodox_right_led_set(uint8_t led, uint8_t n) {
+    if (led == 1) {
+        ergodox_right_led_1_set(n);
+    } else if (led == 2) {
+        ergodox_right_led_2_set(n);
+    } else if (led == 3) {
+        ergodox_right_led_3_set(n);
+    }
+}
+
+void ergodox_led_all_on(void) {
+    ergodox_board_led_on();
+    ergodox_right_led_1_on();
+    ergodox_right_led_2_on();
+    ergodox_right_led_3_on();
+}
+
+void ergodox_led_all_off(void) {
+    ergodox_board_led_off();
+    ergodox_right_led_1_off();
+    ergodox_right_led_2_off();
+    ergodox_right_led_3_off();
+}
+
+void ergodox_led_all_set(uint8_t n) {
+    ergodox_right_led_1_set(n);
+    ergodox_right_led_2_set(n);
+    ergodox_right_led_3_set(n);
 }
 
 void ergodox_blink_all_leds(void) {
@@ -84,113 +155,16 @@ void ergodox_blink_all_leds(void) {
     _delay_ms(50);
     ergodox_right_led_3_on();
     _delay_ms(50);
-#ifdef LEFT_LEDS
-    ergodox_left_led_1_on();
-    _delay_ms(50);
-    if (!mcp23018_status) {
-        mcp23018_status = ergodox_left_leds_update();
-    }
-    ergodox_left_led_2_on();
-    _delay_ms(50);
-    if (!mcp23018_status) {
-        mcp23018_status = ergodox_left_leds_update();
-    }
-    ergodox_left_led_3_on();
-    _delay_ms(50);
-    if (!mcp23018_status) {
-        mcp23018_status = ergodox_left_leds_update();
-    }
-#endif
     ergodox_right_led_1_off();
     _delay_ms(50);
     ergodox_right_led_2_off();
     _delay_ms(50);
     ergodox_right_led_3_off();
-#ifdef LEFT_LEDS
-    _delay_ms(50);
-    ergodox_left_led_1_off();
-    if (!mcp23018_status) {
-        mcp23018_status = ergodox_left_leds_update();
-    }
-    _delay_ms(50);
-    ergodox_left_led_2_off();
-    if (!mcp23018_status) {
-        mcp23018_status = ergodox_left_leds_update();
-    }
-    _delay_ms(50);
-    ergodox_left_led_3_off();
-    if (!mcp23018_status) {
-        mcp23018_status = ergodox_left_leds_update();
-    }
-#endif
 
-    // ergodox_led_all_on();
-    //_delay_ms(333);
+    ergodox_led_all_set((uint8_t)keyboard_config.led_level * 255 / 4);
+
     ergodox_led_all_off();
 }
-
-uint8_t init_mcp23018(void) {
-    mcp23018_status = 0x20;
-
-    // I2C subsystem
-
-    // uint8_t sreg_prev;
-    // sreg_prev=SREG;
-    // cli();
-
-    if (i2c_initialized == 0) {
-        i2c_init();  // on pins D(1,0)
-        i2c_initialized = true;
-        _delay_ms(1000);
-    }
-    // i2c_init(); // on pins D(1,0)
-    // _delay_ms(1000);
-
-    // set pin direction
-    // - unused  : input  : 1
-    // - input   : input  : 1
-    // - driving : output : 0
-    uint8_t data[] = {0b00000000, 0b00111111};
-    mcp23018_status = i2c_write_register(I2C_ADDR, IODIRA, data, 2, ERGODOX_EZ_I2C_TIMEOUT);
-
-    if (!mcp23018_status) {
-        // set pull-up
-        // - unused  : on  : 1
-        // - input   : on  : 1
-        // - driving : off : 0
-        mcp23018_status = i2c_write_register(I2C_ADDR, GPPUA, data, 2, ERGODOX_EZ_I2C_TIMEOUT);
-    }
-
-#ifdef LEFT_LEDS
-    if (!mcp23018_status) mcp23018_status = ergodox_left_leds_update();
-#endif  // LEFT_LEDS
-
-    // SREG=sreg_prev;
-
-    return mcp23018_status;
-}
-
-#ifdef LEFT_LEDS
-uint8_t ergodox_left_leds_update(void) {
-    if (mcp23018_status) {  // if there was an error
-        return mcp23018_status;
-    }
-#    define LEFT_LED_1_SHIFT 7  // in MCP23018 port B
-#    define LEFT_LED_2_SHIFT 6  // in MCP23018 port B
-#    define LEFT_LED_3_SHIFT 7  // in MCP23018 port A
-
-    // set logical value (doesn't matter on inputs)
-    // - unused  : hi-Z : 1
-    // - input   : hi-Z : 1
-    // - driving : hi-Z : 1
-    uint8_t data[2];
-    data[0] = 0b11111111 & ~(ergodox_left_led_3 << LEFT_LED_3_SHIFT);
-    data[1] = 0b11111111 & ~(ergodox_left_led_2 << LEFT_LED_2_SHIFT) & ~(ergodox_left_led_1 << LEFT_LED_1_SHIFT);
-    mcp23018_status = i2c_write_register(I2C_ADDR, OLATA, data, 2, ERGODOX_EZ_I2C_TIMEOUT);
-
-    return mcp23018_status;
-}
-#endif
 
 #ifdef SWAP_HANDS_ENABLE
 __attribute__((weak))
@@ -313,15 +287,7 @@ led_config_t g_led_config = { {
 } };
 // clang-format on
 
-#    ifdef ORYX_CONFIGURATOR
-void keyboard_post_init_kb(void) {
-    rgb_matrix_enable_noeeprom();
-    keyboard_post_init_user();
-}
-#    endif
-#endif
-
-#ifdef ORYX_CONFIGURATOR
+#ifdef ORYX_ENABLE
 bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
         case LED_LEVEL:
@@ -348,12 +314,10 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
                 switch (rgb_matrix_get_flags()) {
                     case LED_FLAG_ALL: {
                         rgb_matrix_set_flags(LED_FLAG_NONE);
-                        keyboard_config.rgb_matrix_enable = false;
                         rgb_matrix_set_color_all(0, 0, 0);
                     } break;
                     default: {
                         rgb_matrix_set_flags(LED_FLAG_ALL);
-                        keyboard_config.rgb_matrix_enable = true;
                     } break;
                 }
                 eeconfig_update_kb(keyboard_config.raw);
@@ -368,39 +332,26 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
 void eeconfig_init_kb(void) {  // EEPROM is getting reset!
     keyboard_config.raw               = 0;
     keyboard_config.led_level         = 4;
-    keyboard_config.rgb_matrix_enable = true;
     eeconfig_update_kb(keyboard_config.raw);
     eeconfig_init_user();
 }
 
-#ifdef ORYX_ENABLE
-static uint16_t loops = 0;
-static bool is_on = false;
-#endif
-
 #ifdef DYNAMIC_MACRO_ENABLE
-static bool is_dynamic_recording = false;
+static bool     is_dynamic_recording = false;
 static uint16_t dynamic_loop_timer;
 
-bool dynamic_macro_record_start_kb(int8_t direction) {
-    if (!dynamic_macro_record_start_user(direction)) {
-        return false;
-    }
+void dynamic_macro_record_start_user(int8_t direction) {
     is_dynamic_recording = true;
-    dynamic_loop_timer = timer_read();
+    dynamic_loop_timer   = timer_read();
     ergodox_right_led_1_on();
-    return true;
 }
 
-bool dynamic_macro_record_end_kb(int8_t direction) {
-    if (!dynamic_macro_record_end_user(direction)) {
-        return false;
-    }
+void dynamic_macro_record_end_user(int8_t direction) {
     is_dynamic_recording = false;
     layer_state_set_user(layer_state);
-    return true;
 }
 #endif
+
 
 void matrix_scan_kb(void) {
 #ifdef DYNAMIC_MACRO_ENABLE
@@ -430,4 +381,20 @@ void matrix_scan_kb(void) {
 #endif
 
     matrix_scan_user();
+}
+
+__attribute__((weak)) bool bootmagic_should_reset(void) {
+    // normal Split Keyboard must be enabled to support this, but since this is a single controller split,
+    // we need some extra logic to handle this properly.
+    uint8_t row_left = BOOTMAGIC_LITE_ROW;
+    uint8_t col_left = BOOTMAGIC_LITE_COLUMN;
+
+#    if defined(BOOTMAGIC_LITE_ROW_RIGHT) && defined(BOOTMAGIC_LITE_COLUMN_RIGHT)
+    uint8_t row_right = BOOTMAGIC_LITE_ROW_RIGHT;
+    uint8_t col_right = BOOTMAGIC_LITE_COLUMN_RIGHT;
+
+    return (matrix_get_row(row_left) & (1 << col_left) || matrix_get_row(row_right) & (1 << col_right));
+#    endif
+
+    return matrix_get_row(row_left) & (1 << col_left);
 }
