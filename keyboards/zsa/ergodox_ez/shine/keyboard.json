@@ -3,9 +3,6 @@
     "usb": {
         "pid": "0x4975"
     },
-    "rgblight": {
-        "driver": "custom"
-    },
     "features": {
         "bootmagic": false,
         "mousekey": true,

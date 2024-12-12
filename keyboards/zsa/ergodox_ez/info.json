@@ -6,6 +6,9 @@
         "cols": 6,
         "rows": 14
     },
+    "matrix_pins": {
+        "custom_lite": true,
+    },
     "usb": {
         "vid": "0x3297",
         "device_version": "1.0.0"
@@ -129,6 +132,7 @@
     },
     "rgblight": {
         "brightness_steps": 12,
+        "driver": "custom",
         "hue_steps": 12,
         "rgbw": true,
         "saturation_steps": 255,
