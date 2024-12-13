@@ -322,7 +322,7 @@ action_t store_or_get_action(bool pressed, keypos_t key) {
  */
 uint8_t layer_switch_get_layer(keypos_t key) {
 #ifndef NO_ACTION_LAYER
-    action_t action;
+    action_t action = {0};
     action.code = ACTION_TRANSPARENT;
 
     layer_state_t layers = layer_state | default_layer_state;

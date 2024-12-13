@@ -210,7 +210,7 @@ void clear_oneshot_layer_state(oneshot_fullfillment_t state) {
  * FIXME: needs doc
  */
 bool is_oneshot_layer_active(void) {
-    return get_oneshot_layer_state();
+    return (bool)get_oneshot_layer_state();
 }
 
 /** \brief set oneshot
