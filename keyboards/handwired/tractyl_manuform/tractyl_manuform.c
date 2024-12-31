@@ -15,11 +15,9 @@
  */
 
 #include "tractyl_manuform.h"
-#include "keyboard.h"
 #ifdef POINTING_DEVICE_ENABLE
-#include "pointing_device.h"
+#    include "pointing_device.h"
 #endif
-#include "quantum.h"
 #include "transactions.h"
 #include <string.h>
 
@@ -317,10 +315,6 @@ void eeconfig_init_kb(void) {
     eeconfig_init_user();
 }
 
-void matrix_init_kb(void) {
-    read_charybdis_config_from_eeprom(&g_charybdis_config);
-    matrix_init_user();
-}
 void matrix_power_up(void) {
     pointing_device_task();
 }
@@ -360,16 +354,21 @@ void keyboard_post_init_kb(void) {
 
 void keyboard_pre_init_kb(void) {
     user_button_init();
+    read_charybdis_config_from_eeprom(&g_charybdis_config);
     keyboard_pre_init_user();
+}
+
+__attribute__((weak)) void execute_user_button_action(void) {
+    if (is_keyboard_master()) {
+        reset_keyboard();
+    } else {
+        soft_reset_keyboard();
+    }
 }
 
 void housekeeping_task_kb(void) {
     if (check_user_button_state()) {
-       if (is_keyboard_master()) {
-            reset_keyboard();
-       } else {
-            soft_reset_keyboard();
-       }
+        execute_user_button_action();
     }
 
 #ifdef POINTING_DEVICE_ENABLE
@@ -401,16 +400,14 @@ void housekeeping_task_kb(void) {
 }
 
 #ifdef USER_BUTTON_PIN
-__attribute__((weak)) void bootmagic_scan(void) {
-    // We need multiple scans because debouncing can't be turned off.
-    matrix_scan();
-#    if defined(DEBOUNCE) && DEBOUNCE > 0
-    wait_ms(DEBOUNCE * 2);
-#    else
-    wait_ms(30);
-#    endif
-    matrix_scan();
-
+/**
+ * @brief Replace and add upon the default bootmagic reset function.
+ * In this case, we also check the user button.
+ *
+ * @return true if the user button is pressed, or normal bootmagic key position.
+ * @return false if the user button is not pressed and normal bootmagic key position is not pressed.
+ */
+__attribute__((weak)) bool bootmagic_should_reset(void) {
     uint8_t row = BOOTMAGIC_ROW;
     uint8_t col = BOOTMAGIC_COLUMN;
 
@@ -421,10 +418,7 @@ __attribute__((weak)) void bootmagic_scan(void) {
     }
 #    endif
 
-    if (matrix_get_row(row) & (1 << col) || (is_keyboard_master() && check_user_button_state())) {
-        eeconfig_disable();
-        bootloader_jump();
-    }
+    return matrix_get_row(row) & (1 << col) || check_user_button_state();
 }
 #endif // USER_BUTTON_PIN
 

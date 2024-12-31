@@ -21,6 +21,4 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define ROTATIONAL_TRANSFORM_ANGLE  -25
 #define POINTING_DEVICE_INVERT_X
 
-#define LAYER_STATE_16BIT
-
 #define POINTING_DEVICE_RIGHT
