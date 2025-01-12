@@ -352,7 +352,7 @@ void keyboard_pre_init_kb(void) {
     user_button_init();
 #ifdef POINTING_DEVICE_ENABLE
     read_charybdis_config_from_eeprom(&g_charybdis_config);
-#endif // POINTING_DEVICE_ENAcBLE
+#endif // POINTING_DEVICE_ENABLE
     keyboard_pre_init_user();
 }
 
