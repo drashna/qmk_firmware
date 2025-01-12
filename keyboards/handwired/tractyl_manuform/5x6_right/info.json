@@ -233,7 +233,6 @@
         },
         "driver": "ws2812",
         "led_count": 64,
-        "max_brightness": 100,
         "split_count": [33, 31],
         "sleep": true,
         "layout": [
