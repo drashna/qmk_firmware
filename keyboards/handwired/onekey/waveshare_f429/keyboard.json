@@ -1,0 +1,24 @@
+{
+    "keyboard_name": "Onekey WaveShare STM32F429",
+    "processor": "STM32F429",
+    "bootloader": "stm32-dfu",
+    "usb": {
+        "shared_endpoint": {
+            "keyboard": true
+        }
+    },
+    "matrix_pins": {
+        "cols": ["B0"],
+        "rows": ["A7"]
+    },
+    "backlight": {
+        "pin": "A0"
+    },
+    "ws2812": {
+        "pin": "A1"
+    },
+    "apa102": {
+        "data_pin": "A1",
+        "clock_pin": "A2"
+    }
+}
