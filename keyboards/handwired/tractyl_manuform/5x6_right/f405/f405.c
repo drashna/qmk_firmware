@@ -42,11 +42,17 @@ void board_init(void) {
     gpio_set_pin_input(A5);
     gpio_set_pin_input(A6);
     gpio_set_pin_input(A7);
+}
 
-    // If using USB_OTG_HS, we need to set the data pins since they're set wrong for our needs by default.
-    // We set it here by default, in case it's bridged with A11/A12, as to reduce the chance of issues.
+
+#ifdef USE_USB_OTG_HS_PORT
+#    pragma message("Using USB OTG HS Port")
+void early_hardware_init_post(void) {
+    // D-  white
     palSetLineMode(
         B14, PAL_MODE_ALTERNATE(12) | PAL_STM32_OTYPE_PUSHPULL | PAL_STM32_OSPEED_HIGHEST | PAL_STM32_PUPDR_FLOATING);
+    // D+  blue
     palSetLineMode(
         B15, PAL_MODE_ALTERNATE(12) | PAL_STM32_OTYPE_PUSHPULL | PAL_STM32_OSPEED_HIGHEST | PAL_STM32_PUPDR_FLOATING);
 }
+#endif
