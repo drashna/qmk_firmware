@@ -291,6 +291,7 @@ typedef uint8_t ws2812_buffer_t;
 #endif
 
 static ws2812_buffer_t ws2812_frame_buffer[WS2812_BIT_N + 1]; /**< Buffer for a frame */
+static bool                   ws2812_dirty = false;
 
 /* --- PUBLIC FUNCTIONS ----------------------------------------------------- */
 /*
@@ -398,6 +399,7 @@ void ws2812_set_color(int index, uint8_t red, uint8_t green, uint8_t blue) {
     ws2812_leds[index].r = red;
     ws2812_leds[index].g = green;
     ws2812_leds[index].b = blue;
+    ws2812_dirty         = true;
 #if defined(WS2812_RGBW)
     ws2812_rgb_to_rgbw(&ws2812_leds[index]);
 #endif
@@ -410,6 +412,8 @@ void ws2812_set_color_all(uint8_t red, uint8_t green, uint8_t blue) {
 }
 
 void ws2812_flush(void) {
+    if (!ws2812_dirty) return;
+    ws2812_dirty = false;
     for (int i = 0; i < WS2812_LED_COUNT; i++) {
 #if defined(WS2812_RGBW)
         ws2812_write_led_rgbw(i, ws2812_leds[i].r, ws2812_leds[i].g, ws2812_leds[i].b, ws2812_leds[i].w);
