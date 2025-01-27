@@ -35,6 +35,12 @@ extern "C" {
 #    define TAP_HOLD_CAPS_DELAY 80
 #endif
 
+typedef enum {
+    EEHANDS_LEFT,
+    EEHANDS_RIGHT,
+    EEHANDS_UNSET,
+} eehands_t;
+
 /* tapping count and state */
 typedef struct {
     bool    interrupted : 1;
