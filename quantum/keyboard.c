@@ -466,6 +466,7 @@ static THD_FUNCTION(LightingThread, arg) {
 #    endif
 #    ifdef BACKLIGHT_ENABLE
     backlight_init();
+    backlight_init_ports();
 #    endif
 
     while (true) {
@@ -512,9 +513,6 @@ void keyboard_init(void) {
 #endif
     host_init();
     led_init_ports();
-#ifdef BACKLIGHT_ENABLE
-    backlight_init_ports();
-#endif
 #ifdef AUDIO_ENABLE
     audio_init();
 #endif
@@ -546,6 +544,7 @@ void keyboard_init(void) {
 #ifndef MULTITHREADED_LIGHTING_ENABLE
 #    ifdef BACKLIGHT_ENABLE
     backlight_init();
+    backlight_init_ports();
 #    endif
 #    ifdef RGBLIGHT_ENABLE
     rgblight_init();
