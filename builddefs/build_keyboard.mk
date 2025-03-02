@@ -491,6 +491,8 @@ define post_rules_mk_community_module_includer
 endef
 $(foreach module,$(COMMUNITY_MODULE_PATHS),$(eval $(call post_rules_mk_community_module_includer,$(module))))
 
+-include $(USER_PATH)/post_rules.mk
+
 ifneq ("$(wildcard $(KEYMAP_PATH)/config.h)","")
     CONFIG_H += $(KEYMAP_PATH)/config.h
 endif
