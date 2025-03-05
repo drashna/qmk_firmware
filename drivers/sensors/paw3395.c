@@ -54,10 +54,9 @@
 #define PAW3395_READ_REGISTER 0x00
 #define PAW3395_WRITE_REGISTER 0x80
 
-#define US_BETWEEN_WRITES 5
-#define US_BETWEEN_READS 5
-#define US_DELAY_AFTER_ADDR 5
-#define US_BEFORE_MOTION 100
+#define US_BETWEEN_WRITES 5 // tSWW
+#define US_BETWEEN_READS 2 // tSRW/tSRR
+#define US_DELAY_AFTER_ADDR 2 // tSRAD
 
 static const uint8_t paw3395_startup_sequence[][2] PROGMEM = {
     {0x7F, 0x07}, {0x40, 0x41}, {0x7F, 0x00}, {0x40, 0x80}, {0x7F, 0x0E}, {0x55, 0x0D}, {0x56, 0x1B}, {0x57, 0xE8}, {0x58, 0xD5}, {0x7F, 0x14}, {0x42, 0xBC}, {0x43, 0x74}, {0x4B, 0x20}, {0x4D, 0x00}, {0x53, 0x0E}, {0x7F, 0x05}, {0x44, 0x04}, {0x4D, 0x06}, {0x51, 0x40}, {0x53, 0x40}, {0x55, 0xCA}, {0x5A, 0xE8}, {0x5B, 0xEA}, {0x61, 0x31}, {0x62, 0x64}, {0x6D, 0xB8}, {0x6E, 0x0F}, {0x70, 0x02}, {0x4A, 0x2A}, {0x60, 0x26}, {0x7F, 0x06}, {0x6D, 0x70}, {0x6E, 0x60}, {0x6F, 0x04}, {0x53, 0x02}, {0x55, 0x11}, {0x7A, 0x01}, {0x7D, 0x51}, {0x7F, 0x07}, {0x41, 0x10}, {0x42, 0x32}, {0x43, 0x00}, {0x7F, 0x08}, {0x71, 0x4F}, {0x7F, 0x09}, {0x62, 0x1F}, {0x63, 0x1F}, {0x65, 0x03}, {0x66, 0x03}, {0x67, 0x1F}, {0x68, 0x1F}, {0x69, 0x03}, {0x6A, 0x03}, {0x6C, 0x1F}, {0x6D, 0x1F}, {0x51, 0x04}, {0x53, 0x20}, {0x54, 0x20}, {0x71, 0x0C}, {0x72, 0x07}, {0x73, 0x07}, {0x7F, 0x0A}, {0x4A, 0x14}, {0x4C, 0x14}, {0x55, 0x19}, {0x7F, 0x14}, {0x4B, 0x30}, {0x4C, 0x03}, {0x61, 0x0B},
@@ -66,45 +65,69 @@ static const uint8_t paw3395_startup_sequence[][2] PROGMEM = {
 
 const pointing_device_driver_t paw3395_pointing_device_driver = {
     .init       = paw3395_init,
-    .get_report = paw3395_get_report_driver,
+    .get_report = paw3395_get_report,
     .set_cpi    = paw3395_set_cpi,
     .get_cpi    = paw3395_get_cpi,
 };
 
-void paw3395_spi_start(void) {
-    spi_start(PAW3395_CS_PIN, false, PAW3395_SPI_MODE, PAW3395_SPI_DIVISOR);
+bool paw3395_spi_start(void) {
+    if (!spi_start(PAW3395_CS_PIN, false, PAW3395_SPI_MODE, PAW3395_SPI_DIVISOR)) {
+        spi_stop();
+        return false;
+    }
+    // tNCS-SCLK, 120ns
+    wait_us(1);
+    return true;
 }
 
-void paw3395_write_register(uint8_t reg_addr, uint8_t data) {
-    paw3395_spi_start();
-    spi_write(reg_addr | PAW3395_WRITE_REGISTER);
-    spi_write(data);
-    spi_stop();
+bool paw3395_write_register(uint8_t reg_addr, uint8_t data) {
+    if (!paw3395_spi_start()) {
+        return false;
+    }
+    uint8_t command[2] = {reg_addr | 0x80, data};
+    if (spi_transmit(command, sizeof(command)) != SPI_STATUS_SUCCESS) {
+        return false;
+    }
     wait_us(US_BETWEEN_WRITES);
+    spi_stop();
+
+    wait_us(US_BETWEEN_WRITES);
+    return true;
 }
 
 uint8_t paw3395_read_register(uint8_t reg_addr) {
-    paw3395_spi_start();
-    spi_write(reg_addr | PAW3395_READ_REGISTER);
+    if (!paw3395_spi_start()) {
+        return 0;
+    }
+
+    spi_write(reg_addr & 0x7F);
     wait_us(US_DELAY_AFTER_ADDR);
+
     uint8_t data = spi_read();
     spi_stop();
 
+    wait_us(US_BETWEEN_READS);
     return data;
 }
 
-void paw3395_init(void) {
+bool paw3395_init(void) {
     spi_init();
 
+    // initial wait for the sensor to power up is 50ms
     wait_ms(50);
     // write CS pin high->low to reset the sensor
-    paw3395_spi_start();
-    wait_us(2);
+    if (!paw3395_spi_start()) {
+        return false;
+    }
+    wait_us(1);
     spi_stop();
-    wait_ms(2);
+    wait_ms(1);
     // write the power up reset register
-    paw3395_write_register(PAW3395_REGISTER_POWERUPRESET, 0x5A);
-    wait_ms(5);
+    if (!paw3395_write_register(PAW3395_REGISTER_POWERUPRESET, 0x5A)) {
+        return false;
+    }
+    // wait for at least 5ms
+    wait_ms(7);
 
     // run power up sequence
     for (uint8_t i = 0; i < ARRAY_SIZE(paw3395_startup_sequence); i++) {
@@ -114,17 +137,20 @@ void paw3395_init(void) {
 
     uint8_t count = 0;
 
+    // read from register 0x6C at 1ms intervals until 0x80 is obtained or read 60 times
     for (count = 0; count < 60; count++) {
         if (paw3395_read_register(0x6C) == 0x80) {
             break;
         }
         wait_ms(1);
     }
+    // if value is not 0x80 after 60 reads, additional writes to sensor needed
     if (count == 60) {
         paw3395_write_register(0x7F, 0x14);
         paw3395_write_register(0x6C, 0x00);
         paw3395_write_register(0x7F, 0x00);
     }
+
     paw3395_write_register(0x22, 0x00);
     paw3395_write_register(0x55, 0x00);
     paw3395_write_register(0x7F, 0x07);
@@ -138,24 +164,20 @@ void paw3395_init(void) {
     paw3395_read_register(PAW3395_REGISTER_DELTA_Y_L);
     paw3395_read_register(PAW3395_REGISTER_DELTA_Y_H);
 
-    wait_us(20);
-
     spi_stop();
-}
-
-void paw3395_burst_motion_read(uint8_t *buffer) {
-    paw3395_spi_start();
     wait_us(1);
-    paw3395_write_register(PAW3395_REGISTER_MOTION_BURST, 0x00);
-    wait_us(2);
-    spi_receive(buffer, 12);
-    spi_stop();
-    wait_us(4);
+
+#if PAW3395_CPI != 5000
+    wait_ms(10);
+    paw3395_set_cpi(PAW3395_CPI);
+    wait_ms(1);
+#endif
+
+    return true;
 }
 
 void paw3395_set_cpi(uint16_t cpi) {
     paw3395_spi_start();
-    wait_us(1);
     // motion control register is set to 0x00 to have X axis set as both X and Y axis configuration
     paw3395_write_register(PAW3395_REGISTER_MOTION_CTRL, 0x00);
     paw3395_write_register(PAW3395_REGISTER_RESOLUTION_X_LOW, ((cpi / 50) - 1) & 0xFF);
@@ -165,27 +187,15 @@ void paw3395_set_cpi(uint16_t cpi) {
     // if CPI is set to 9000 or higher, docs recommend enabling repple control
     paw3395_write_register(PAW3395_REGISTER_RIPPLE_CTRL, (cpi >= 9000) ? 0x01 : 0x00);
     spi_stop();
-    wait_us(4);
 }
 
 uint16_t paw3395_get_cpi(void) {
-    uint8_t temp[4] = {0};
-
     paw3395_spi_start();
-    wait_us(1);
-    temp[0] = paw3395_read_register(PAW3395_REGISTER_RESOLUTION_X_LOW);
-    temp[1] = paw3395_read_register(PAW3395_REGISTER_RESOLUTION_X_HIGH);
-    temp[2] = paw3395_read_register(PAW3395_REGISTER_RESOLUTION_Y_LOW);
-    temp[3] = paw3395_read_register(PAW3395_REGISTER_RESOLUTION_Y_HIGH);
-
-    uint16_t cpi_x = (temp[0] << 8) | temp[1];
-    uint16_t cpi_y = (temp[2] << 8) | temp[3];
-    if (cpi_x != cpi_y) {
-        pd_dprint("CPI X (%d) != CPI Y (%d)\n", cpi_x, cpi_y);
-    }
+    uint8_t x_low  = paw3395_read_register(PAW3395_REGISTER_RESOLUTION_X_LOW);
+    uint8_t x_high = paw3395_read_register(PAW3395_REGISTER_RESOLUTION_X_HIGH);
     spi_stop();
 
-    return cpi_x;
+    return (((x_high << 8) | x_low) + 1) * 50;
 }
 
 void paw3395_shutdown(void) {
@@ -313,10 +323,39 @@ void paw3395_set_mode(uint8_t mode) {
     spi_stop();
 }
 
-paw3395_report_t paw3395_get_report(void) {
+paw3395_report_t paw3395_read_burst(void) {
     paw3395_report_t report = {0};
+
+    if (!paw3395_write_register(PAW3395_REGISTER_MOTION, 0x00)) {
+        return report;
+    }
+    wait_us(US_DELAY_AFTER_ADDR);
+    spi_receive((uint8_t *)&report, sizeof(report));
+
+    spi_stop();
+
     return report;
 }
-report_mouse_t paw3395_get_report_driver(report_mouse_t mouse_report) {
+
+report_mouse_t paw3395_get_report(report_mouse_t mouse_report) {
+    paw3395_report_t report    = paw3395_read_burst();
+    static bool      in_motion = false;
+
+    if (report.motion.b.is_lifted) {
+        return mouse_report;
+    }
+
+    if (!report.motion.b.is_motion) {
+        in_motion = false;
+        return mouse_report;
+    }
+
+    if (!in_motion) {
+        in_motion = true;
+        pd_dprintf("PWM3360 (0): starting motion\n");
+    }
+
+    mouse_report.x = CONSTRAIN_HID_XY(report.delta_x);
+    mouse_report.y = CONSTRAIN_HID_XY(report.delta_y);
     return mouse_report;
 }

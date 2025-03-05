@@ -43,18 +43,18 @@ typedef struct __attribute__((packed)) {
             bool    is_lifted : 1;
             uint8_t _reserved2 : 3;
             bool    is_motion : 1;
-        };
+        } b;
         uint8_t w;
     } motion;
-    uint8_t  observation;
-    int16_t  delta_x;
-    int16_t  delta_y;
-    uint8_t  squal;
-    uint8_t  pixel_sum;
-    uint8_t  maximum_pixel;
-    uint8_t  minimum_pixel;
-    uint8_t  shutter_upper;
-    uint8_t  shutter_lower;
+    uint8_t observation;
+    int16_t delta_x;
+    int16_t delta_y;
+    uint8_t squal;
+    uint8_t pixel_sum;
+    uint8_t maximum_pixel;
+    uint8_t minimum_pixel;
+    uint8_t shutter_upper;
+    uint8_t shutter_lower;
 } paw3395_report_t;
 
 _Static_assert(sizeof(paw3395_report_t) == 12, "pmw33xx_report_t must be 6 bytes in size");
@@ -62,10 +62,12 @@ _Static_assert(sizeof((paw3395_report_t){0}.motion) == 1, "pmw33xx_report_t.moti
 
 const pointing_device_driver_t paw3395_pointing_device_driver;
 
-void             paw3395_init(void);
+bool             paw3395_init(void);
+void             paw3395_shutdown(void);
 uint8_t          paw3395_read_register(uint8_t reg_addr);
-void             paw3395_write_register(uint8_t reg_addr, uint8_t data);
+bool             paw3395_write_register(uint8_t reg_addr, uint8_t data);
+void             paw3395_set_mode(uint8_t mode);
 uint16_t         paw3395_get_cpi(void);
 void             paw3395_set_cpi(uint16_t cpi);
-paw3395_report_t paw3395_get_report(void);
-report_mouse_t   paw3395_get_report_driver(report_mouse_t mouse_report);
+paw3395_report_t paw3395_read_burst(void);
+report_mouse_t   paw3395_get_report(report_mouse_t mouse_report);
