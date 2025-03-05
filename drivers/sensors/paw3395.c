@@ -173,6 +173,24 @@ bool paw3395_init(void) {
     wait_ms(1);
 #endif
 
+#if ROTATIONAL_TRANSFORM_ANGLE != 0
+    // enable angle tune
+    paw3395_write_register(0x7F, 0x05);
+    paw3395_write_register(0x78, 0x80);
+    paw3395_write_register(0x7F, 0x00);
+    // write the angle tune value
+    paw3395_write_register(0x7F, 0x05);
+    paw3395_write_register(0x77, CONSTRAIN(ROTATIONAL_TRANSFORM_ANGLE, -127, 127));
+    paw3395_write_register(0x7F, 0x00);
+#endif
+
+#if PAW3395_LIFT_CONFIG != 0
+    paw3395_write_register(0x7F, 0x0C);
+    paw3395_write_register(0x4E, 0x08 | PAW3395_LIFTOFF_DISTANCE);
+    paw3395_write_register(0x7F, 0x00);
+#endif
+
+
     return true;
 }
 

@@ -35,6 +35,22 @@
 #    endif
 #endif
 
+#if !defined(PAW3395_LIFT_CONFIG)
+#    define PAW3395_LIFT_CONFIG 0x00
+#endif
+
+#if !defined(ROTATIONAL_TRANSFORM_ANGLE)
+#    define ROTATIONAL_TRANSFORM_ANGLE 0x00
+#endif
+
+#if ROTATIONAL_TRANSFORM_ANGLE > 127 || ROTATIONAL_TRANSFORM_ANGLE < (-127)
+#    error ROTATIONAL_TRANSFORM_ANGLE has to be in the range of +/- 127 for all PMW33XX sensors.
+#endif
+
+#if !defined(PAW3395_CPI)
+#    define PAW3395_CPI 5000U
+#endif
+
 typedef struct __attribute__((packed)) {
     union {
         struct {
