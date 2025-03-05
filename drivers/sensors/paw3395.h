@@ -55,11 +55,9 @@ typedef struct __attribute__((packed)) {
     uint8_t  minimum_pixel;
     uint8_t  shutter_upper;
     uint8_t  shutter_lower;
-    uint16_t reserved;
-    uint8_t  squal2;
 } paw3395_report_t;
 
-_Static_assert(sizeof(paw3395_report_t) == 15, "pmw33xx_report_t must be 6 bytes in size");
+_Static_assert(sizeof(paw3395_report_t) == 12, "pmw33xx_report_t must be 6 bytes in size");
 _Static_assert(sizeof((paw3395_report_t){0}.motion) == 1, "pmw33xx_report_t.motion must be 1 byte in size");
 
 const pointing_device_driver_t paw3395_pointing_device_driver;

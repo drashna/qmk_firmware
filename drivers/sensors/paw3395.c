@@ -51,6 +51,9 @@
 #define PAW3395_REGISTER_LIFT_CONFIG         0x0C4E
 // clang-format on
 
+#define PAW3395_READ_REGISTER 0x00
+#define PAW3395_WRITE_REGISTER 0x80
+
 #define US_BETWEEN_WRITES 5
 #define US_BETWEEN_READS 5
 #define US_DELAY_AFTER_ADDR 5
@@ -74,7 +77,7 @@ void paw3395_spi_start(void) {
 
 void paw3395_write_register(uint8_t reg_addr, uint8_t data) {
     paw3395_spi_start();
-    spi_write(reg_addr + 0x80);
+    spi_write(reg_addr | PAW3395_WRITE_REGISTER);
     spi_write(data);
     spi_stop();
     wait_us(US_BETWEEN_WRITES);
@@ -82,7 +85,7 @@ void paw3395_write_register(uint8_t reg_addr, uint8_t data) {
 
 uint8_t paw3395_read_register(uint8_t reg_addr) {
     paw3395_spi_start();
-    spi_write(reg_addr + 0x00);
+    spi_write(reg_addr | PAW3395_READ_REGISTER);
     wait_us(US_DELAY_AFTER_ADDR);
     uint8_t data = spi_read();
     spi_stop();
@@ -91,10 +94,19 @@ uint8_t paw3395_read_register(uint8_t reg_addr) {
 }
 
 void paw3395_init(void) {
-    gpio_set_pin_output(PAW3395_CS_PIN);
-
     spi_init();
 
+    wait_ms(50);
+    // write CS pin high->low to reset the sensor
+    paw3395_spi_start();
+    wait_us(2);
+    spi_stop();
+    wait_ms(2);
+    // write the power up reset register
+    paw3395_write_register(PAW3395_REGISTER_POWERUPRESET, 0x5A);
+    wait_ms(5);
+
+    // run power up sequence
     for (uint8_t i = 0; i < ARRAY_SIZE(paw3395_startup_sequence); i++) {
         paw3395_write_register(pgm_read_byte(&paw3395_startup_sequence[i][0]), pgm_read_byte(&paw3395_startup_sequence[i][1]));
     }
@@ -118,6 +130,17 @@ void paw3395_init(void) {
     paw3395_write_register(0x7F, 0x07);
     paw3395_write_register(0x40, 0x40);
     paw3395_write_register(0x7F, 0x00);
+
+    // read registers 2-6 to clear any pending motion data regardless of mation state
+    paw3395_read_register(PAW3395_REGISTER_MOTION);
+    paw3395_read_register(PAW3395_REGISTER_DELTA_X_L);
+    paw3395_read_register(PAW3395_REGISTER_DELTA_X_H);
+    paw3395_read_register(PAW3395_REGISTER_DELTA_Y_L);
+    paw3395_read_register(PAW3395_REGISTER_DELTA_Y_H);
+
+    wait_us(20);
+
+    spi_stop();
 }
 
 void paw3395_burst_motion_read(uint8_t *buffer) {
@@ -125,37 +148,175 @@ void paw3395_burst_motion_read(uint8_t *buffer) {
     wait_us(1);
     paw3395_write_register(PAW3395_REGISTER_MOTION_BURST, 0x00);
     wait_us(2);
-    for (uint8_t i = 0; i < 12; i++) {
-        buffer[i] = spi_read();
-    }
+    spi_receive(buffer, 12);
     spi_stop();
     wait_us(4);
 }
 
 void paw3395_set_cpi(uint16_t cpi) {
-    uint8_t temp;
-
     paw3395_spi_start();
     wait_us(1);
+    // motion control register is set to 0x00 to have X axis set as both X and Y axis configuration
     paw3395_write_register(PAW3395_REGISTER_MOTION_CTRL, 0x00);
-    temp = (uint8_t)(((cpi / 50) << 8) >> 8);
-    paw3395_write_register(PAW3395_REGISTER_RESOLUTION_X_LOW, temp);
-    temp = (uint8_t)((cpi / 50) >> 8);
-    paw3395_write_register(PAW3395_REGISTER_RESOLUTION_X_HIGH, temp);
+    paw3395_write_register(PAW3395_REGISTER_RESOLUTION_X_LOW, ((cpi / 50) - 1) & 0xFF);
+    paw3395_write_register(PAW3395_REGISTER_RESOLUTION_X_HIGH, ((cpi / 50) - 1) >> 8);
+    // write 0x01 to set the resolution
     paw3395_write_register(PAW3395_REGISTER_SET_RESOLUTION, 0x01);
-
+    // if CPI is set to 9000 or higher, docs recommend enabling repple control
+    paw3395_write_register(PAW3395_REGISTER_RIPPLE_CTRL, (cpi >= 9000) ? 0x01 : 0x00);
     spi_stop();
     wait_us(4);
 }
 
 uint16_t paw3395_get_cpi(void) {
-    return 5000;
+    uint8_t temp[4] = {0};
+
+    paw3395_spi_start();
+    wait_us(1);
+    temp[0] = paw3395_read_register(PAW3395_REGISTER_RESOLUTION_X_LOW);
+    temp[1] = paw3395_read_register(PAW3395_REGISTER_RESOLUTION_X_HIGH);
+    temp[2] = paw3395_read_register(PAW3395_REGISTER_RESOLUTION_Y_LOW);
+    temp[3] = paw3395_read_register(PAW3395_REGISTER_RESOLUTION_Y_HIGH);
+
+    uint16_t cpi_x = (temp[0] << 8) | temp[1];
+    uint16_t cpi_y = (temp[2] << 8) | temp[3];
+    if (cpi_x != cpi_y) {
+        pd_dprint("CPI X (%d) != CPI Y (%d)\n", cpi_x, cpi_y);
+    }
+    spi_stop();
+
+    return cpi_x;
 }
 
-paw3395_report_t  paw3395_get_report(void) {
+void paw3395_shutdown(void) {
+    paw3395_spi_start();
+    paw3395_write_register(PAW3395_REGISTER_SHUTDOWN, 0xB6);
+    spi_stop();
+}
+
+void paw3395_set_mode(uint8_t mode) {
+    if (mode > 3) {
+        return;
+    }
+    uint8_t reg_tmp = 0;
+
+    paw3395_spi_start();
+    switch (mode) {
+        case 0: // High Performance Mode (Default)
+            paw3395_write_register(0x7F, 0x05);
+            paw3395_write_register(0x51, 0x40);
+            paw3395_write_register(0x53, 0x40);
+            paw3395_write_register(0x61, 0x31);
+            paw3395_write_register(0x6E, 0x0F);
+            paw3395_write_register(0x7F, 0x07);
+            paw3395_write_register(0x42, 0x32);
+            paw3395_write_register(0x43, 0x00);
+            paw3395_write_register(0x7F, 0x0D);
+            paw3395_write_register(0x51, 0x00);
+            paw3395_write_register(0x52, 0x49);
+            paw3395_write_register(0x53, 0x00);
+            paw3395_write_register(0x54, 0x5B);
+            paw3395_write_register(0x55, 0x00);
+            paw3395_write_register(0x56, 0x64);
+            paw3395_write_register(0x57, 0x02);
+            paw3395_write_register(0x58, 0xA5);
+            paw3395_write_register(0x7F, 0x00);
+            paw3395_write_register(0x54, 0x54);
+            paw3395_write_register(0x78, 0x01);
+            paw3395_write_register(0x79, 0x9C);
+
+            // register 40 is super special and we need to read it, write to bits 0 and 1, and then write it back
+            reg_tmp = paw3395_read_register(0x40);
+            paw3395_write_register(0x40, reg_tmp);
+
+            break;
+        case 1: // Low Power Mode
+            paw3395_write_register(0x7F, 0x05);
+            paw3395_write_register(0x51, 0x40);
+            paw3395_write_register(0x53, 0x40);
+            paw3395_write_register(0x61, 0x3B);
+            paw3395_write_register(0x6E, 0x1F);
+            paw3395_write_register(0x7F, 0x07);
+            paw3395_write_register(0x42, 0x32);
+            paw3395_write_register(0x43, 0x00);
+            paw3395_write_register(0x7F, 0x0D);
+            paw3395_write_register(0x51, 0x00);
+            paw3395_write_register(0x52, 0x49);
+            paw3395_write_register(0x53, 0x00);
+            paw3395_write_register(0x54, 0x5B);
+            paw3395_write_register(0x55, 0x00);
+            paw3395_write_register(0x56, 0x64);
+            paw3395_write_register(0x57, 0x02);
+            paw3395_write_register(0x58, 0xA5);
+            paw3395_write_register(0x7F, 0x00);
+            paw3395_write_register(0x54, 0x54);
+            paw3395_write_register(0x78, 0x01);
+            paw3395_write_register(0x79, 0x9C);
+
+            // register 40 is super special and we need to read it, write to bits 0 and 1, and then write it back
+            reg_tmp = paw3395_read_register(0x40);
+            paw3395_write_register(0x40, reg_tmp | 0x01);
+            break;
+        case 2: // Office mode
+            paw3395_write_register(0x7F, 0x05);
+            paw3395_write_register(0x51, 0x28);
+            paw3395_write_register(0x53, 0x30);
+            paw3395_write_register(0x61, 0x3B);
+            paw3395_write_register(0x6E, 0x1F);
+            paw3395_write_register(0x7F, 0x07);
+            paw3395_write_register(0x42, 0x32);
+            paw3395_write_register(0x43, 0x00);
+            paw3395_write_register(0x7F, 0x0D);
+            paw3395_write_register(0x51, 0x00);
+            paw3395_write_register(0x52, 0x49);
+            paw3395_write_register(0x53, 0x00);
+            paw3395_write_register(0x54, 0x5B);
+            paw3395_write_register(0x55, 0x00);
+            paw3395_write_register(0x56, 0x64);
+            paw3395_write_register(0x57, 0x02);
+            paw3395_write_register(0x58, 0xA5);
+            paw3395_write_register(0x7F, 0x00);
+            paw3395_write_register(0x54, 0x52);
+            paw3395_write_register(0x78, 0x0A);
+            paw3395_write_register(0x79, 0x0F);
+
+            // register 40 is super special and we need to read it, write to bits 0 and 1, and then write it back
+            reg_tmp = paw3395_read_register(0x40);
+            paw3395_write_register(0x40, reg_tmp | 0x02);
+            break;
+        case 3: // Corded Gaming Mode
+            paw3395_write_register(0x7F, 0x05);
+            paw3395_write_register(0x51, 0x40);
+            paw3395_write_register(0x53, 0x40);
+            paw3395_write_register(0x61, 0x31);
+            paw3395_write_register(0x6E, 0x0F);
+            paw3395_write_register(0x7F, 0x07);
+            paw3395_write_register(0x42, 0x2F);
+            paw3395_write_register(0x43, 0x00);
+            paw3395_write_register(0x7F, 0x0D);
+            paw3395_write_register(0x51, 0x12);
+            paw3395_write_register(0x52, 0xDB);
+            paw3395_write_register(0x53, 0x12);
+            paw3395_write_register(0x54, 0xDC);
+            paw3395_write_register(0x55, 0x12);
+            paw3395_write_register(0x56, 0xEA);
+            paw3395_write_register(0x57, 0x15);
+            paw3395_write_register(0x58, 0x2D);
+            paw3395_write_register(0x7F, 0x00);
+            paw3395_write_register(0x54, 0x55);
+
+            // except here apparently, we just need to write 0x83 to register 0x40
+            paw3395_write_register(0x40, 0x83);
+            break;
+    }
+
+    spi_stop();
+}
+
+paw3395_report_t paw3395_get_report(void) {
     paw3395_report_t report = {0};
     return report;
 }
-report_mouse_t    paw3395_get_report_driver(report_mouse_t mouse_report) {
+report_mouse_t paw3395_get_report_driver(report_mouse_t mouse_report) {
     return mouse_report;
 }
