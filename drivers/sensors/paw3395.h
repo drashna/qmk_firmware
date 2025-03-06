@@ -78,7 +78,7 @@ _Static_assert(sizeof((paw3395_report_t){0}.motion) == 1, "pmw33xx_report_t.moti
 
 const pointing_device_driver_t paw3395_pointing_device_driver;
 
-bool             paw3395_init(void);
+void             paw3395_init(void);
 void             paw3395_shutdown(void);
 uint8_t          paw3395_read_register(uint8_t reg_addr);
 bool             paw3395_write_register(uint8_t reg_addr, uint8_t data);
