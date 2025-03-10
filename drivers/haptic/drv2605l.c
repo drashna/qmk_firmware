@@ -19,17 +19,21 @@
 #include "i2c_master.h"
 #include <math.h>
 
+#ifndef DRV2605L_I2C_TIMEOUT
+#    define DRV2605L_I2C_TIMEOUT 100
+#endif
+
 uint8_t drv2605l_write_buffer[2];
 uint8_t drv2605l_read_buffer;
 
 void drv2605l_write(uint8_t reg_addr, uint8_t data) {
     drv2605l_write_buffer[0] = reg_addr;
     drv2605l_write_buffer[1] = data;
-    i2c_transmit(DRV2605L_I2C_ADDRESS << 1, drv2605l_write_buffer, 2, 100);
+    i2c_transmit(DRV2605L_I2C_ADDRESS << 1, drv2605l_write_buffer, 2, DRV2605L_I2C_TIMEOUT);
 }
 
 uint8_t drv2605l_read(uint8_t reg_addr) {
-    i2c_read_register(DRV2605L_I2C_ADDRESS << 1, reg_addr, &drv2605l_read_buffer, 1, 100);
+    i2c_read_register(DRV2605L_I2C_ADDRESS << 1, reg_addr, &drv2605l_read_buffer, 1, DRV2605L_I2C_TIMEOUT);
 
     return drv2605l_read_buffer;
 }
