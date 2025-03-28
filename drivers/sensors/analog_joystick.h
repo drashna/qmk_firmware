@@ -53,3 +53,5 @@ typedef struct {
 report_analog_joystick_t analog_joystick_read(void);
 bool                     analog_joystick_init(void);
 report_mouse_t           analog_joystick_get_report(report_mouse_t mouse_report);
+void                     analog_joystick_set_cpi(uint16_t cpi);
+uint16_t                 analog_joystick_get_cpi(void);
