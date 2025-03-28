@@ -16,7 +16,6 @@
 
 #include "analog_joystick.h"
 #include "analog.h"
-#include "gpio.h"
 #include "wait.h"
 #include "timer.h"
 #include <stdlib.h>
@@ -25,8 +24,8 @@
 const pointing_device_driver_t analog_joystick_pointing_device_driver = {
     .init       = analog_joystick_init,
     .get_report = analog_joystick_get_report,
-    .set_cpi    = NULL,
-    .get_cpi    = NULL,
+    .set_cpi    = analog_joystick_set_cpi,
+    .get_cpi    = analog_joystick_get_cpi,
 };
 
 // Set Parameters
@@ -45,16 +44,16 @@ uint8_t speedRegulator = ANALOG_JOYSTICK_SPEED_REGULATOR; // Lower Values Create
 int8_t weights[101] = ANALOG_JOYSTICK_WEIGHTS;
 #endif
 
-int16_t xOrigin, yOrigin;
+static int16_t xOrigin, yOrigin;
 
-uint16_t lastCursor = 0;
+static uint16_t lastCursor     = 0;
+static int16_t  joystick_ratio = 0;
 
 uint8_t prevValues[2] = {0, 0};
 
 int16_t axisCoordinate(pin_t pin, uint16_t origin, uint8_t axis) {
     int8_t  direction;
     int16_t distanceFromOrigin;
-    int16_t range;
 
     int16_t position = analogReadPin(pin);
 
@@ -66,9 +65,9 @@ int16_t axisCoordinate(pin_t pin, uint16_t origin, uint8_t axis) {
         if (position < minAxisValues[axis]) {
             minAxisValues[axis] = position;
         }
-        range = origin - minAxisValues[axis];
+        distanceFromOrigin = origin - minAxisValues[axis];
 #else
-        range = origin - minAxisValue;
+        distanceFromOrigin = origin - minAxisValue;
 #endif
         direction = -1;
     } else {
@@ -78,22 +77,14 @@ int16_t axisCoordinate(pin_t pin, uint16_t origin, uint8_t axis) {
         if (position > maxAxisValues[axis]) {
             maxAxisValues[axis] = position;
         }
-        range = maxAxisValues[axis] - origin;
+        distanceFromOrigin = maxAxisValues[axis] - origin;
 #else
-        range = maxAxisValue - origin;
+        distanceFromOrigin = maxAxisValue - origin;
 #endif
         direction = 1;
     }
 
-    float   percent    = (float)distanceFromOrigin / range;
-    int16_t coordinate = (int16_t)(percent * 100);
-    if (coordinate < 0) {
-        return 0;
-    } else if (coordinate > 100) {
-        return 100 * direction;
-    } else {
-        return coordinate * direction;
-    }
+    return distanceFromOrigin * direction;
 }
 
 int8_t axisToMouseComponent(pin_t pin, int16_t origin, uint8_t maxSpeed, uint8_t axis) {
@@ -126,8 +117,9 @@ report_analog_joystick_t analog_joystick_read(void) {
 
     if (timer_elapsed(lastCursor) > ANALOG_JOYSTICK_READ_INTERVAL) {
         lastCursor = timer_read();
-        report.x   = axisToMouseComponent(ANALOG_JOYSTICK_X_AXIS_PIN, xOrigin, maxCursorSpeed, 0);
-        report.y   = axisToMouseComponent(ANALOG_JOYSTICK_Y_AXIS_PIN, yOrigin, maxCursorSpeed, 1);
+
+        report.x = axisToMouseComponent(ANALOG_JOYSTICK_X_AXIS_PIN, xOrigin, maxCursorSpeed, 0) / joystick_ratio;
+        report.y = axisToMouseComponent(ANALOG_JOYSTICK_Y_AXIS_PIN, yOrigin, maxCursorSpeed, 1) / joystick_ratio;
     }
 #ifdef ANALOG_JOYSTICK_CLICK_PIN
     report.button = !gpio_read_pin(ANALOG_JOYSTICK_CLICK_PIN);
@@ -167,4 +159,19 @@ report_mouse_t analog_joystick_get_report(report_mouse_t mouse_report) {
     mouse_report.buttons = pointing_device_handle_buttons(mouse_report.buttons, data.button, POINTING_DEVICE_BUTTON1);
 
     return mouse_report;
+}
+
+//
+void analog_joystick_set_cpi(uint16_t cpi) {
+    joystick_ratio = 10 - (cpi / 100);
+
+    if (0 <= joystick_ratio && joystick_ratio < 10) {
+        joystick_ratio = 10;
+    } else if (-joystick_ratio < joystick_ratio && joystick_ratio < 0) {
+        joystick_ratio = -10;
+    }
+}
+
+uint16_t analog_joystick_get_cpi(void) {
+    return (joystick_ratio + 10) * 100;
 }
