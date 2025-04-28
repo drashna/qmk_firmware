@@ -431,6 +431,9 @@ void process_action(keyrecord_t *record, action_t action) {
                         add_weak_mods(mods);
                     }
                     send_keyboard_report();
+#if MOD_KEYCODE_DELAY_MS > 0
+                    wait_ms(MOD_KEYCODE_DELAY_MS);
+#endif // MOD_KEYCODE_DELAY_MS
                 }
                 register_code(action.key.code);
             } else {
