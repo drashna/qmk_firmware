@@ -331,9 +331,9 @@ __attribute__((weak)) bool pointing_device_task(void) {
 #if defined(SPLIT_POINTING_ENABLE)
 #    if defined(POINTING_DEVICE_COMBINED)
         static uint32_t old_buttons = 0;
-        local_mouse_report.buttons = old_buttons;
-        local_mouse_report         = pointing_device_driver->get_report(local_mouse_report);
-        old_buttons                = local_mouse_report.buttons;
+        local_mouse_report.buttons  = old_buttons;
+        local_mouse_report          = pointing_device_driver->get_report(local_mouse_report);
+        old_buttons                 = local_mouse_report.buttons;
 #    elif defined(POINTING_DEVICE_LEFT) || defined(POINTING_DEVICE_RIGHT)
         local_mouse_report = POINTING_DEVICE_THIS_SIDE ? pointing_device_driver->get_report(local_mouse_report) : shared_mouse_report;
 #    else
