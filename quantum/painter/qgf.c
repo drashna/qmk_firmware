@@ -66,7 +66,9 @@ bool qgf_parse_format(qp_image_format_t format, uint8_t *bpp, bool *has_palette,
 
 bool qgf_parse_frame_descriptor(qgf_frame_v1_t *frame_descriptor, uint8_t *bpp, bool *has_palette, bool *is_panel_native, bool *is_delta, painter_compression_t *compression_scheme, uint16_t *delay) {
     // Decode the format
-    qgf_parse_format(frame_descriptor->format, bpp, has_palette, is_panel_native);
+    if (!qgf_parse_format(frame_descriptor->format, bpp, has_palette, is_panel_native)) {
+        return false;
+    }
 
     // Copy out the required info
     if (is_delta) {
@@ -168,18 +170,22 @@ static bool qgf_read_frame_offset(qp_stream_t *stream, uint16_t frame_number, ui
     return true;
 }
 
-void qgf_seek_to_frame_descriptor(qp_stream_t *stream, uint16_t frame_number) {
+bool qgf_seek_to_frame_descriptor(qp_stream_t *stream, uint16_t frame_number) {
     // Read the offset
     uint32_t offset = 0;
-    qgf_read_frame_offset(stream, frame_number, &offset);
+    if (!qgf_read_frame_offset(stream, frame_number, &offset)) {
+        return false;
+    }
 
     // Move to the offset
-    qp_stream_setpos(stream, offset);
+    return qp_stream_setpos(stream, offset) >= 0;
 }
 
 bool qgf_validate_frame_descriptor(qp_stream_t *stream, uint16_t frame_number, uint8_t *bpp, bool *has_palette, bool *is_panel_native, bool *is_delta) {
     // Seek to the correct location
-    qgf_seek_to_frame_descriptor(stream, frame_number);
+    if (!qgf_seek_to_frame_descriptor(stream, frame_number)) {
+        return false;
+    }
 
     // Read the raw descriptor
     qgf_frame_v1_t frame_descriptor;
@@ -196,7 +202,7 @@ bool qgf_validate_frame_descriptor(qp_stream_t *stream, uint16_t frame_number, u
     return qgf_parse_frame_descriptor(&frame_descriptor, bpp, has_palette, is_panel_native, is_delta, NULL, NULL);
 }
 
-bool qgf_validate_palette_descriptor(qp_stream_t *stream, uint16_t frame_number, uint8_t bpp) {
+bool qgf_validate_palette_descriptor(qp_stream_t *stream, uint8_t bpp) {
     // Read the palette descriptor
     qgf_palette_v1_t palette_descriptor;
     if (qp_stream_read(&palette_descriptor, sizeof(qgf_palette_v1_t), 1, stream) != 1) {
@@ -215,7 +221,7 @@ bool qgf_validate_palette_descriptor(qp_stream_t *stream, uint16_t frame_number,
     return true;
 }
 
-bool qgf_validate_delta_descriptor(qp_stream_t *stream, uint16_t frame_number) {
+bool qgf_validate_delta_descriptor(qp_stream_t *stream) {
     // Read the delta descriptor
     qgf_delta_v1_t delta_descriptor;
     if (qp_stream_read(&delta_descriptor, sizeof(qgf_delta_v1_t), 1, stream) != 1) {
@@ -231,7 +237,7 @@ bool qgf_validate_delta_descriptor(qp_stream_t *stream, uint16_t frame_number) {
     return true;
 }
 
-bool qgf_validate_frame_data_descriptor(qp_stream_t *stream, uint16_t frame_number) {
+bool qgf_validate_frame_data_descriptor(qp_stream_t *stream) {
     // Read and validate the data block
     qgf_data_v1_t data_descriptor;
     if (qp_stream_read(&data_descriptor, sizeof(qgf_data_v1_t), 1, stream) != 1) {
@@ -264,17 +270,17 @@ bool qgf_validate_stream(qp_stream_t *stream) {
         }
 
         // If we've got a palette block, check it
-        if (has_palette && !qgf_validate_palette_descriptor(stream, i, bpp)) {
+        if (has_palette && !qgf_validate_palette_descriptor(stream, bpp)) {
             return false;
         }
 
         // If we've got a delta block, check it
-        if (has_delta && !qgf_validate_delta_descriptor(stream, i)) {
+        if (has_delta && !qgf_validate_delta_descriptor(stream)) {
             return false;
         }
 
         // Check the data block
-        if (!qgf_validate_frame_data_descriptor(stream, i)) {
+        if (!qgf_validate_frame_data_descriptor(stream)) {
             return false;
         }
     }
@@ -290,7 +296,7 @@ uint32_t qgf_get_total_size(qp_stream_t *stream) {
     // Read the graphics descriptor, grabbing the size
     uint32_t total_size;
     if (!qgf_read_graphics_descriptor(stream, NULL, NULL, NULL, &total_size)) {
-        return false;
+        return 0;
     }
 
     // Restore the original location

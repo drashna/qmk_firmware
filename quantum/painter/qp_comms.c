@@ -40,7 +40,7 @@ uint32_t qp_comms_send(painter_device_t device, const void *data, uint32_t byte_
     painter_driver_t *driver = (painter_driver_t *)device;
     if (!driver || !driver->validate_ok) {
         qp_dprintf("qp_comms_send: fail (validation_ok == false)\n");
-        return false;
+        return 0;
     }
 
     return driver->comms_vtable->comms_send(device, data, byte_count);
@@ -50,8 +50,18 @@ uint32_t qp_comms_send(painter_device_t device, const void *data, uint32_t byte_
 // Comms APIs that use a D/C pin
 
 void qp_comms_command(painter_device_t device, uint8_t cmd) {
-    painter_driver_t *                   driver       = (painter_driver_t *)device;
+    painter_driver_t *driver = (painter_driver_t *)device;
+    if (!driver || !driver->validate_ok) {
+        qp_dprintf("qp_comms_command: fail (validation_ok == false)\n");
+        return;
+    }
+
     painter_comms_with_command_vtable_t *comms_vtable = (painter_comms_with_command_vtable_t *)driver->comms_vtable;
+    if (!comms_vtable || !comms_vtable->send_command) {
+        qp_dprintf("qp_comms_command: fail (send_command not supported)\n");
+        return;
+    }
+
     comms_vtable->send_command(device, cmd);
 }
 
@@ -66,7 +76,17 @@ uint32_t qp_comms_command_databuf(painter_device_t device, uint8_t cmd, const vo
 }
 
 void qp_comms_bulk_command_sequence(painter_device_t device, const uint8_t *sequence, size_t sequence_len) {
-    painter_driver_t *                   driver       = (painter_driver_t *)device;
+    painter_driver_t *driver = (painter_driver_t *)device;
+    if (!driver || !driver->validate_ok) {
+        qp_dprintf("qp_comms_bulk_command_sequence: fail (validation_ok == false)\n");
+        return;
+    }
+
     painter_comms_with_command_vtable_t *comms_vtable = (painter_comms_with_command_vtable_t *)driver->comms_vtable;
+    if (!comms_vtable || !comms_vtable->bulk_command_sequence) {
+        qp_dprintf("qp_comms_bulk_command_sequence: fail (bulk_command_sequence not supported)\n");
+        return;
+    }
+
     comms_vtable->bulk_command_sequence(device, sequence, sequence_len);
 }

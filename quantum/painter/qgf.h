@@ -133,5 +133,5 @@ bool     qgf_validate_stream(qp_stream_t *stream);
 bool     qgf_validate_block_header(qgf_block_header_v1_t *desc, uint8_t expected_typeid, int32_t expected_length);
 bool     qgf_read_graphics_descriptor(qp_stream_t *stream, uint16_t *image_width, uint16_t *image_height, uint16_t *frame_count, uint32_t *total_bytes);
 bool     qgf_parse_format(qp_image_format_t format, uint8_t *bpp, bool *has_palette, bool *is_panel_native);
-void     qgf_seek_to_frame_descriptor(qp_stream_t *stream, uint16_t frame_number);
+bool     qgf_seek_to_frame_descriptor(qp_stream_t *stream, uint16_t frame_number);
 bool     qgf_parse_frame_descriptor(qgf_frame_v1_t *frame_descriptor, uint8_t *bpp, bool *has_palette, bool *is_panel_native, bool *is_delta, painter_compression_t *compression_scheme, uint16_t *delay);
