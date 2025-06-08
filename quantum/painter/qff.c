@@ -80,6 +80,12 @@ static bool qff_validate_ascii_descriptor(qp_stream_t *stream) {
 }
 
 static bool qff_validate_unicode_descriptor(qp_stream_t *stream, uint16_t num_unicode_glyphs) {
+    // Check for potential overflow
+    if (num_unicode_glyphs > 0xFFFF / sizeof(qff_unicode_glyph_v1_t)) {
+        qp_dprintf("Unicode glyph count too large: %d\n", (int)num_unicode_glyphs);
+        return false;
+    }
+
     // Read the raw descriptor
     qff_unicode_glyph_table_v1_t unicode_descriptor;
     if (qp_stream_read(&unicode_descriptor, sizeof(qff_unicode_glyph_table_v1_t), 1, stream) != 1) {
@@ -88,7 +94,7 @@ static bool qff_validate_unicode_descriptor(qp_stream_t *stream, uint16_t num_un
     }
 
     // Make sure this block is valid
-    if (!qgf_validate_block_header(&unicode_descriptor.header, QFF_UNICODE_GLYPH_DESCRIPTOR_TYPEID, num_unicode_glyphs * 6)) {
+    if (!qgf_validate_block_header(&unicode_descriptor.header, QFF_UNICODE_GLYPH_DESCRIPTOR_TYPEID, num_unicode_glyphs * sizeof(qff_unicode_glyph_v1_t))) {
         return false;
     }
 
@@ -128,7 +134,7 @@ uint32_t qff_get_total_size(qp_stream_t *stream) {
     // Read the font descriptor, grabbing the size
     uint32_t total_size;
     if (!qff_read_font_descriptor(stream, NULL, NULL, NULL, NULL, NULL, NULL, NULL, &total_size)) {
-        return false;
+        return 0;
     }
 
     // Restore the original location

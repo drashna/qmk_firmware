@@ -133,8 +133,17 @@ static bool qp_drawimage_prepare_frame_for_stream_read(painter_device_t device, 
         return false;
     }
 
+    // Validate frame number is within bounds
+    if (frame_number >= qgf_image->base.frame_count) {
+        qp_dprintf("Failed to prepare frame for read, frame_number %d >= frame_count %d\n", (int)frame_number, (int)qgf_image->base.frame_count);
+        return false;
+    }
+
     // Seek to the frame
-    qgf_seek_to_frame_descriptor(&qgf_image->stream, frame_number);
+    if (!qgf_seek_to_frame_descriptor(&qgf_image->stream, frame_number)) {
+        qp_dprintf("Failed to seek to frame descriptor for frame %d\n", (int)frame_number);
+        return false;
+    }
 
     // Read the frame descriptor
     qgf_frame_v1_t frame_descriptor;
@@ -302,7 +311,7 @@ typedef struct animation_state_t {
 static deferred_executor_t animation_executors[QUANTUM_PAINTER_CONCURRENT_ANIMATIONS] = {0};
 static animation_state_t   animation_states[QUANTUM_PAINTER_CONCURRENT_ANIMATIONS]    = {0};
 
-static deferred_token qp_render_animation_state(animation_state_t *state, uint16_t *delay_ms) {
+static bool qp_render_animation_state(animation_state_t *state, uint16_t *delay_ms) {
     qgf_frame_info_t frame_info = {0};
     qp_dprintf("qp_render_animation_state: entry (frame #%d)\n", (int)state->frame_number);
     bool ret = qp_drawimage_recolor_impl(state->device, state->x, state->y, state->image, state->frame_number, &frame_info, state->fg_hsv888, state->bg_hsv888);

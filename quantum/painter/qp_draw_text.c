@@ -77,23 +77,17 @@ static painter_font_handle_t qp_load_font_internal(bool (*stream_factory)(qff_fo
     if (ram_buffer == NULL) {
         qp_dprintf("qp_load_font: could not allocate enough RAM for font, falling back to original\n");
     } else {
-        do {
-            // Copy the data into RAM
-            if (qp_stream_read(ram_buffer, 1, font->mem_stream.length, &font->mem_stream) != font->mem_stream.length) {
-                qp_dprintf("qp_load_font: could not copy from flash to RAM, falling back to original\n");
-                break;
-            }
-
+        // Copy the data into RAM
+        if (qp_stream_read(ram_buffer, 1, font->mem_stream.length, &font->mem_stream) != font->mem_stream.length) {
+            qp_dprintf("qp_load_font: could not copy from flash to RAM, falling back to original\n");
+            free(ram_buffer);
+            ram_buffer = NULL;
+        } else {
             // Create the new stream with the new buffer
             font->buffer      = ram_buffer;
             font->owns_buffer = true;
             font->mem_stream  = qp_make_memory_stream(font->buffer, font->mem_stream.length);
-        } while (0);
-    }
-
-    // Free the buffer if we were unable to recreate the RAM copy.
-    if (ram_buffer != NULL && !font->owns_buffer) {
-        free(ram_buffer);
+        }
     }
 #endif // QUANTUM_PAINTER_LOAD_FONTS_TO_RAM
 
@@ -183,8 +177,8 @@ static inline bool qp_drawtext_prepare_font_for_render(painter_device_t device, 
     }
 
     // Handle palette if needed
-    const uint16_t palette_entries  = 1u << qff_font->bpp;
-    bool           needs_pixconvert = false;
+    const int16_t palette_entries  = 1 << qff_font->bpp;
+    bool          needs_pixconvert = false;
     if (qff_font->has_palette) {
         // If this font has a palette, we need to read it out and set up the pixel lookup table
         qp_stream_setpos(&qff_font->stream, offset);
@@ -197,8 +191,7 @@ static inline bool qp_drawtext_prepare_font_for_render(painter_device_t device, 
         needs_pixconvert = true;
     } else {
         // Interpolate from fg/bg
-        int16_t palette_entries = 1 << qff_font->bpp;
-        needs_pixconvert        = qp_internal_interpolate_palette(fg_hsv888, bg_hsv888, palette_entries);
+        needs_pixconvert = qp_internal_interpolate_palette(fg_hsv888, bg_hsv888, palette_entries);
     }
 
     if (needs_pixconvert) {
@@ -294,6 +287,10 @@ static inline bool qp_drawtext_prepare_glyph_for_render(qff_font_handle_t *qff_f
 
 // Function to iterate over each UTF8 codepoint, invoking the callback for each decoded glyph
 static inline bool qp_iterate_code_points(qff_font_handle_t *qff_font, const char *str, code_point_handler handler, void *cb_arg) {
+    if (!str) {
+        qp_dprintf("qp_iterate_code_points: fail (invalid string)\n");
+        return false;
+    }
     while (*str) {
         int32_t code_point = 0;
         str                = decode_utf8(str, &code_point);
@@ -343,14 +340,14 @@ typedef struct code_point_iter_drawglyph_state_t {
     int16_t                           xpos;
     int16_t                           ypos;
     qp_internal_byte_input_callback   input_callback;
-    qp_internal_byte_input_state_t *  input_state;
+    qp_internal_byte_input_state_t   *input_state;
     qp_internal_pixel_output_state_t *output_state;
 } code_point_iter_drawglyph_state_t;
 
 // Codepoint handler callback: drawing
 static inline bool qp_font_code_point_handler_drawglyph(qff_font_handle_t *qff_font, uint32_t code_point, uint8_t width, uint8_t height, void *cb_arg) {
     code_point_iter_drawglyph_state_t *state  = (code_point_iter_drawglyph_state_t *)cb_arg;
-    painter_driver_t *                 driver = (painter_driver_t *)state->device;
+    painter_driver_t                  *driver = (painter_driver_t *)state->device;
 
     // Reset the input state's RLE mode -- the stream should already be correctly positioned by qp_iterate_code_points()
     state->input_state->rle.mode = MARKER_BYTE; // ignored if not using RLE
@@ -376,7 +373,7 @@ int16_t qp_textwidth(painter_font_handle_t font, const char *str) {
     qff_font_handle_t *qff_font = (qff_font_handle_t *)font;
     if (!qff_font || !qff_font->validate_ok) {
         qp_dprintf("qp_textwidth: fail (invalid font)\n");
-        return false;
+        return 0;
     }
 
     // Create the codepoint iterator state
@@ -408,7 +405,7 @@ int16_t qp_drawtext_recolor(painter_device_t device, uint16_t x, uint16_t y, pai
     qff_font_handle_t *qff_font = (qff_font_handle_t *)font;
     if (!qff_font || !qff_font->validate_ok) {
         qp_dprintf("qp_drawtext_recolor: fail (invalid font)\n");
-        return false;
+        return 0;
     }
 
     if (!qp_comms_start(device)) {
@@ -422,7 +419,7 @@ int16_t qp_drawtext_recolor(painter_device_t device, uint16_t x, uint16_t y, pai
     if (input_callback == NULL) {
         qp_dprintf("qp_drawtext_recolor: fail (invalid font compression scheme)\n");
         qp_comms_stop(device);
-        return false;
+        return 0;
     }
 
     // Set up the pixel output state
@@ -445,7 +442,7 @@ int16_t qp_drawtext_recolor(painter_device_t device, uint16_t x, uint16_t y, pai
     if (!qp_drawtext_prepare_font_for_render(driver, qff_font, fg_hsv888, bg_hsv888, &data_offset)) {
         qp_dprintf("qp_drawtext_recolor: fail (failed to prepare font for rendering)\n");
         qp_comms_stop(device);
-        return false;
+        return 0;
     }
 
     // Iterate the codepoints with the drawglyph callback
