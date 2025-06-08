@@ -98,9 +98,16 @@ bool qp_internal_interpolate_palette(qp_pixel_t fg_hsv888, qp_pixel_t bg_hsv888,
 
     // Interpolate each of the lookup table entries
     for (int16_t i = 0; i < steps; ++i) {
-        qp_internal_global_pixel_lookup_table[i].hsv888.h = (uint8_t)((hue_fg - hue_bg) * i / (steps - 1) + hue_bg);
-        qp_internal_global_pixel_lookup_table[i].hsv888.s = (uint8_t)((fg_hsv888.hsv888.s - bg_hsv888.hsv888.s) * i / (steps - 1) + bg_hsv888.hsv888.s);
-        qp_internal_global_pixel_lookup_table[i].hsv888.v = (uint8_t)((fg_hsv888.hsv888.v - bg_hsv888.hsv888.v) * i / (steps - 1) + bg_hsv888.hsv888.v);
+        if (steps == 1) {
+            // Single color, use foreground
+            qp_internal_global_pixel_lookup_table[i].hsv888.h = hue_fg;
+            qp_internal_global_pixel_lookup_table[i].hsv888.s = fg_hsv888.hsv888.s;
+            qp_internal_global_pixel_lookup_table[i].hsv888.v = fg_hsv888.hsv888.v;
+        } else {
+            qp_internal_global_pixel_lookup_table[i].hsv888.h = (uint8_t)((hue_fg - hue_bg) * i / (steps - 1) + hue_bg);
+            qp_internal_global_pixel_lookup_table[i].hsv888.s = (uint8_t)((fg_hsv888.hsv888.s - bg_hsv888.hsv888.s) * i / (steps - 1) + bg_hsv888.hsv888.s);
+            qp_internal_global_pixel_lookup_table[i].hsv888.v = (uint8_t)((fg_hsv888.hsv888.v - bg_hsv888.hsv888.v) * i / (steps - 1) + bg_hsv888.hsv888.v);
+        }
 
         qp_dprintf("qp_internal_interpolate_palette: %3d of %d -- H: %3d, S: %3d, V: %3d\n", (int)(i + 1), (int)steps, (int)qp_internal_global_pixel_lookup_table[i].hsv888.h, (int)qp_internal_global_pixel_lookup_table[i].hsv888.s, (int)qp_internal_global_pixel_lookup_table[i].hsv888.v);
     }
