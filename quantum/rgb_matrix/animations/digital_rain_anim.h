@@ -38,8 +38,8 @@ bool DIGITAL_RAIN(effect_params_t* params) {
                 }
             }
             // set the pixel colour
-            uint8_t led[LED_HITS_TO_REMEMBER];
-            uint8_t led_count = rgb_matrix_map_row_column_to_led(row, col, led);
+            led_index_t led[LED_HITS_TO_REMEMBER];
+            led_index_t led_count = rgb_matrix_map_row_column_to_led(row, col, led);
 
             // TODO: multiple leds are supported mapped to the same row/column
             if (led_count > 0) {
