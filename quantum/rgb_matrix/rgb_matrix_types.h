@@ -23,6 +23,14 @@
 #include "color.h"
 #include "util.h"
 
+#if RGB_MATRIX_LED_COUNT <= UINT8_MAX
+#    define NO_LED UINT8_MAX
+typedef uint8_t led_index_t; // Continue using uint8_t by default.
+#else
+#    define NO_LED UINT_FAST16_MAX
+typedef uint_fast16_t led_index_t; // If there are more than 255 LEDs.
+#endif
+
 #if defined(RGB_MATRIX_KEYPRESSES) || defined(RGB_MATRIX_KEYRELEASES)
 #    define RGB_MATRIX_KEYREACTIVE_ENABLED
 #endif
@@ -34,15 +42,20 @@
 
 #ifdef RGB_MATRIX_KEYREACTIVE_ENABLED
 typedef struct PACKED {
-    uint8_t  count;
-    uint8_t  x[LED_HITS_TO_REMEMBER];
-    uint8_t  y[LED_HITS_TO_REMEMBER];
-    uint8_t  index[LED_HITS_TO_REMEMBER];
-    uint16_t tick[LED_HITS_TO_REMEMBER];
+    uint8_t     count;
+    uint8_t     x[LED_HITS_TO_REMEMBER];
+    uint8_t     y[LED_HITS_TO_REMEMBER];
+    led_index_t index[LED_HITS_TO_REMEMBER];
+    uint16_t    tick[LED_HITS_TO_REMEMBER];
 } last_hit_t;
 #endif // RGB_MATRIX_KEYREACTIVE_ENABLED
 
-typedef enum rgb_task_states { STARTING, RENDERING, FLUSHING, SYNCING } rgb_task_states;
+typedef enum rgb_task_states {
+    STARTING,
+    RENDERING,
+    FLUSHING,
+    SYNCING,
+} rgb_task_states;
 
 typedef uint8_t led_flags_t;
 
@@ -67,10 +80,8 @@ typedef struct PACKED {
 #define LED_FLAG_KEYLIGHT 0x04
 #define LED_FLAG_INDICATOR 0x08
 
-#define NO_LED 255
-
 typedef struct PACKED {
-    uint8_t     matrix_co[MATRIX_ROWS][MATRIX_COLS];
+    led_index_t matrix_co[MATRIX_ROWS][MATRIX_COLS];
     led_point_t point[RGB_MATRIX_LED_COUNT];
     uint8_t     flags[RGB_MATRIX_LED_COUNT];
 } led_config_t;

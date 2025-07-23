@@ -20,7 +20,7 @@ bool JELLYBEAN_RAINDROPS(effect_params_t* params) {
 
     RGB_MATRIX_USE_LIMITS(led_min, led_max);
     if (params->init) {
-        for (uint8_t i = led_min; i < led_max; i++) {
+        for (led_index_t i = led_min; i < led_max; i++) {
             jellybean_raindrops_set_color(i, params);
         }
     }

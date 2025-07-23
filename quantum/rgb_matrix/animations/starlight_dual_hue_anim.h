@@ -23,7 +23,7 @@ bool STARLIGHT_DUAL_HUE(effect_params_t* params) {
 
     RGB_MATRIX_USE_LIMITS(led_min, led_max);
     if (params->init) {
-        for (uint8_t i = led_min; i < led_max; i++) {
+        for (led_index_t i = led_min; i < led_max; i++) {
             set_starlight_dual_hue_color(i, params);
         }
     }
