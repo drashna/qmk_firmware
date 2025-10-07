@@ -368,6 +368,21 @@ report_mouse_t pointing_device_task_kb(report_mouse_t mouse_report) {
 
 ```
 
+### ZSA Navigator Trackball
+
+To use the ZSA Navigator Trackball module, add this to your `rules.mk`:
+
+```make
+POINTING_DEVICE_DRIVER = navigator_trackball
+```
+
+The ZSA Navigator Trackball module is a I2C based module using an sci18is606 I2C to SPI bridge chip driving a paw3805ek sensor.
+
+| Setting (`config.h`)           | Description                                                                        | Default |
+| ------------------------------ | ---------------------------------------------------------------------------------- | ------- |
+| `NAVIGATOR_TRACKBALL_ADDRESS`  | (Required) Sets the I2C Address for the ZSA Navigator Trackball.                   | `0x50`  |
+| `NAVIGATOR_TRACKBALL_TIMEOUT`  | (Optional) The timeout for i2c communication with the trackball in milliseconds.   | `100`   |
+
 ### Custom Driver
 
 If you have a sensor type that isn't supported above, a custom option is available by adding the following to your `rules.mk`
