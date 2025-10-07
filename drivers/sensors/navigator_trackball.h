@@ -17,6 +17,11 @@
 #define NAVIGATOR_TRACKBALL_READ 7
 #define NAVIGATOR_TRACKBALL_PROBE 1000
 
+#if !defined(POINTING_DEVICE_TASK_THROTTLE_MS)
+// Polling the Azoteq isn't recommended, ensuring we only poll after the report is ready stops any unexpected NACKs
+#    define POINTING_DEVICE_TASK_THROTTLE_MS NAVIGATOR_TRACKBALL_READ
+#endif
+
 #define NCS_PIN 0x01
 #define PAW3805EK_ID 0x31
 
