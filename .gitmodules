@@ -25,3 +25,9 @@
 	path = lib/lvgl
 	url = https://github.com/qmk/lvgl.git
 	branch = release/v8.2
+[submodule "keyboards/adafruit/rp2040_usb_host/lib/Pico-PIO-USB"]
+	path = keyboards/adafruit/rp2040_usb_host/lib/Pico-PIO-USB
+	url = https://github.com/sekigon-gonnoc/Pico-PIO-USB.git
+[submodule "keyboards/adafruit/rp2040_usb_host/lib/tinyusb"]
+	path = keyboards/adafruit/rp2040_usb_host/lib/tinyusb
+	url = https://github.com/hathach/tinyusb.git
