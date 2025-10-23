@@ -99,12 +99,12 @@ void auto_mouse_toggle(void);                // toggle mouse layer flag disables
 bool get_auto_mouse_toggle(void);            // get toggle mouse layer flag value
 
 /* ----------Callbacks for adding keycodes to mouse record checking------------------------------------------ */
-bool is_mouse_record_kb(uint16_t keycode, keyrecord_t* record);
-bool is_mouse_record_user(uint16_t keycode, keyrecord_t* record);
+bool is_mouse_record_kb(uint16_t keycode, keyrecord_t *record);
+bool is_mouse_record_user(uint16_t keycode, keyrecord_t *record);
 
 /* ----------Core functions (only used in custom pointing devices or key processing)------------------------- */
-void pointing_device_task_auto_mouse(report_mouse_t mouse_report); // add to pointing_device_task_*
-bool process_auto_mouse(uint16_t keycode, keyrecord_t* record);    // add to process_record_*
+void pointing_device_task_auto_mouse(report_mouse_t mouse_report);   // add to pointing_device_task_*
+void post_process_auto_mouse(uint16_t keycode, keyrecord_t *record); // add to process_record_*
 
 /* ----------Macros/Aliases---------------------------------------------------------------------------------- */
 #define AUTO_MOUSE_TARGET_LAYER get_auto_mouse_layer()
