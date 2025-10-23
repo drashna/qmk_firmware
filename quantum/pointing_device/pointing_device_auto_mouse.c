@@ -340,9 +340,9 @@ void auto_mouse_reset_trigger(bool pressed) {
  * @params keycode[in] uint16_t
  * @params record[in] keyrecord_t pointer
  */
-bool process_auto_mouse(uint16_t keycode, keyrecord_t* record) {
+void post_process_auto_mouse(uint16_t keycode, keyrecord_t* record) {
     // skip if not enabled or mouse_layer not set
-    if (!(AUTO_MOUSE_ENABLED)) return true;
+    if (!(AUTO_MOUSE_ENABLED)) return;
 
     switch (keycode) {
         // Skip Mod keys, KC_NO, and layer lock to avoid layer reset
@@ -432,7 +432,6 @@ bool process_auto_mouse(uint16_t keycode, keyrecord_t* record) {
         auto_mouse_context.status.mouse_key_tracker = 0;
         dprintf("key tracker error (<0) \n");
     }
-    return true;
 }
 
 /**
