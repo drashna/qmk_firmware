@@ -68,7 +68,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define SPI_MISO_PIN      B4
 #define SPI_MISO_PAL_MODE 5
 
-#define EXTERNAL_FLASH_SPI_SLAVE_SELECT_PIN E0
+#define EXTERNAL_FLASH_SPI_SLAVE_SELECT_PIN I7
 #define EXTERNAL_FLASH_SPI_CLOCK_DIVISOR    4
 #define EXTERNAL_FLASH_SIZE                 (8 * 1024 * 1024)
 

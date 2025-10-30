@@ -35,7 +35,7 @@ MEMORY
     ram4   (wx) : org = 0x10000000, len = 64k     /* CCM SRAM */
     ram5   (wx) : org = 0x40024000, len = 4k      /* BCKP SRAM */
     ram6   (wx) : org = 0x00000000, len = 0
-    ram7   (wx) : org = 0x00000000, len = 0
+    ram7   (wx) : org = 0xD0000000, len = 8M      /* SDRAM */
 }
 
 /* For each data/text section two region are defined, a virtual region
@@ -80,6 +80,9 @@ REGION_ALIAS("BSS_RAM", ram0);
 
 /* RAM region to be used for the default heap.*/
 REGION_ALIAS("HEAP_RAM", ram0);
+
+/* RAM region to be used for SDRAM segment.*/
+REGION_ALIAS("SDRAM_RAM", ram7);
 
 /* Generic rules inclusion.*/
 INCLUDE rules.ld
