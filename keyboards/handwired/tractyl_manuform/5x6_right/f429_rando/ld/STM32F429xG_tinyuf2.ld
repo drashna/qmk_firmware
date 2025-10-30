@@ -20,9 +20,9 @@
  */
 MEMORY
 {
-    flash0 (rx) : org = 0x08000000, len = 16k        /* Sector 0    - Init code as ROM bootloader assumes application starts here */
-    flash1 (rx) : org = 0x08004000, len = 16k        /* Sector 1    - Emulated eeprom */
-    flash2 (rx) : org = 0x08008000, len = 1M - 32k /* Sector 2..6 - Rest of firmware */
+    flash0 (rx) : org = 0x08000000 + 64k, len = 2M - 64k /* tinyuf2 bootloader requires app to be located at 64k offset for this MCU */
+    flash1 (rx) : org = 0x00000000, len = 0
+    flash2 (rx) : org = 0x00000000, len = 0
     flash3 (rx) : org = 0x00000000, len = 0
     flash4 (rx) : org = 0x00000000, len = 0
     flash5 (rx) : org = 0x00000000, len = 0
@@ -45,23 +45,23 @@ MEMORY
 REGION_ALIAS("VECTORS_FLASH", flash0);
 REGION_ALIAS("VECTORS_FLASH_LMA", flash0);
 /* Flash region to be used for constructors and destructors.*/
-REGION_ALIAS("XTORS_FLASH", flash2);
-REGION_ALIAS("XTORS_FLASH_LMA", flash2);
+REGION_ALIAS("XTORS_FLASH", flash0);
+REGION_ALIAS("XTORS_FLASH_LMA", flash0);
 
 /* Flash region to be used for code text.*/
-REGION_ALIAS("TEXT_FLASH", flash2);
-REGION_ALIAS("TEXT_FLASH_LMA", flash2);
+REGION_ALIAS("TEXT_FLASH", flash0);
+REGION_ALIAS("TEXT_FLASH_LMA", flash0);
 
 /* Flash region to be used for read only data.*/
-REGION_ALIAS("RODATA_FLASH", flash2);
-REGION_ALIAS("RODATA_FLASH_LMA", flash2);
+REGION_ALIAS("RODATA_FLASH", flash0);
+REGION_ALIAS("RODATA_FLASH_LMA", flash0);
 
 /* Flash region to be used for various.*/
-REGION_ALIAS("VARIOUS_FLASH", flash2);
-REGION_ALIAS("VARIOUS_FLASH_LMA", flash2);
+REGION_ALIAS("VARIOUS_FLASH", flash0);
+REGION_ALIAS("VARIOUS_FLASH_LMA", flash0);
 
 /* Flash region to be used for RAM(n) initialization data.*/
-REGION_ALIAS("RAM_INIT_FLASH_LMA", flash2);
+REGION_ALIAS("RAM_INIT_FLASH_LMA", flash0);
 
 /* RAM region to be used for Main stack. This stack accommodates the processing
    of all exceptions and interrupts.*/
@@ -73,7 +73,7 @@ REGION_ALIAS("PROCESS_STACK_RAM", ram0);
 
 /* RAM region to be used for data segment.*/
 REGION_ALIAS("DATA_RAM", ram0);
-REGION_ALIAS("DATA_RAM_LMA", flash2);
+REGION_ALIAS("DATA_RAM_LMA", flash0);
 
 /* RAM region to be used for BSS segment.*/
 REGION_ALIAS("BSS_RAM", ram0);
@@ -86,3 +86,6 @@ REGION_ALIAS("SDRAM_RAM", ram7);
 
 /* Generic rules inclusion.*/
 INCLUDE rules.ld
+
+/* TinyUF2 bootloader reset support */
+_board_dfu_dbl_tap = ORIGIN(ram0) + 64k - 4; /* this is based off the linker file for tinyuf2 */

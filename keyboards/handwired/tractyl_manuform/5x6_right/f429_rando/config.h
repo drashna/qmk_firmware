@@ -18,9 +18,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
-#define USER_BUTTON_PIN     A0
-#define DEBUG_LED_PIN       F6
-#define USB_VBUS_PIN        A9
+#define USER_BUTTON_PIN     H3
+#define DEBUG_LED_PIN       B13
+
+// #define USB_VBUS_PIN        A9
 
 // WS2812 RGB LED strip input and number of LEDs
 #define WS2812_PWM_DRIVER        PWMD3
@@ -31,7 +32,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define WS2812_EXTERNAL_PULLUP
 
 #define BACKLIGHT_PWM_DRIVER     PWMD8
-#define BACKLIGHT_PWM_CHANNEL    3
+#define BACKLIGHT_PWM_CHANNEL    1
 #define BACKLIGHT_PAL_MODE       3
 
 /* Audio config */
@@ -41,9 +42,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 /* serial.c configuration for split keyboard */
 #define SERIAL_USART_DRIVER      SD1
-#define SERIAL_USART_TX_PIN      B6
+#define SERIAL_USART_TX_PIN      A9
 #define SERIAL_USART_TX_PAL_MODE 7
-#define SERIAL_USART_RX_PIN      B7
+#define SERIAL_USART_RX_PIN      A10
 #define SERIAL_USART_RX_PAL_MODE 7
 #define SERIAL_USART_TIMEOUT     10
 #define SERIAL_USART_SPEED       (1 * 1024 * 1024)
@@ -51,11 +52,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 /* i2c config for oleds */
-#define I2C_DRIVER        I2CD1
-#define I2C1_SCL_PIN      B8
-#define I2C1_SCL_PAL_MODE 4
-#define I2C1_SDA_PIN      B9
-#define I2C1_SDA_PAL_MODE 4
 #define I2C1_CLOCK_SPEED  400000
 #define I2C1_DUTY_CYCLE   FAST_DUTY_CYCLE_16_9
 
@@ -68,7 +64,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define SPI_MISO_PIN      B4
 #define SPI_MISO_PAL_MODE 5
 
-#define EXTERNAL_FLASH_SPI_SLAVE_SELECT_PIN I7
+#define EXTERNAL_FLASH_SPI_SLAVE_SELECT_PIN G3
 #define EXTERNAL_FLASH_SPI_CLOCK_DIVISOR    4
 #define EXTERNAL_FLASH_SIZE                 (8 * 1024 * 1024)
 
@@ -79,13 +75,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define PMW33XX_SPI_DIVISOR 16
 
 // lcd
-#define DISPLAY_RST_PIN C9
-#define DISPLAY_DC_PIN B12
-#define DISPLAY_CS_PIN H12
+#define DISPLAY_RST_PIN D11
+#define DISPLAY_DC_PIN D12
+#define DISPLAY_CS_PIN D13
 #define DISPLAY_SPI_DIVIDER 1
 
 #define DRV2605L_FB_ERM_LRA   0
 #define DRV2605L_GREETING     DRV2605L_EFFECT_750_MS_ALERT_100
 #define DRV2605L_DEFAULT_MODE DRV2605L_EFFECT_BUZZ_1_100
-
-#define DIP_SWITCH_PINS {G2, G3, G9, G10, D13, A0}
