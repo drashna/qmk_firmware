@@ -1,0 +1,66 @@
+{
+    "keyboard_name": "Tractyl Manuform (5x6) WeAct STM32F429",
+    "audio": {
+        "driver": "dac_additive",
+        "power_control": {
+            "pin": "A3"
+        }
+    },
+    "backlight": {
+        "levels": 16,
+        "pin": "C6"
+    },
+    "bootloader": "tinyuf2",
+    "build": {
+        "debounce_type": "asym_eager_defer_pk"
+    },
+    "diode_direction": "COL2ROW",
+    "encoder": {
+        "rotary": [
+            {"pin_a": "A1", "pin_b": "A2"}
+        ]
+    },
+    "eeprom": {
+        "driver": "wear_leveling",
+        "wear_leveling": {
+            "driver": "spi_flash",
+            "backing_size": 16384,
+            "logical_size": 4096
+        }
+    },
+    "features": {
+        "console": true,
+        "haptic": true
+    },
+    "haptic": {
+        "driver": "drv2605l"
+    },
+    "matrix_pins": {
+        "cols": ["E2", "E3", "E4", "E5", "E6", "C13"],
+        "rows": ["D3", "D4", "D5", "D6", "D7", "J12"]
+    },
+    "processor": "STM32F429",
+    "rgblight": {
+        "led_count": 24,
+        "split": true
+    },
+    "split": {
+        "handedness": {
+            "pin": "B11"
+        },
+        "serial": {
+            "driver": "usart"
+        },
+        "transport": {
+            "sync": {
+                "activity": true,
+                "haptic": true,
+                "matrix_state": true
+            }
+        }
+    },
+    "ws2812": {
+        "driver": "pwm",
+        "pin": "C7"
+    }
+}
