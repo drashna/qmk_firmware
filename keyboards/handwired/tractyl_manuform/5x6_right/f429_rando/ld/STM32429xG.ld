@@ -22,7 +22,7 @@ MEMORY
 {
     flash0 (rx) : org = 0x08000000, len = 16k        /* Sector 0    - Init code as ROM bootloader assumes application starts here */
     flash1 (rx) : org = 0x08004000, len = 16k        /* Sector 1    - Emulated eeprom */
-    flash2 (rx) : org = 0x08008000, len = 1M - 32k /* Sector 2..6 - Rest of firmware */
+    flash2 (rx) : org = 0x08008000, len = 2M - 32k /* Sector 2..6 - Rest of firmware */
     flash3 (rx) : org = 0x00000000, len = 0
     flash4 (rx) : org = 0x00000000, len = 0
     flash5 (rx) : org = 0x00000000, len = 0
@@ -35,7 +35,7 @@ MEMORY
     ram4   (wx) : org = 0x10000000, len = 64k     /* CCM SRAM */
     ram5   (wx) : org = 0x40024000, len = 4k      /* BCKP SRAM */
     ram6   (wx) : org = 0x00000000, len = 0
-    ram7   (wx) : org = 0xD0000000, len = 8M      /* SDRAM */
+    ram7   (wx) : org = 0xC0000000, len = 8M      /* SDRAM */
 }
 
 /* For each data/text section two region are defined, a virtual region
