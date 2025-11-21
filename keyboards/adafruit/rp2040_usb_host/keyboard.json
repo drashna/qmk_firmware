@@ -9,7 +9,6 @@
         "extrakey": true,
         "mousekey": true,
         "nkro": true,
-        "virtser": true,
         "pointing_device": true
     },
     "matrix_pins": {
@@ -26,7 +25,7 @@
     "processor": "RP2040",
     "usb": {
         "vid": "0x239A",
-        "pid": "0x0001",
+        "pid": "0xFEED",
         "device_version": "1.0.0"
     },
     "layouts": {
