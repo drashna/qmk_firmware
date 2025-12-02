@@ -28,6 +28,7 @@ For full documentation, see QMK Docs
 """
 
 import textwrap
+from pathlib import Path
 from typing import Any, Dict, Iterator, List, Tuple
 
 from milc import cli
@@ -165,7 +166,7 @@ def check_typo_against_dictionary(typo: str, line_number: int, correct_words) ->
                 cli.log.warning('{fg_yellow}Warning:%d:{fg_reset} Typo "{fg_cyan}%s{fg_reset}" would falsely trigger on correctly spelled word "{fg_cyan}%s{fg_reset}".', line_number, typo, word)
 
 
-def serialize_trie(autocorrections: List[Tuple[str, str]], trie: Dict[str, Any]) -> List[int]:
+def serialize_trie(autocorrections: List[Tuple[str, str]], trie: Dict[str, Any]) -> Tuple[List[int], int]:
     """Serializes trie and correction data in a form readable by the C code.
   Args:
     autocorrections: List of (typo, correction) tuples.
@@ -212,7 +213,7 @@ def serialize_trie(autocorrections: List[Tuple[str, str]], trie: Dict[str, Any])
 
     traverse(trie)
 
-    def serialize(e: Dict[str, Any]) -> List[int]:
+    def serialize(e: Dict[str, Any], link_byte_count: int) -> List[int]:
         if not e['links']:  # Handle a leaf table entry.
             return e['data']
         elif len(e['links']) == 1:  # Handle a chain table entry.
@@ -220,25 +221,55 @@ def serialize_trie(autocorrections: List[Tuple[str, str]], trie: Dict[str, Any])
         else:  # Handle a branch table entry.
             data = []
             for c, link in zip(e['chars'], e['links']):
-                data += [TYPO_CHARS[c] | (0 if data else 64)] + encode_link(link)
+                data += [TYPO_CHARS[c] | (0 if data else 64)] + encode_link(link, link_byte_count)
             return data + [0]
 
-    byte_offset = 0
-    for e in table:  # To encode links, first compute byte offset of each entry.
-        e['byte_offset'] = byte_offset
-        byte_offset += len(serialize(e))
-        assert 0 <= byte_offset <= 0xffff
+    def serialized_entry_length(entry: Dict[str, Any], link_byte_count: int) -> int:
+        if not entry['links']:
+            return len(entry['data'])
+        elif len(entry['links']) == 1:
+            return len(entry['chars']) + 1
+        else:
+            return (len(entry['chars']) * (1 + link_byte_count)) + 1
 
-    return [b for e in table for b in serialize(e)]  # Serialize final table.
+    def try_assign_offsets(link_byte_count: int) -> Tuple[int, bool]:
+        byte_offset = 0
+        max_offset  = (1 << (link_byte_count * 8)) - 1
 
+        for entry in table:
+            entry['byte_offset'] = byte_offset
+            byte_offset += serialized_entry_length(entry, link_byte_count)
 
-def encode_link(link: Dict[str, Any]) -> List[int]:
-    """Encodes a node link as two bytes."""
-    byte_offset = link['byte_offset']
-    if not (0 <= byte_offset <= 0xffff):
-        cli.log.error('{fg_red}Error:{fg_reset} The autocorrection table is too large, a node link exceeds 64KB limit. Try reducing the autocorrection dict to fewer entries.')
+            if not (0 <= byte_offset <= max_offset):
+                return byte_offset, False
+
+        return byte_offset, True
+
+    link_byte_count = 2
+    byte_offset, success = try_assign_offsets(link_byte_count)
+
+    if not success:
+        cli.log.info('Autocorrection table exceeds 64KB, switching to 3-byte node links.')
+        link_byte_count = 3
+        byte_offset, success = try_assign_offsets(link_byte_count)
+
+    if not success:
+        cli.log.error('{fg_red}Error:{fg_reset} The autocorrection table is too large, a node link exceeds 16MB limit. Try reducing the autocorrection dict to fewer entries.')
         maybe_exit(1)
-    return [byte_offset & 255, byte_offset >> 8]
+
+    serialized_data = [b for e in table for b in serialize(e, link_byte_count)]  # Serialize final table.
+    assert len(serialized_data) == byte_offset
+
+    return serialized_data, link_byte_count
+
+
+def encode_link(link: Dict[str, Any], link_byte_count: int) -> List[int]:
+    """Encodes a node link using `link_byte_count` bytes."""
+    byte_offset = link['byte_offset']
+    if not (0 <= byte_offset < (1 << (link_byte_count * 8))):
+        cli.log.error('{fg_red}Error:{fg_reset} The autocorrection table is too large, a node link exceeds the supported limit. Try reducing the autocorrection dict to fewer entries.')
+        maybe_exit(1)
+    return [(byte_offset >> (8 * i)) & 255 for i in range(link_byte_count)]
 
 
 def typo_len(e: Tuple[str, str]) -> int:
@@ -249,41 +280,90 @@ def to_hex(b: int) -> str:
     return f'0x{b:02X}'
 
 
-@cli.argument('filename', type=normpath, help='The autocorrection database file')
+class AutocorrectDict:
+    """Class to generate autocorrect data from a file."""
+    def __init__(self, path: Path):
+        self.path = path
+        self.autocorrections = parse_file(self.path)
+
+        self.trie = make_trie(self.autocorrections)
+        self.data, self.link_byte_count = serialize_trie(self.autocorrections, self.trie)
+
+        assert all(0 <= b <= 255 for b in self.data)
+
+        self.min_typo = min(self.autocorrections, key=typo_len)[0]
+        self.max_typo = max(self.autocorrections, key=typo_len)[0]
+
+
+@cli.argument('filenames', type=normpath, help='The autocorrection database file(s)', nargs='+')
 @cli.argument('-kb', '--keyboard', type=keyboard_folder, completer=keyboard_completer, help='The keyboard to build a firmware for. Ignored when a output file is supplied.')
 @cli.argument('-km', '--keymap', completer=keymap_completer, help='The keymap to build a firmware for. Ignored when a output file is supplied.')
 @cli.argument('-o', '--output', arg_only=True, type=normpath, help='File to write to')
 @cli.argument('-q', '--quiet', arg_only=True, action='store_true', help="Quiet mode, only output error messages")
 @cli.subcommand('Generate the autocorrection data file from a dictionary file.')
 def generate_autocorrect_data(cli):
-    autocorrections = parse_file(cli.args.filename)
-    trie = make_trie(autocorrections)
-    data = serialize_trie(autocorrections, trie)
+    if len(cli.args.filenames) > 8:
+        cli.log.error("Current EEPROM settings can only index up to 8 dicts")
+        sys.exit(1)
+
+    autocorrect_dicts = [AutocorrectDict(path) for path in cli.args.filenames]
 
     current_keyboard = cli.args.keyboard or cli.config.user.keyboard or cli.config.generate_autocorrect_data.keyboard
     current_keymap = cli.args.keymap or cli.config.user.keymap or cli.config.generate_autocorrect_data.keymap
 
     if not cli.args.output and current_keyboard and current_keymap:
-        cli.args.output = locate_keymap(current_keyboard, current_keymap).parent / 'autocorrect_data.h'
-
-    assert all(0 <= b <= 255 for b in data)
-
-    min_typo = min(autocorrections, key=typo_len)[0]
-    max_typo = max(autocorrections, key=typo_len)[0]
+        cli.args.output = locate_keymap(current_keyboard, current_keymap).parent / file_name
 
     # Build the autocorrect_data.h file.
     autocorrect_data_h_lines = [GPL2_HEADER_C_LIKE, GENERATED_HEADER_C_LIKE, '#pragma once', '']
 
-    autocorrect_data_h_lines.append(f'// Autocorrection dictionary ({len(autocorrections)} entries):')
-    for typo, correction in autocorrections:
-        autocorrect_data_h_lines.append(f'//   {typo:<{len(max_typo)}} -> {correction}')
+    n_entries = sum(len(dict_.autocorrections) for dict_ in autocorrect_dicts)
+    autocorrect_data_h_lines.append(f'// Autocorrection dictionary ({n_entries} entries):')
+
+    # collect all information, and write the corrections as comments
+    data, maxs, mins, sizes, nodes = [], [], [], [], []
+
+    for dict_ in autocorrect_dicts:
+        autocorrect_data_h_lines.append(f'// From {dict_.path}')
+        for typo, correction in dict_.autocorrections:
+            autocorrect_data_h_lines.append(f'//   {typo:<{len(dict_.max_typo)}} -> {correction}')
+        autocorrect_data_h_lines.append('// ' + '-' * 15)
+
+        data.extend(dict_.data)
+        maxs.append(len(dict_.max_typo))
+        mins.append(len(dict_.min_typo))
+        sizes.append(len(dict_.data))
+        nodes.append(dict_.link_byte_count)
+
+    assert(sum(sizes) == len(data))
+
+    offsets = [0]
+    for size in sizes[:-1]:
+        offsets.append(offsets[-1] + size)
+
+    def list_to_str(x: list) -> str:
+        """Helper to stringify the lists"""
+        return ', '.join(map(str, x))
+
+    offsets_str = list_to_str(offsets)
+    maxs_str = list_to_str(maxs)
+    mins_str = list_to_str(mins)
+    sizes_str = list_to_str(sizes)
+    nodes_str = list_to_str(nodes)
 
     autocorrect_data_h_lines.append('')
-    autocorrect_data_h_lines.append(f'#define AUTOCORRECT_MIN_LENGTH {len(min_typo)} // "{min_typo}"')
-    autocorrect_data_h_lines.append(f'#define AUTOCORRECT_MAX_LENGTH {len(max_typo)} // "{max_typo}"')
-    autocorrect_data_h_lines.append(f'#define DICTIONARY_SIZE {len(data)}')
+    autocorrect_data_h_lines.append(f'#define N_DICTS {len(autocorrect_dicts)}')
     autocorrect_data_h_lines.append('')
-    autocorrect_data_h_lines.append('static const uint8_t autocorrect_data[DICTIONARY_SIZE] PROGMEM = {')
+    autocorrect_data_h_lines.append(f'static const uint32_t autocorrect_offsets[N_DICTS] PROGMEM     = {{{offsets_str}}};')
+    autocorrect_data_h_lines.append(f'static const uint16_t autocorrect_min_lengths[N_DICTS] PROGMEM = {{{mins_str}}};')
+    autocorrect_data_h_lines.append(f'static const uint16_t autocorrect_max_lengths[N_DICTS] PROGMEM = {{{maxs_str}}};')
+    autocorrect_data_h_lines.append(f'static const uint32_t autocorrect_sizes[N_DICTS] PROGMEM       = {{{sizes_str}}};')
+    autocorrect_data_h_lines.append(f'static const uint8_t  autocorrect_node_size[N_DICTS] PROGMEM    = {{{nodes_str}}};')
+    autocorrect_data_h_lines.append('')
+    autocorrect_data_h_lines.append(f'#define DICTIONARY_SIZE {sum(sizes)}')
+    autocorrect_data_h_lines.append(f'#define TYPO_BUFFER_SIZE {max(maxs)}')
+    autocorrect_data_h_lines.append('')
+    autocorrect_data_h_lines.append(f'static const uint8_t autocorrect_data[DICTIONARY_SIZE] PROGMEM = {{')
     autocorrect_data_h_lines.append(textwrap.fill('    %s' % (', '.join(map(to_hex, data))), width=100, subsequent_indent='    '))
     autocorrect_data_h_lines.append('};')
 
