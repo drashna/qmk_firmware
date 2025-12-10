@@ -73,12 +73,14 @@ STATIC_ASSERT((QUANTUM_PAINTER_TASK_THROTTLE) > 0 && (QUANTUM_PAINTER_TASK_THROT
 
 void qp_internal_task(void) {
     // Perform throttling of the internal processing of Quantum Painter
+#ifndef MULTITHREADED_PAINTER_ENABLE
     static uint32_t last_tick = 0;
     uint32_t        now       = timer_read32();
     if (TIMER_DIFF_32(now, last_tick) < (QUANTUM_PAINTER_TASK_THROTTLE)) {
         return;
     }
     last_tick = now;
+#endif
 
 #if (QUANTUM_PAINTER_DISPLAY_TIMEOUT) > 0
     qp_internal_display_timeout_task();
@@ -108,3 +110,53 @@ void qp_internal_task(void) {
     debug_enable = old_debug_state;
 #endif // defined(QUANTUM_PAINTER_DEBUG_ENABLE_FLUSH_TASK_OUTPUT)
 }
+
+#ifdef MULTITHREADED_PAINTER_ENABLE
+thread_t                  *painter_thread         = NULL;
+volatile bool              painter_thread_running = true;
+__attribute__((weak)) bool qp_thread_init_user(void) {
+    return true;
+}
+__attribute__((weak)) bool qp_thread_init_kb(void) {
+    return qp_thread_init_user();
+}
+__attribute__((weak)) bool qp_thread_task_user(void) {
+    return true;
+}
+__attribute__((weak)) bool qp_thread_task_kb(void) {
+    return qp_thread_task_user();
+}
+
+static THD_WORKING_AREA(waPainterThread, 1024);
+static THD_FUNCTION(PainterThread, arg) {
+    (void)arg;
+    chRegSetThreadName("painter");
+
+    qp_thread_init_kb();
+
+    while (painter_thread_running) {
+        wait_ms(QUANTUM_PAINTER_TASK_THROTTLE);
+        qp_internal_task();
+        qp_thread_task_kb();
+    }
+}
+
+void qp_thread_init(void) {
+    painter_thread = chThdCreateStatic(waPainterThread, sizeof(waPainterThread), LOWPRIO, PainterThread, NULL);
+}
+
+void qp_shutdown_thread(void) {
+    // if the painter thread is running, wait for it to finish
+    if (painter_thread != NULL) {
+        painter_thread_running = false;
+        while (!chThdTerminatedX(painter_thread)) {
+            chThdSleepMilliseconds(10);
+        }
+        for (uint8_t i = 0; i < QP_NUM_DEVICES; i++) {
+            if (qp_devices[i] != NULL) {
+                qp_flush(qp_devices[i]);
+            }
+        }
+    }
+}
+#endif // MULTITHREADED_PAINTER_ENABLE
