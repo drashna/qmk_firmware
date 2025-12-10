@@ -207,6 +207,10 @@ __attribute__((weak)) void suspend_wakeup_init_modules(void) {}
 
 void shutdown_quantum(bool jump_to_bootloader) {
     clear_keyboard();
+#ifdef MULTITHREADED_PAINTER_ENABLE
+    void qp_shutdown_thread(void);
+    qp_shutdown_thread();
+#endif // MULTITHREADED_PAINTER_ENABLE
 #if defined(MIDI_ENABLE) && defined(MIDI_BASIC)
     process_midi_all_notes_off();
 #endif
