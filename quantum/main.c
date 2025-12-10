@@ -65,7 +65,7 @@ int main(void) {
         console_task();
 #endif
 
-#ifdef QUANTUM_PAINTER_ENABLE
+#if defined(QUANTUM_PAINTER_ENABLE) && !defined(MULTITHREADED_PAINTER_ENABLE)
         // Run Quantum Painter task
         void qp_internal_task(void);
         qp_internal_task();
