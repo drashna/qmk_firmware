@@ -520,6 +520,10 @@ void keyboard_init(void) {
 #ifdef AUDIO_ENABLE
     audio_init();
 #endif
+#ifdef MULTITHREADED_PAINTER_ENABLE
+    void qp_thread_init(void);
+    qp_thread_init();
+#endif
 #ifdef MULTITHREADED_LIGHTING_ENABLE
     chThdCreateStatic(waLightingThread, sizeof(waLightingThread), HIGHPRIO, LightingThread, NULL);
 #else
