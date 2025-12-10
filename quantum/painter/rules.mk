@@ -288,3 +288,7 @@ endif
 ifeq ($(strip $(QUANTUM_PAINTER_LVGL_INTEGRATION)), yes)
     include $(QUANTUM_DIR)/painter/lvgl/rules.mk
 endif
+
+ifeq ($(strip $(MULTITHREADED_PAINTER_ENABLE)), yes)
+    OPT_DEFS += -DMULTITHREADED_PAINTER_ENABLE
+endif
