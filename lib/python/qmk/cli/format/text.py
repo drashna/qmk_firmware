@@ -1,11 +1,11 @@
 """Ensure text files have the proper line endings.
 """
-from itertools import islice
 from subprocess import DEVNULL
 
 from milc import cli
 
 from qmk.path import normpath, is_relative_to
+from qmk.commands import get_chunks
 
 IGNORE_SUFFIXES = [
     'hex',
