@@ -31,6 +31,8 @@ typedef uint8_t matrix_row_t;
 typedef uint16_t matrix_row_t;
 #elif (MATRIX_COLS <= 32)
 typedef uint32_t matrix_row_t;
+#elif (MATRIX_COLS <= 64)
+typedef uint64_t matrix_row_t;
 #else
 #    error "MATRIX_COLS: invalid value"
 #endif
