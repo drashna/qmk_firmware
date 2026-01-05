@@ -74,6 +74,10 @@ inline matrix_row_t matrix_get_row(uint8_t row) {
 #elif (MATRIX_COLS <= 32)
 #    define print_matrix_header() print("\nr/c 0123456789ABCDEF0123456789ABCDEF\n")
 #    define print_matrix_row(row) print_bin_reverse32(matrix_get_row(row))
+#elif (MATRIX_COLS <= 64)
+#    define print_matrix_header() print("\nr/c 0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF\n")
+#    define print_matrix_row(row) print_bin_reverse64(matrix_get_row(row))
+
 #endif
 
 void matrix_print(void) {
