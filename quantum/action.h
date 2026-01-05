@@ -80,6 +80,8 @@ typedef uint8_t swap_state_row_t;
 typedef uint16_t swap_state_row_t;
 #    elif (MATRIX_COLS <= 32)
 typedef uint32_t swap_state_row_t;
+#    elif (MATRIX_COLS <= 64)
+typedef uint64_t swap_state_row_t;
 #    else
 #        error "MATRIX_COLS: invalid value"
 #    endif
@@ -139,7 +141,7 @@ void process_record_tap_hint(keyrecord_t *record);
 #endif
 
 #ifndef NO_ACTION_ONESHOT
-bool get_clear_oneshot_layer(uint16_t keycode, keyrecord_t *record, bool default_value);
+bool     get_clear_oneshot_layer(uint16_t keycode, keyrecord_t *record, bool default_value);
 uint16_t get_record_keycode(keyrecord_t *record, bool update_layer_cache);
 #endif
 
@@ -149,7 +151,7 @@ uint16_t get_record_keycode(keyrecord_t *record, bool update_layer_cache);
 #ifdef ACTION_DEBUG
 #    include "debug.h"
 #    include "print.h"
-#    define ac_dprintf(fmt, ...)                                     \
+#    define ac_dprintf(fmt, ...)                                  \
         do {                                                      \
             if (debug_config.action) xprintf(fmt, ##__VA_ARGS__); \
         } while (0)
