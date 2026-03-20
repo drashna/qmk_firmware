@@ -23,6 +23,9 @@
 #    include "debug.h"
 #    include "action_util.h"
 #    include "quantum_keycodes.h"
+#    ifdef LAYER_LOCK_ENABLE
+#        include "layer_lock.h"
+#    endif
 
 /* local data structure for tracking auto mouse */
 static auto_mouse_context_t auto_mouse_context = {
@@ -265,6 +268,9 @@ void pointing_device_task_auto_mouse(report_mouse_t mouse_report) {
             layer_on((AUTO_MOUSE_TARGET_LAYER));
         }
     } else if (layer_state_is((AUTO_MOUSE_TARGET_LAYER)) && timer_elapsed(auto_mouse_context.timer.active) > auto_mouse_context.config.timeout) {
+#    ifdef LAYER_LOCK_ENABLE
+        if (is_layer_locked(AUTO_MOUSE_DEFAULT_LAYER)) return;
+#    endif
         layer_off((AUTO_MOUSE_TARGET_LAYER));
         auto_mouse_context.timer.active         = 0;
         auto_mouse_context.total_mouse_movement = (total_mouse_movement_t){.x = 0, .y = 0, .h = 0, .v = 0};
@@ -300,6 +306,11 @@ void auto_mouse_keyevent(bool pressed) {
  */
 void auto_mouse_reset_trigger(bool pressed) {
     if (pressed) {
+#    ifdef LAYER_LOCK_ENABLE
+        if (is_layer_locked(AUTO_MOUSE_DEFAULT_LAYER)) {
+            return;
+        }
+#    endif
         if (layer_state_is((AUTO_MOUSE_TARGET_LAYER))) {
             layer_off((AUTO_MOUSE_TARGET_LAYER));
         };
@@ -400,6 +411,10 @@ bool process_auto_mouse(uint16_t keycode, keyrecord_t* record) {
         // MT(kc) only skip on hold
         case QK_MOD_TAP ... QK_MOD_TAP_MAX:
             if (!record->tap.count) break;
+#        ifdef LAYER_LOCK_ENABLE
+        case QK_LLCK:
+            break;
+#        endif
 #    endif
         // QK_MODS goes to default
         default:
