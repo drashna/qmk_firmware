@@ -345,29 +345,18 @@ void register_mouse(uint8_t mouse_keycode, bool pressed) {
     } else {
         mousekey_off(mouse_keycode);
     }
-    // should mousekeys send report, or does something else handle this?
-    switch (mouse_keycode) {
 #    if defined(PS2_MOUSE_ENABLE) || defined(POINTING_DEVICE_ENABLE)
-        case QK_MOUSE_BUTTON_1 ... QK_MOUSE_BUTTON_8:
-            // let pointing device handle the buttons
-            // expand if/when it handles more of the code
-#        if defined(POINTING_DEVICE_ENABLE)
-            pointing_device_keycode_handler(mouse_keycode, pressed);
-#        endif
-            break;
+    // If other mouse subsystems are enabled, don't send report here if it is a button keycode,
+    // as pointing device or ps2 mouse will handle sending the report. Send all movement keycodes immediately, though.
+    if (!IS_MOUSEKEY_BUTTON(mouse_keycode))
 #    endif
-        default:
-            mousekey_send();
-            break;
-    }
-#elif defined(POINTING_DEVICE_ENABLE)
-    // if mousekeys isn't enabled, and pointing device is enabled, then
-    // let pointing device do all the heavy lifting, then
-    if (IS_MOUSE_KEYCODE(mouse_keycode)) {
-        pointing_device_keycode_handler(mouse_keycode, pressed);
-    }
+        mousekey_send();
 #endif
-
+#if defined(POINTING_DEVICE_ENABLE)
+    // always send keycode to pointing device system, so it's aat least aware of all mouse keycodes, even if mousekeys
+    // is enabled.
+    pointing_device_keycode_handler(mouse_keycode, pressed);
+#endif
 #ifdef PS2_MOUSE_ENABLE
     // make sure that ps2 mouse has button report synced
     if (QK_MOUSE_BUTTON_1 <= mouse_keycode && mouse_keycode <= QK_MOUSE_BUTTON_3) {
