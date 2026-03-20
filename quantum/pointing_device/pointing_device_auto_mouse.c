@@ -431,7 +431,8 @@ bool process_auto_mouse(uint16_t keycode, keyrecord_t* record) {
  */
 static bool is_mouse_record(uint16_t keycode, keyrecord_t* record) {
     // allow for keyboard to hook in and override if need be
-    if (is_mouse_record_kb(keycode, record) || IS_MOUSEKEY(keycode)) return true;
+    if (is_mouse_record_kb(keycode, record)) return true;
+
     return false;
 }
 
@@ -458,7 +459,7 @@ __attribute__((weak)) bool is_mouse_record_kb(uint16_t keycode, keyrecord_t* rec
  * @return bool true: keyrecord is defined as mouse key false: keyrecord is not defined as mouse key
  */
 __attribute__((weak)) bool is_mouse_record_user(uint16_t keycode, keyrecord_t* record) {
-    return false;
+    return IS_MOUSE_KEYCODE(keycode);
 }
 
 #endif // POINTING_DEVICE_AUTO_MOUSE_ENABLE
