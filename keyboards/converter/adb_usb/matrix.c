@@ -29,6 +29,9 @@ Ported to QMK by Peter Roe <pete@13bit.me>
 #include "host.h"
 #include "led.h"
 #include "timer.h"
+#ifdef POINTING_DEVICE_ENABLE
+#    include "pointing_device.h"
+#endif
 
 #ifndef ADB_MOUSE_MAXACC
 #    define ADB_MOUSE_MAXACC 8
@@ -45,69 +48,88 @@ void matrix_init_custom(void) {
     wait_ms(2000);
 }
 
-#ifdef ADB_MOUSE_ENABLE
-static report_mouse_t mouse_report = {};
+#ifdef POINTING_DEVICE_ENABLE
+static int8_t mouseacc = 1;
 
-void housekeeping_task_kb(void) {
-    adb_mouse_task();
+bool pointing_device_driver_init(void) {
+    return true;
 }
 
-void adb_mouse_task(void) {
-    uint16_t      codes;
-    int16_t       x, y;
-    static int8_t mouseacc;
-
+report_mouse_t pointing_device_driver_get_report(report_mouse_t mouse_report) {
     /* tick of last polling */
     static uint16_t tick_ms;
 
     // polling with 12ms interval
-    if (timer_elapsed(tick_ms) < 12) return;
+    if (timer_elapsed(tick_ms) < 12) return mouse_report;
     tick_ms = timer_read();
 
-    codes = adb_host_mouse_recv();
-    // If nothing received reset mouse acceleration, and quit.
+    uint16_t codes = adb_host_mouse_recv();
+    // If nothing received reset mouse acceleration
     if (!codes) {
-        mouseacc = 1;
-        return;
-    };
-    // Bit sixteen is button.
-    if (~codes & (1 << 15)) mouse_report.buttons |= MOUSE_BTN1;
-    if (codes & (1 << 15)) mouse_report.buttons &= ~MOUSE_BTN1;
-    // lower seven bits are movement, as signed int_7.
-    // low byte is X-axis, high byte is Y.
-    y = (codes >> 8 & 0x3F);
-    x = (codes >> 0 & 0x3F);
-    // bit seven and fifteen is negative
-    // usb does not use int_8, but int_7 (measuring distance) with sign-bit.
-    if (codes & (1 << 6)) x = (x - 0x40);
-    if (codes & (1 << 14)) y = (y - 0x40);
-    // Accelerate mouse. (They weren't meant to be used on screens larger than 320x200).
-    x *= mouseacc;
-    y *= mouseacc;
-    // Cap our two bytes per axis to one byte.
-    // Easier with a MIN-function, but since -MAX(-a,-b) = MIN(a,b)...
-    // I.E. MIN(MAX(x,-127),127) = -MAX(-MAX(x, -127), -127) = MIN(-MIN(-x,127),127)
-    mouse_report.x = -MAX(-MAX(x, -127), -127);
-    mouse_report.y = -MAX(-MAX(y, -127), -127);
+        mouseacc       = 1;
+        mouse_report.x = 0;
+        mouse_report.y = 0;
+        return mouse_report;
+    }
+
     if (debug_mouse) {
         print("adb_host_mouse_recv: ");
         print_bin16(codes);
         print("\n");
-        print("adb_mouse raw: [");
-        print_hex8(mouseacc);
-        print(" ");
-        print_hex8(mouse_report.buttons);
-        print("|");
-        print_decs(mouse_report.x);
-        print(" ");
-        print_decs(mouse_report.y);
-        print("]\n");
     }
-    // Send result by usb.
-    host_mouse_send(&mouse_report);
-    // increase acceleration of mouse
-    mouseacc += (mouseacc < ADB_MOUSE_MAXACC ? 1 : 0);
-    return;
+
+    // Bit sixteen is button.
+    if (~codes & (1 << 15)) {
+        mouse_report.buttons |= MOUSE_BTN1;
+    } else {
+        mouse_report.buttons &= ~MOUSE_BTN1;
+    }
+    // lower seven bits are movement, as signed int_7.
+    // low byte is X-axis, high byte is Y.
+    int16_t y = (codes >> 8 & 0x3F);
+    int16_t x = (codes >> 0 & 0x3F);
+    // bit seven and fifteen are negative
+    // usb does not use int_8, but int_7 (measuring distance) with sign-bit.
+    if (codes & (1 << 6)) x = (x - 0x40);
+    if (codes & (1 << 14)) y = (y - 0x40);
+
+    mouse_report.x = x;
+    mouse_report.y = y;
+
+    return mouse_report;
+}
+
+uint16_t pointing_device_driver_get_cpi(void) {
+    return 0;
+}
+
+void pointing_device_driver_set_cpi(uint16_t cpi) {}
+
+report_mouse_t pointing_device_task_kb(report_mouse_t mouse_report) {
+    if (mouse_report.x != 0 || mouse_report.y != 0) {
+        if (debug_mouse) {
+            print("adb_mouse raw: [");
+            print_hex8(mouseacc);
+            print(" ");
+            print_hex8(mouse_report.buttons);
+            print("|");
+            print_decs(mouse_report.x);
+            print(" ");
+            print_decs(mouse_report.y);
+            print("]\n");
+        }
+        // Accelerate mouse. (They weren't meant to be used on screens larger than 320x200).
+        int16_t x = mouse_report.x * mouseacc;
+        int16_t y = mouse_report.y * mouseacc;
+        // Cap our two bytes per axis to one byte.
+        // Easier with a MIN-function, but since -MAX(-a,-b) = MIN(a,b)...
+        // I.E. MIN(MAX(x,-127),127) = -MAX(-MAX(x, -127), -127) = MIN(-MIN(-x,127),127)
+        mouse_report.x = -MAX(-MAX(x, -127), -127);
+        mouse_report.y = -MAX(-MAX(y, -127), -127);
+        // increase acceleration of mouse
+        mouseacc += (mouseacc < ADB_MOUSE_MAXACC ? 1 : 0);
+    }
+    return pointing_device_task_user(mouse_report);
 }
 #endif
 
@@ -154,7 +176,7 @@ bool matrix_scan_custom(matrix_row_t current_matrix[]) {
     } else if (key0 == 0xFF) { // error
         xprintf("adb_host_kbd_recv: ERROR(%d)\n", codes);
         // something wrong or plug-in
-        matrix_init_custom();
+        matrix_init();
         return key1;
     } else {
         /* Swap codes for ISO keyboard
