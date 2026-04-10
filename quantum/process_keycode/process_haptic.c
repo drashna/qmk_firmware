@@ -20,6 +20,7 @@
 #include "usb_device_state.h"
 
 __attribute__((weak)) bool get_haptic_enabled_key(uint16_t keycode, keyrecord_t *record) {
+#if defined(NO_HAPTIC_MOD) || defined(NO_HAPTIC_ALPHA) || defined(NO_HAPTIC_PUNCTUATION) || defined(NO_HAPTIC_LOCKKEYS) || defined(NO_HAPTIC_NAV) || defined(NO_HAPTIC_NUMERIC)
     switch (keycode) {
 #ifdef NO_HAPTIC_MOD
         case QK_MOD_TAP ... QK_MOD_TAP_MAX:
@@ -81,6 +82,7 @@ __attribute__((weak)) bool get_haptic_enabled_key(uint16_t keycode, keyrecord_t 
 #endif
             return false;
     }
+#endif
     return true;
 }
 
