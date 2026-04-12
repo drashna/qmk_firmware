@@ -183,6 +183,9 @@ void viable_init(void);
 // Returns true if command was handled
 bool viable_handle_command(uint8_t *data, uint8_t length);
 
+void viable_read_eeprom(uint16_t offset, void *buf, uint16_t size);
+void viable_write_eeprom(uint16_t offset, const void *buf, uint16_t size);
+
 // Storage API - Tap Dance
 int viable_get_tap_dance(uint8_t index, viable_tap_dance_entry_t *entry);
 int viable_set_tap_dance(uint8_t index, const viable_tap_dance_entry_t *entry);

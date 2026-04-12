@@ -9,6 +9,10 @@
 #include <string.h>
 #include "print.h"
 #include "version.h"
+#include "eeconfig.h"
+#include "nvm_eeprom_eeconfig_internal.h"
+#include "nvm_eeprom_via_internal.h"
+#include "keymap_introspection.h"
 
 ASSERT_COMMUNITY_MODULES_MIN_API_VERSION(1, 0, 0);
 
@@ -19,12 +23,17 @@ ASSERT_COMMUNITY_MODULES_MIN_API_VERSION(1, 0, 0);
 uint16_t g_viable_magic_keycode_override;
 
 // Internal EEPROM access functions - uses eeconfig_kb_datablock
-static void viable_read_eeprom(uint16_t offset, void *buf, uint16_t size) {
-    eeconfig_read_kb_datablock(buf, offset, size);
+__attribute__((weak)) void viable_read_eeprom(uint16_t offset, void *buf, uint16_t size) {
+        void *ee_start = (void *)(uintptr_t)(DYNAMIC_KEYMAP_EEPROM_MAX_ADDR + offset);
+        void *ee_end   = (void *)(uintptr_t)(DYNAMIC_KEYMAP_EEPROM_MAX_ADDR + MIN(VIABLE_EEPROM_SIZE_CALC, offset + size));
+        // xprintf("EEPROM read: offset=%p size=%p\n", ee_start, ee_end);
+        eeprom_read_block(buf, ee_start, ee_end - ee_start);
 }
 
-static void viable_write_eeprom(uint16_t offset, const void *buf, uint16_t size) {
-    eeconfig_update_kb_datablock(buf, offset, size);
+__attribute__((weak)) void viable_write_eeprom(uint16_t offset, const void *buf, uint16_t size) {
+       void *ee_start = (void *)(uintptr_t)(DYNAMIC_KEYMAP_EEPROM_MAX_ADDR + offset);
+       void *ee_end   = (void *)(uintptr_t)(DYNAMIC_KEYMAP_EEPROM_MAX_ADDR + MIN(VIABLE_EEPROM_SIZE_CALC, offset + size));
+       eeprom_update_block(buf, ee_start, ee_end - ee_start);
 }
 
 // Magic header for EEPROM validation - derived from QMK_BUILDDATE
@@ -454,9 +463,26 @@ bool process_record_viable(uint16_t keycode, keyrecord_t *record) {
 
 // Override keymap_key_to_keycode to handle magic position for tap dance/combo execution
 uint16_t keymap_key_to_keycode(uint8_t layer, keypos_t key) {
-    if (key.row == VIABLE_MATRIX_MAGIC && key.col == VIABLE_MATRIX_MAGIC) {
+     if (key.row == VIABLE_MATRIX_MAGIC && key.col == VIABLE_MATRIX_MAGIC) {
         return g_viable_magic_keycode_override;
+    } else  if (key.row < MATRIX_ROWS && key.col < MATRIX_COLS) {
+        return keycode_at_keymap_location(layer, key.row, key.col);
     }
+#ifdef ENCODER_MAP_ENABLE
+    else if (key.row == KEYLOC_ENCODER_CW && key.col < NUM_ENCODERS) {
+        return keycode_at_encodermap_location(layer, key.col, true);
+    } else if (key.row == KEYLOC_ENCODER_CCW && key.col < NUM_ENCODERS) {
+        return keycode_at_encodermap_location(layer, key.col, false);
+    }
+#endif // ENCODER_MAP_ENABLE
+#ifdef DIP_SWITCH_MAP_ENABLE
+    else if (key.row == KEYLOC_DIP_SWITCH_ON && key.col < NUM_DIP_SWITCHES) {
+        return keycode_at_dip_switch_map_location(key.col, true);
+    } else if (key.row == KEYLOC_DIP_SWITCH_OFF && key.col < NUM_DIP_SWITCHES) {
+        return keycode_at_dip_switch_map_location(key.col, false);
+    }
+#endif // DIP_SWITCH_MAP_ENABLE
+
     // Use dynamic keymap for normal keys
-    return dynamic_keymap_get_keycode(layer, key.row, key.col);
+    return KC_NO;
 }

@@ -33,6 +33,6 @@
     (VIABLE_ALT_REPEAT_KEY_ENTRIES * 6) + \
     3 + 6 + VIABLE_QMK_SETTINGS_SIZE)
 
-#ifndef EECONFIG_KB_DATA_SIZE
-#    define EECONFIG_KB_DATA_SIZE VIABLE_EEPROM_SIZE_CALC
-#endif
+// Reduce max address for dynamic keymap to ensure we don't overlap with Viable's EEPROM storage
+// much easier than trying to set the start address.
+#define DYNAMIC_KEYMAP_EEPROM_MAX_ADDR (TOTAL_EEPROM_BYTE_COUNT - 1 - VIABLE_EEPROM_SIZE_CALC)

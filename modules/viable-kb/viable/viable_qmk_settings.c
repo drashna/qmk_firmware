@@ -148,12 +148,12 @@ void viable_qmk_settings_init(void) {
 
 // Load settings from EEPROM
 static void viable_qmk_settings_load(void) {
-    eeconfig_read_kb_datablock(&settings, VIABLE_QMK_SETTINGS_OFFSET, sizeof(settings));
+    viable_read_eeprom(VIABLE_QMK_SETTINGS_OFFSET, &settings, sizeof(settings));
 }
 
 // Save settings to EEPROM
 static void viable_qmk_settings_save(void) {
-    eeconfig_update_kb_datablock(&settings, VIABLE_QMK_SETTINGS_OFFSET, sizeof(settings));
+    viable_write_eeprom(VIABLE_QMK_SETTINGS_OFFSET, &settings, sizeof(settings));
 }
 
 // Apply settings to QMK subsystems

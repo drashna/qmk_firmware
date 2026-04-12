@@ -98,7 +98,7 @@ __attribute__((weak)) uint16_t keycode_at_dip_switch_map_location(uint8_t switch
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Combos
 
-#if defined(COMBO_ENABLE) && !defined(VIABLE_ENABLE)
+#if defined(COMBO_ENABLE)
 
 uint16_t combo_count_raw(void) {
     return ARRAY_SIZE(key_combos);
@@ -119,12 +119,12 @@ __attribute__((weak)) combo_t* combo_get(uint16_t combo_idx) {
     return combo_get_raw(combo_idx);
 }
 
-#endif // defined(COMBO_ENABLE) && !defined(VIABLE_ENABLE)
+#endif // defined(COMBO_ENABLE)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Tap Dance
 
-#if defined(TAP_DANCE_ENABLE) && !defined(VIABLE_ENABLE)
+#if defined(TAP_DANCE_ENABLE)
 
 uint16_t tap_dance_count_raw(void) {
     return ARRAY_SIZE(tap_dance_actions);
@@ -147,12 +147,12 @@ __attribute__((weak)) tap_dance_action_t* tap_dance_get(uint16_t tap_dance_idx) 
     return tap_dance_get_raw(tap_dance_idx);
 }
 
-#endif // defined(TAP_DANCE_ENABLE) && !defined(VIABLE_ENABLE)
+#endif // defined(TAP_DANCE_ENABLE)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Key Overrides
 
-#if defined(KEY_OVERRIDE_ENABLE) && !defined(VIABLE_ENABLE)
+#if defined(KEY_OVERRIDE_ENABLE)
 
 uint16_t key_override_count_raw(void) {
     return ARRAY_SIZE(key_overrides);
@@ -175,7 +175,7 @@ __attribute__((weak)) const key_override_t* key_override_get(uint16_t key_overri
     return key_override_get_raw(key_override_idx);
 }
 
-#endif // defined(KEY_OVERRIDE_ENABLE) && !defined(VIABLE_ENABLE)
+#endif // defined(KEY_OVERRIDE_ENABLE)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Community modules (must be last in this file!)

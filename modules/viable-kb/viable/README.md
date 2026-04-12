@@ -17,7 +17,7 @@ Add to your keymap's `keymap.json`:
 
 ```json
 {
-    "modules": ["viable-kb/core"]
+    "modules": ["viable-kb/viable"]
 }
 ```
 
