@@ -87,8 +87,13 @@ void del_oneshot_locked_mods(uint8_t mods) {
 }
 #    if (defined(ONESHOT_TIMEOUT) && (ONESHOT_TIMEOUT > 0))
 static uint16_t oneshot_time = 0;
+
+__attribute__((weak)) uint16_t get_oneshot_timeout(void) {
+    return ONESHOT_TIMEOUT;
+}
+
 bool            has_oneshot_mods_timed_out(void) {
-    return TIMER_DIFF_16(timer_read(), oneshot_time) >= ONESHOT_TIMEOUT;
+    return TIMER_DIFF_16(timer_read(), oneshot_time) >= get_oneshot_timeout();
 }
 #    else
 bool has_oneshot_mods_timed_out(void) {
@@ -126,12 +131,13 @@ enum {
 #    if (defined(ONESHOT_TIMEOUT) && (ONESHOT_TIMEOUT > 0))
 static uint16_t oneshot_layer_time = 0;
 inline bool     has_oneshot_layer_timed_out(void) {
-    return TIMER_DIFF_16(timer_read(), oneshot_layer_time) >= ONESHOT_TIMEOUT && !(get_oneshot_layer_state() & ONESHOT_TOGGLED);
-}
+    uint16_t timeout = get_oneshot_timeout();
+    return timeout > 0 && TIMER_DIFF_16(timer_read(), oneshot_layer_time) >= timeout && !(get_oneshot_layer_state() & ONESHOT_TOGGLED);}
 #        ifdef SWAP_HANDS_ENABLE
 static uint16_t oneshot_swaphands_time = 0;
 inline bool     has_oneshot_swaphands_timed_out(void) {
-    return TIMER_DIFF_16(timer_read(), oneshot_swaphands_time) >= ONESHOT_TIMEOUT && (swap_hands_oneshot == SHO_ACTIVE);
+    uint16_t timeout = get_oneshot_timeout();
+    return timeout > 0 && TIMER_DIFF_16(timer_read(), oneshot_swaphands_time) >= timeout && (swap_hands_oneshot == SHO_ACTIVE);
 }
 #        endif
 #    endif
