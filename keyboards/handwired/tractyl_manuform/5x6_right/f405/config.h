@@ -42,6 +42,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define AUDIO_PIN               A4
 #define AUDIO_PIN_ALT           A5
 #define AUDIO_PIN_ALT_AS_NEGATIVE
+#define AUDIO_INIT_DELAY
 
 /* serial.c configuration for split keyboard */
 #define SERIAL_USART_DRIVER      SD1
@@ -84,9 +85,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define DISPLAY_CS_PIN B9
 #define DISPLAY_SPI_DIVIDER 1
 
-#define DRV2605L_FB_ERM_LRA   0
-#define DRV2605L_GREETING     DRV2605L_EFFECT_750_MS_ALERT_100
-#define DRV2605L_DEFAULT_MODE DRV2605L_EFFECT_BUZZ_1_100
+#define DRV2605L_FB_ERM_LRA 0
+#define DRV2605L_RATED_VOLTAGE 3
+#define DRV2605L_V_RMS 2.3
+#define DRV2605L_V_PEAK 3.3
+#define DRV2605L_LIBRARY 2
 
 
 #ifdef POINTING_DEVICE_DRIVER_pmw3610
