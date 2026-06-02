@@ -932,7 +932,7 @@ const PROGMEM usbConfigurationDescriptor_t usbConfigurationDescriptor = {
             .bDescriptorType = USBDESCR_HID
         },
         .bcdHID              = 0x0101,
-        .bCountryCode        = 0x00,
+        .bCountryCode        = USB_HID_COUNTRY_CODE,
         .bNumDescriptors     = 1,
         .bDescriptorType     = USBDESCR_HID_REPORT,
         .wDescriptorLength   = sizeof(keyboard_hid_report)
@@ -972,7 +972,7 @@ const PROGMEM usbConfigurationDescriptor_t usbConfigurationDescriptor = {
             .bDescriptorType = USBDESCR_HID
         },
         .bcdHID              = 0x0101,
-        .bCountryCode        = 0x00,
+        .bCountryCode        = USB_HID_COUNTRY_CODE,
         .bNumDescriptors     = 1,
         .bDescriptorType     = USBDESCR_HID_REPORT,
         .wDescriptorLength   = sizeof(raw_hid_report)
@@ -1067,7 +1067,7 @@ const PROGMEM usbConfigurationDescriptor_t usbConfigurationDescriptor = {
             .bDescriptorType = USBDESCR_HID
         },
         .bcdHID              = 0x0101,
-        .bCountryCode        = 0x00,
+        .bCountryCode        = USB_HID_COUNTRY_CODE,
         .bNumDescriptors     = 1,
         .bDescriptorType     = USBDESCR_HID_REPORT,
         .wDescriptorLength   = sizeof(shared_hid_report)
@@ -1111,7 +1111,7 @@ const PROGMEM usbConfigurationDescriptor_t usbConfigurationDescriptor = {
             .bDescriptorType = USBDESCR_HID
         },
         .bcdHID              = 0x0111,
-        .bCountryCode        = 0x00,
+        .bCountryCode        = USB_HID_COUNTRY_CODE,
         .bNumDescriptors     = 1,
         .bDescriptorType     = USBDESCR_HID_REPORT,
         .wDescriptorLength   = sizeof(console_hid_report)
