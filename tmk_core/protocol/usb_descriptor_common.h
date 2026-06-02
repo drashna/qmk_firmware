@@ -49,6 +49,10 @@ STATIC_ASSERT(SYSTEM_CONTROL_USAGE_MINIMUM <= SYSTEM_CONTROL_USAGE_MAXIMUM, "SYS
 #    define RAW_USAGE_ID 0x61
 #endif
 
+#ifndef USB_HID_COUNTRY_CODE
+#    define USB_HID_COUNTRY_CODE 0x00
+#endif
+
 /////////////////////
 // Hires Scroll Defaults
 
