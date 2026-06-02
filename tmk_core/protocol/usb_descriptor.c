@@ -505,7 +505,7 @@ const USB_Descriptor_Configuration_t PROGMEM ConfigurationDescriptor = {
             .Type               = HID_DTYPE_HID
         },
         .HIDSpec                = VERSION_BCD(1, 1, 1),
-        .CountryCode            = 0x00,
+        .CountryCode            = USB_HID_COUNTRY_CODE,
         .TotalReportDescriptors = 1,
         .HIDReportType          = HID_DTYPE_Report,
         .HIDReportLength        = sizeof(KeyboardReport)
@@ -545,7 +545,7 @@ const USB_Descriptor_Configuration_t PROGMEM ConfigurationDescriptor = {
             .Type               = HID_DTYPE_HID
         },
         .HIDSpec                = VERSION_BCD(1, 1, 1),
-        .CountryCode            = 0x00,
+        .CountryCode            = USB_HID_COUNTRY_CODE,
         .TotalReportDescriptors = 1,
         .HIDReportType          = HID_DTYPE_Report,
         .HIDReportLength        = sizeof(RawReport)
@@ -635,7 +635,7 @@ const USB_Descriptor_Configuration_t PROGMEM ConfigurationDescriptor = {
             .Type               = HID_DTYPE_HID
         },
         .HIDSpec                = VERSION_BCD(1, 1, 1),
-        .CountryCode            = 0x00,
+        .CountryCode            = USB_HID_COUNTRY_CODE,
         .TotalReportDescriptors = 1,
         .HIDReportType          = HID_DTYPE_Report,
         .HIDReportLength        = sizeof(MouseReport)
@@ -680,7 +680,7 @@ const USB_Descriptor_Configuration_t PROGMEM ConfigurationDescriptor = {
             .Type               = HID_DTYPE_HID
         },
         .HIDSpec                = VERSION_BCD(1, 1, 1),
-        .CountryCode            = 0x00,
+        .CountryCode            = USB_HID_COUNTRY_CODE,
         .TotalReportDescriptors = 1,
         .HIDReportType          = HID_DTYPE_Report,
         .HIDReportLength        = sizeof(SharedReport)
@@ -720,7 +720,7 @@ const USB_Descriptor_Configuration_t PROGMEM ConfigurationDescriptor = {
             .Type               = HID_DTYPE_HID
         },
         .HIDSpec                = VERSION_BCD(1, 1, 1),
-        .CountryCode            = 0x00,
+        .CountryCode            = USB_HID_COUNTRY_CODE,
         .TotalReportDescriptors = 1,
         .HIDReportType          = HID_DTYPE_Report,
         .HIDReportLength        = sizeof(ConsoleReport)
@@ -1015,7 +1015,7 @@ const USB_Descriptor_Configuration_t PROGMEM ConfigurationDescriptor = {
             .Type               = HID_DTYPE_HID
         },
         .HIDSpec                = VERSION_BCD(1, 1, 1),
-        .CountryCode            = 0x00,
+        .CountryCode            = USB_HID_COUNTRY_CODE,
         .TotalReportDescriptors = 1,
         .HIDReportType          = HID_DTYPE_Report,
         .HIDReportLength        = sizeof(JoystickReport)
@@ -1055,7 +1055,7 @@ const USB_Descriptor_Configuration_t PROGMEM ConfigurationDescriptor = {
             .Type               = HID_DTYPE_HID
         },
         .HIDSpec                = VERSION_BCD(1, 1, 1),
-        .CountryCode            = 0x00,
+        .CountryCode            = USB_HID_COUNTRY_CODE,
         .TotalReportDescriptors = 1,
         .HIDReportType          = HID_DTYPE_Report,
         .HIDReportLength        = sizeof(DigitizerReport)
