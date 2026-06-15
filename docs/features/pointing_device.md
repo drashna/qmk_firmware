@@ -337,6 +337,32 @@ The following pins must be defined in `config.h`:
 
 The CPI range is 100-5000, in increments of 100. Defaults to 2000 CPI.
 
+### PMW3610 Sensor
+
+To use the PMW3610 sensor, add this to your `rules.mk`:
+
+```make
+POINTING_DEVICE_DRIVER = pmw3610
+```
+
+The following pins must be defined in `config.h`:
+
+| Setting (`config.h`)  | Description                                                        | Default                      |
+| --------------------- | ------------------------------------------------------------------ | ---------------------------- |
+| `PMW3610_SCLK_PIN`    | (Required) The pin connected to the serial clock pin of the sensor. | `POINTING_DEVICE_SCLK_PIN` |
+| `PMW3610_SDIO_PIN`    | (Required) The pin connected to the bidirectional data pin of the sensor. | `POINTING_DEVICE_SDIO_PIN` |
+| `PMW3610_CS_PIN`      | (Required) The pin connected to the chip select pin of the sensor. | `POINTING_DEVICE_CS_PIN` |
+| `PMW3610_NRESET_PIN`  | (Required) The pin connected to the sensor nRESET pin (active-low). | _not defined_ |
+
+The CPI range is 200-3200, in increments of 200. Defaults to 1600 CPI.
+
+Optional product-ID checks can be enabled with:
+
+```c
+#define PMW3610_PRODUCT_ID         0xNN
+#define PMW3610_INVERSE_PRODUCT_ID 0xNN
+```
+
 ### PMW 3360 and PMW 3389 Sensor
 
 This drivers supports both the PMW 3360 and PMW 3389 sensor as well as multiple sensors of the same type _per_ controller, so 2 can be attached at the same side for split keyboards (or unsplit keyboards).
