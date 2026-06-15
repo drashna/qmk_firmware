@@ -87,3 +87,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define DRV2605L_FB_ERM_LRA   0
 #define DRV2605L_GREETING     DRV2605L_EFFECT_750_MS_ALERT_100
 #define DRV2605L_DEFAULT_MODE DRV2605L_EFFECT_BUZZ_1_100
+
+
+#ifdef POINTING_DEVICE_DRIVER_pmw3610
+#    define POINTING_DEVICE_SCLK_PIN B14
+#    define POINTING_DEVICE_SDIO_PIN B15
+#    define PMW3610_CS_PIN           C8
+#    define PMW3610_NRESET_PIN       C9
+
+#    undef SPLIT_HAND_PIN
+#    define MASTER_RIGHT
+#endif
