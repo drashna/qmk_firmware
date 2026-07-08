@@ -29,7 +29,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // clang-format off
 
 /* HID report IDs */
-enum hid_report_ids { 
+enum hid_report_ids {
     REPORT_ID_ALL = 0,
     REPORT_ID_KEYBOARD = 1,
     REPORT_ID_MOUSE,
@@ -139,6 +139,13 @@ enum desktop_usages {
 
 // clang-format on
 
+#if defined(NKRO_BOOT_COMPAT_ENABLE) && !defined(NKRO_ENABLE)
+#    error "NKRO_BOOT_COMPAT_ENABLE requires NKRO_ENABLE"
+#endif
+#if defined(NKRO_BOOT_COMPAT_ENABLE) && defined(BLUETOOTH_ENABLE)
+#    error "NKRO_BOOT_COMPAT_ENABLE is not compatible with BLUETOOTH_ENABLE"
+#endif
+
 #define NKRO_REPORT_BITS 30
 
 #ifdef KEYBOARD_SHARED_EP
@@ -187,6 +194,17 @@ typedef struct {
     uint8_t mods;
     uint8_t bits[NKRO_REPORT_BITS];
 } PACKED report_nkro_t;
+
+#ifdef NKRO_BOOT_COMPAT_ENABLE
+/* Combined boot keyboard report + NKRO bitfield; the leading boot bytes double as
+ * Input(Constant) padding. See https://www.devever.net/~hl/usbnkro */
+typedef struct {
+    uint8_t mods;
+    uint8_t reserved;
+    uint8_t keys[KEYBOARD_REPORT_KEYS];
+    uint8_t bits[NKRO_REPORT_BITS];
+} PACKED report_keyboard_nkro_t;
+#endif
 
 typedef struct {
     uint8_t  report_id;
