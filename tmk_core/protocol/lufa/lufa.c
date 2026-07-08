@@ -79,8 +79,12 @@
 static report_keyboard_t keyboard_report_sent;
 
 /* Host driver */
+#ifdef NKRO_BOOT_COMPAT_ENABLE
+static void send_combined(report_keyboard_nkro_t *report);
+#else
 static void send_keyboard(report_keyboard_t *report);
 static void send_nkro(report_nkro_t *report);
+#endif
 static void send_mouse(report_mouse_t *report);
 static void send_extra(report_extra_t *report);
 #ifdef RAW_ENABLE
@@ -89,10 +93,14 @@ static void send_raw_hid(uint8_t *data, uint8_t length);
 
 host_driver_t lufa_driver = {
     .keyboard_leds = usb_device_state_get_leds,
+#ifdef NKRO_BOOT_COMPAT_ENABLE
+    .send_combined = send_combined,
+#else
     .send_keyboard = send_keyboard,
     .send_nkro     = send_nkro,
-    .send_mouse    = send_mouse,
-    .send_extra    = send_extra,
+#endif
+    .send_mouse = send_mouse,
+    .send_extra = send_extra,
 #ifdef RAW_ENABLE
     .send_raw_hid = send_raw_hid,
 #endif
@@ -651,6 +659,18 @@ void EVENT_USB_Device_ControlRequest(void) {
  *
  * FIXME: Needs doc
  */
+#ifdef NKRO_BOOT_COMPAT_ENABLE
+static void send_combined(report_keyboard_nkro_t *report) {
+    /* If we're in Boot Protocol, send only the 8-byte boot keyboard view */
+    if (usb_device_state_get_protocol() == USB_PROTOCOL_BOOT) {
+        send_report(KEYBOARD_IN_EPNUM, &report->mods, 8);
+    } else {
+        send_report(KEYBOARD_IN_EPNUM, report, sizeof(report_keyboard_nkro_t));
+    }
+
+    keyboard_report_sent = *(report_keyboard_t *)report;
+}
+#else
 static void send_keyboard(report_keyboard_t *report) {
     /* If we're in Boot Protocol, don't send any report ID or other funky fields */
     if (usb_device_state_get_protocol() == USB_PROTOCOL_BOOT) {
@@ -667,10 +687,11 @@ static void send_keyboard(report_keyboard_t *report) {
  * FIXME: Needs doc
  */
 static void send_nkro(report_nkro_t *report) {
-#ifdef NKRO_ENABLE
+#    ifdef NKRO_ENABLE
     send_report(SHARED_IN_EPNUM, report, sizeof(report_nkro_t));
-#endif
+#    endif
 }
+#endif
 
 /** \brief Send Mouse
  *

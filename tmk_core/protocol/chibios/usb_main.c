@@ -438,6 +438,16 @@ static bool receive_report(usb_endpoint_out_lut_t endpoint, void *report, size_t
     return usb_endpoint_out_receive(&usb_endpoints_out[endpoint], (uint8_t *)report, size, TIME_IMMEDIATE);
 }
 
+#ifdef NKRO_BOOT_COMPAT_ENABLE
+void send_combined(report_keyboard_nkro_t *report) {
+    /* If we're in Boot Protocol, send only the 8-byte boot keyboard view */
+    if (usb_device_state_get_protocol() == USB_PROTOCOL_BOOT) {
+        send_report(USB_ENDPOINT_IN_KEYBOARD, &report->mods, 8);
+    } else {
+        send_report(USB_ENDPOINT_IN_KEYBOARD, report, sizeof(report_keyboard_nkro_t));
+    }
+}
+#else
 void send_keyboard(report_keyboard_t *report) {
     /* If we're in Boot Protocol, don't send any report ID or other funky fields */
     if (usb_device_state_get_protocol() == USB_PROTOCOL_BOOT) {
@@ -448,10 +458,11 @@ void send_keyboard(report_keyboard_t *report) {
 }
 
 void send_nkro(report_nkro_t *report) {
-#ifdef NKRO_ENABLE
+#    ifdef NKRO_ENABLE
     send_report(USB_ENDPOINT_IN_SHARED, report, sizeof(report_nkro_t));
-#endif
+#    endif
 }
+#endif
 
 /* ---------------------------------------------------------
  *                     Mouse functions
