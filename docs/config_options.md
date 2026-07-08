@@ -413,6 +413,8 @@ Use these to enable or disable building certain features. The more you have enab
   * Key combo feature
 * `NKRO_ENABLE`
   * USB N-Key Rollover - if this doesn't work, see here: https://github.com/tmk/tmk_keyboard/wiki/FAQ#nkro-doesnt-work
+* `NKRO_BOOT_COMPAT_ENABLE`
+  * Adds a boot-keyboard fallback to the NKRO report for hosts that ignore the HID report descriptor (some BIOS/UEFI, KVM switches, BMC/IPMI consoles). Implies `NKRO_ENABLE`; ignores `KEYBOARD_SHARED_EP`; incompatible with `BLUETOOTH_ENABLE`. See [NKRO boot compatibility](#nkro-boot-compatibility) below.
 * `AUDIO_ENABLE`
   * Enable the audio subsystem.
 * `KEY_OVERRIDE_ENABLE`
@@ -467,6 +469,24 @@ by setting `KEYBOARD_SHARED_EP = yes`.
 This frees up one more endpoint,
 but it can prevent the keyboard working in some BIOSes,
 as they do not implement Boot Keyboard protocol switching.
+
+## NKRO boot compatibility
+
+Some hosts (certain BIOS/UEFI firmware, KVM switches, IPMI/BMC remote consoles) do not parse the HID report descriptor and assume the fixed boot keyboard report format, yet never request Boot Protocol. With standard NKRO, these hosts see no usable keyboard.
+
+Setting `NKRO_BOOT_COMPAT_ENABLE = yes` replaces the separate boot keyboard and NKRO reports with a single combined report on the keyboard's own interface. Its first 8 bytes are laid out exactly like the boot keyboard report (modifiers + a 6-key array), but declared as padding, with the NKRO bitfield following:
+
+* descriptor-aware hosts ignore the padding and use the full NKRO bitfield;
+* descriptor-ignoring hosts read the 8-byte boot view and get a working 6KRO keyboard.
+
+This is based on the technique described at <https://www.devever.net/~hl/usbnkro>.
+
+Notes:
+
+* It implies `NKRO_ENABLE` (enabled automatically).
+* The runtime NKRO toggle (e.g. `NK_TOGG`) has no effect: the host automatically uses 6KRO or full NKRO depending on its own capabilities.
+* It requires the keyboard to have its own interface, so `KEYBOARD_SHARED_EP` is ignored when it is enabled. Mouse, media keys and other HID devices continue to share their endpoint as before.
+* It is not compatible with `BLUETOOTH_ENABLE`.
 
 Combining the mouse also breaks Boot Mouse compatibility.
 The mouse can be uncombined by setting `MOUSE_SHARED_EP = no` if this functionality is required.
