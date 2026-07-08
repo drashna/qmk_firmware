@@ -295,8 +295,12 @@ void console_task(void) {
 /*------------------------------------------------------------------*
  * Host driver
  *------------------------------------------------------------------*/
+#ifdef NKRO_BOOT_COMPAT_ENABLE
+static void send_combined(report_keyboard_nkro_t *report);
+#else
 static void send_keyboard(report_keyboard_t *report);
 static void send_nkro(report_nkro_t *report);
+#endif
 static void send_mouse(report_mouse_t *report);
 static void send_extra(report_extra_t *report);
 #ifdef RAW_ENABLE
@@ -305,10 +309,14 @@ static void send_raw_hid(uint8_t *data, uint8_t length);
 
 static host_driver_t driver = {
     .keyboard_leds = usb_device_state_get_leds,
+#ifdef NKRO_BOOT_COMPAT_ENABLE
+    .send_combined = send_combined,
+#else
     .send_keyboard = send_keyboard,
     .send_nkro     = send_nkro,
-    .send_mouse    = send_mouse,
-    .send_extra    = send_extra,
+#endif
+    .send_mouse = send_mouse,
+    .send_extra = send_extra,
 #ifdef RAW_ENABLE
     .send_raw_hid = send_raw_hid,
 #endif
@@ -318,6 +326,17 @@ host_driver_t *vusb_driver(void) {
     return &driver;
 }
 
+#ifdef NKRO_BOOT_COMPAT_ENABLE
+static void send_combined(report_keyboard_nkro_t *report) {
+    if (usb_device_state_get_protocol() == USB_PROTOCOL_BOOT) {
+        send_report(1, &report->mods, 8);
+    } else {
+        send_report(1, report, sizeof(report_keyboard_nkro_t));
+    }
+
+    keyboard_report_sent = *(report_keyboard_t *)report;
+}
+#else
 static void send_keyboard(report_keyboard_t *report) {
     if (usb_device_state_get_protocol() == USB_PROTOCOL_BOOT) {
         send_report(1, &report->mods, 8);
@@ -327,6 +346,7 @@ static void send_keyboard(report_keyboard_t *report) {
 
     keyboard_report_sent = *report;
 }
+#endif
 
 #ifndef KEYBOARD_SHARED_EP
 #    define MOUSE_IN_EPNUM 3
@@ -336,11 +356,13 @@ static void send_keyboard(report_keyboard_t *report) {
 #    define SHARED_IN_EPNUM 1
 #endif
 
+#ifndef NKRO_BOOT_COMPAT_ENABLE
 static void send_nkro(report_nkro_t *report) {
-#ifdef NKRO_ENABLE
+#    ifdef NKRO_ENABLE
     send_report(3, report, sizeof(report_nkro_t));
-#endif
+#    endif
 }
+#endif
 
 static void send_mouse(report_mouse_t *report) {
 #ifdef MOUSE_ENABLE
@@ -530,6 +552,22 @@ const PROGMEM uchar keyboard_hid_report[] = {
     0x95, 0x01, //   Report Count (1)
     0x75, 0x08, //   Report Size (8)
     0x81, 0x03, //   Input (Constant)
+#ifdef NKRO_BOOT_COMPAT_ENABLE
+    // Boot keycodes (6 bytes) as padding; real keys follow as the NKRO bitfield
+    // See https://www.devever.net/~hl/usbnkro
+    0x95, 0x06, //   Report Count (6)
+    0x75, 0x08, //   Report Size (8)
+    0x81, 0x03, //   Input (Constant)
+    // NKRO bitfield
+    0x05, 0x07,                     //   Usage Page (Keyboard/Keypad)
+    0x19, 0x00,                     //   Usage Minimum (0)
+    0x29, NKRO_REPORT_BITS * 8 - 1, //   Usage Maximum
+    0x15, 0x00,                     //   Logical Minimum (0)
+    0x25, 0x01,                     //   Logical Maximum (1)
+    0x95, NKRO_REPORT_BITS * 8,     //   Report Count
+    0x75, 0x01,                     //   Report Size (1)
+    0x81, 0x02,                     //   Input (Data, Variable, Absolute)
+#else
     // Keycodes (6 bytes)
     0x05, 0x07,       //   Usage Page (Keyboard/Keypad)
     0x19, 0x00,       //   Usage Minimum (0)
@@ -539,6 +577,7 @@ const PROGMEM uchar keyboard_hid_report[] = {
     0x95, 0x06,       //   Report Count (6)
     0x75, 0x08,       //   Report Size (8)
     0x81, 0x00,       //   Input (Data, Array, Absolute)
+#endif
 
     // Status LEDs (5 bits)
     0x05, 0x08, //   Usage Page (LED)
@@ -563,7 +602,8 @@ const PROGMEM uchar shared_hid_report[] = {
 #    define SHARED_REPORT_STARTED
 #endif
 
-#ifdef NKRO_ENABLE
+// Dropped in boot-compatibility mode (folded into the keyboard report above).
+#if defined(NKRO_ENABLE) && !defined(NKRO_BOOT_COMPAT_ENABLE)
     // NKRO report descriptor
     0x05, 0x01,           // Usage Page (Generic Desktop)
     0x09, 0x06,           // Usage (Keyboard)

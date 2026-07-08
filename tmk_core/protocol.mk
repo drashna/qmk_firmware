@@ -6,13 +6,25 @@ SRC +=	\
 
 SHARED_EP_ENABLE = no
 MOUSE_SHARED_EP ?= yes
+
+# NKRO boot-compatibility depends on NKRO, and is not supported over Bluetooth.
+ifeq ($(strip $(NKRO_BOOT_COMPAT_ENABLE)), yes)
+    NKRO_ENABLE = yes
+    ifeq ($(strip $(BLUETOOTH_ENABLE)), yes)
+        $(call CATASTROPHIC_ERROR,Invalid NKRO_BOOT_COMPAT_ENABLE,NKRO_BOOT_COMPAT_ENABLE is not compatible with BLUETOOTH_ENABLE)
+    endif
+endif
+
 ifeq ($(strip $(KEYBOARD_SHARED_EP)), yes)
-    OPT_DEFS += -DKEYBOARD_SHARED_EP
-    SHARED_EP_ENABLE = yes
-    # With the current usb_descriptor.c code,
-    # you can't share kbd without sharing mouse;
-    # that would be a very unexpected use case anyway
-    MOUSE_SHARED_EP = yes
+    # NKRO boot-compatibility needs a dedicated keyboard interface, so it ignores KEYBOARD_SHARED_EP.
+    ifneq ($(strip $(NKRO_BOOT_COMPAT_ENABLE)), yes)
+        OPT_DEFS += -DKEYBOARD_SHARED_EP
+        SHARED_EP_ENABLE = yes
+        # With the current usb_descriptor.c code,
+        # you can't share kbd without sharing mouse;
+        # that would be a very unexpected use case anyway
+        MOUSE_SHARED_EP = yes
+    endif
 endif
 
 ifeq ($(strip $(MOUSE_ENABLE)), yes)
@@ -39,7 +51,10 @@ endif
 
 ifeq ($(strip $(NKRO_ENABLE)), yes)
     OPT_DEFS += -DNKRO_ENABLE
-    SHARED_EP_ENABLE = yes
+    # Boot-compatibility folds NKRO into the keyboard report, so it needs no shared endpoint.
+    ifneq ($(strip $(NKRO_BOOT_COMPAT_ENABLE)), yes)
+        SHARED_EP_ENABLE = yes
+    endif
 endif
 
 ifeq ($(strip $(NO_SUSPEND_POWER_DOWN)), yes)
