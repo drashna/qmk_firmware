@@ -90,6 +90,22 @@ const USB_Descriptor_HIDReport_Datatype_t PROGMEM KeyboardReport[] = {
         HID_RI_REPORT_COUNT(8, 0x01),
         HID_RI_REPORT_SIZE(8, 0x08),
         HID_RI_INPUT(8, HID_IOF_CONSTANT),
+#ifdef NKRO_BOOT_COMPAT_ENABLE
+        // Boot keycodes (6 bytes) as padding; real keys follow as the NKRO bitfield
+        // See https://www.devever.net/~hl/usbnkro
+        HID_RI_REPORT_COUNT(8, 0x06),
+        HID_RI_REPORT_SIZE(8, 0x08),
+        HID_RI_INPUT(8, HID_IOF_CONSTANT),
+        // NKRO bitfield
+        HID_RI_USAGE_PAGE(8, 0x07),    // Keyboard/Keypad
+        HID_RI_USAGE_MINIMUM(8, 0x00),
+        HID_RI_USAGE_MAXIMUM(8, NKRO_REPORT_BITS * 8 - 1),
+        HID_RI_LOGICAL_MINIMUM(8, 0x00),
+        HID_RI_LOGICAL_MAXIMUM(8, 0x01),
+        HID_RI_REPORT_COUNT(8, NKRO_REPORT_BITS * 8),
+        HID_RI_REPORT_SIZE(8, 0x01),
+        HID_RI_INPUT(8, HID_IOF_DATA | HID_IOF_VARIABLE | HID_IOF_ABSOLUTE),
+#else
         // Keycodes (6 bytes)
         HID_RI_USAGE_PAGE(8, 0x07),    // Keyboard/Keypad
         HID_RI_USAGE_MINIMUM(8, 0x00),
@@ -99,6 +115,7 @@ const USB_Descriptor_HIDReport_Datatype_t PROGMEM KeyboardReport[] = {
         HID_RI_REPORT_COUNT(8, 0x06),
         HID_RI_REPORT_SIZE(8, 0x08),
         HID_RI_INPUT(8, HID_IOF_DATA | HID_IOF_ARRAY | HID_IOF_ABSOLUTE),
+#endif
 
         // Status LEDs (5 bits)
         HID_RI_USAGE_PAGE(8, 0x08),    // LED
@@ -313,7 +330,8 @@ const USB_Descriptor_HIDReport_Datatype_t PROGMEM SharedReport[] = {
     HID_RI_END_COLLECTION(0),
 #endif
 
-#ifdef NKRO_ENABLE
+// Dropped in boot-compatibility mode (folded into the keyboard report above).
+#if defined(NKRO_ENABLE) && !defined(NKRO_BOOT_COMPAT_ENABLE)
     HID_RI_USAGE_PAGE(8, 0x01),        // Generic Desktop
     HID_RI_USAGE(8, 0x06),             // Keyboard
     HID_RI_COLLECTION(8, 0x01),        // Application
@@ -402,9 +420,10 @@ const USB_Descriptor_HIDReport_Datatype_t PROGMEM PloverReport[] = {
     HID_RI_END_COLLECTION(0),
 };
 
-// The Plover HID report is sent with sizeof(report_plover_hid_t), but the endpoint and descriptor
-// are sized with PLOVER_HID_EPSIZE; they must match or reports get truncated/padded.
-STATIC_ASSERT(sizeof(report_plover_hid_t) == PLOVER_HID_EPSIZE, "report_plover_hid_t size must match PLOVER_HID_EPSIZE");
+// The Plover HID report is sent with sizeof(report_plover_hid_t); PLOVER_HID_EPSIZE
+// sizes the endpoint and must be at least as large (and, like all endpoint sizes, a
+// multiple of 4 - see usb_descriptor.h).
+STATIC_ASSERT(sizeof(report_plover_hid_t) <= PLOVER_HID_EPSIZE, "report_plover_hid_t must fit within PLOVER_HID_EPSIZE");
 #endif
 
 #ifdef CONSOLE_ENABLE
