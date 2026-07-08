@@ -321,6 +321,11 @@ enum usb_endpoints {
 
 #define KEYBOARD_EPSIZE 8
 #define SHARED_EPSIZE 32
+#if defined(DIGITIZER_ENABLE) && defined(DIGITIZER_SHARED_EP)
+#    define SHARED_EPSIZE 64
+#else
+#    define SHARED_EPSIZE 32
+#endif
 #define MOUSE_EPSIZE 16
 #define RAW_EPSIZE 32
 #define PLOVER_HID_EPSIZE 9
@@ -329,7 +334,7 @@ enum usb_endpoints {
 #define CDC_NOTIFICATION_EPSIZE 8
 #define CDC_EPSIZE 16
 #define JOYSTICK_EPSIZE 8
-#define DIGITIZER_EPSIZE 8
+#define DIGITIZER_EPSIZE 64
 #define XAP_EPSIZE 64
 
-uint16_t get_usb_descriptor(const uint16_t wValue, const uint16_t wIndex, const uint16_t wLength, const void** const DescriptorAddress);
+uint16_t get_usb_descriptor(const uint16_t wValue, const uint16_t wIndex, const uint16_t wLength, const void **const DescriptorAddress);
