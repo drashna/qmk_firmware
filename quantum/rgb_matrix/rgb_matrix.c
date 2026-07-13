@@ -94,7 +94,7 @@ static last_hit_t last_hit_buffer;
 
 // split rgb matrix
 #if defined(RGB_MATRIX_SPLIT)
-const uint8_t k_rgb_matrix_split[2] = RGB_MATRIX_SPLIT;
+const led_index_t k_rgb_matrix_split[2] = RGB_MATRIX_SPLIT;
 #endif
 
 EECONFIG_DEBOUNCE_HELPER(rgb_matrix, rgb_matrix_config);
@@ -138,13 +138,13 @@ void rgb_matrix_reload_from_eeprom(void) {
     }
 }
 
-__attribute__((weak)) uint8_t rgb_matrix_map_row_column_to_led_kb(uint8_t row, uint8_t column, uint8_t *led_i) {
+__attribute__((weak)) led_index_t rgb_matrix_map_row_column_to_led_kb(uint8_t row, uint8_t column, led_index_t *led_i) {
     return 0;
 }
 
-uint8_t rgb_matrix_map_row_column_to_led(uint8_t row, uint8_t column, uint8_t *led_i) {
-    uint8_t led_count = rgb_matrix_map_row_column_to_led_kb(row, column, led_i);
-    uint8_t led_index = g_led_config.matrix_co[row][column];
+led_index_t rgb_matrix_map_row_column_to_led(uint8_t row, uint8_t column, led_index_t *led_i) {
+    led_index_t led_count = rgb_matrix_map_row_column_to_led_kb(row, column, led_i);
+    led_index_t led_index = g_led_config.matrix_co[row][column];
     if (led_index != NO_LED) {
         led_i[led_count] = led_index;
         led_count++;
@@ -200,8 +200,8 @@ void rgb_matrix_handle_key_event(uint8_t row, uint8_t col, bool pressed) {
 #endif
 
 #ifdef RGB_MATRIX_KEYREACTIVE_ENABLED
-    uint8_t led[LED_HITS_TO_REMEMBER];
-    uint8_t led_count = 0;
+    led_index_t led[LED_HITS_TO_REMEMBER];
+    led_index_t led_count = 0;
 
 #    if defined(RGB_MATRIX_KEYRELEASES)
     if (!pressed)
@@ -215,13 +215,13 @@ void rgb_matrix_handle_key_event(uint8_t row, uint8_t col, bool pressed) {
     if (last_hit_buffer.count + led_count > LED_HITS_TO_REMEMBER) {
         memmove(&last_hit_buffer.x[0], &last_hit_buffer.x[led_count], LED_HITS_TO_REMEMBER - led_count);
         memmove(&last_hit_buffer.y[0], &last_hit_buffer.y[led_count], LED_HITS_TO_REMEMBER - led_count);
-        memmove(&last_hit_buffer.tick[0], &last_hit_buffer.tick[led_count], (LED_HITS_TO_REMEMBER - led_count) * 2); // 16 bit
+        memmove(&last_hit_buffer.tick[0], &last_hit_buffer.tick[led_count], (LED_HITS_TO_REMEMBER - led_count) * 2);
         memmove(&last_hit_buffer.index[0], &last_hit_buffer.index[led_count], LED_HITS_TO_REMEMBER - led_count);
         last_hit_buffer.count = LED_HITS_TO_REMEMBER - led_count;
     }
 
-    for (uint8_t i = 0; i < led_count; i++) {
-        uint8_t index                = last_hit_buffer.count;
+    for (led_index_t i = 0; i < led_count; i++) {
+        led_index_t index            = last_hit_buffer.count;
         last_hit_buffer.x[index]     = g_led_config.point[led[i]].x;
         last_hit_buffer.y[index]     = g_led_config.point[led[i]].y;
         last_hit_buffer.index[index] = led[i];
@@ -285,8 +285,8 @@ static void rgb_task_timers(void) {
 
     // Update double buffer last hit timers
 #ifdef RGB_MATRIX_KEYREACTIVE_ENABLED
-    uint8_t count = last_hit_buffer.count;
-    for (uint8_t i = 0; i < count; ++i) {
+    led_index_t count = last_hit_buffer.count;
+    for (led_index_t i = 0; i < count; ++i) {
         if (UINT16_MAX - deltaTime < last_hit_buffer.tick[i]) {
             last_hit_buffer.count--;
             continue;
@@ -480,7 +480,7 @@ struct rgb_matrix_limits_t rgb_matrix_get_limits(uint8_t iter) {
     return limits;
 }
 
-__attribute__((weak)) bool rgb_matrix_indicators_advanced_modules(uint8_t led_min, uint8_t led_max) {
+__attribute__((weak)) bool rgb_matrix_indicators_advanced_modules(led_index_t led_min, led_index_t led_max) {
     return true;
 }
 
@@ -495,11 +495,11 @@ void rgb_matrix_indicators_advanced(effect_params_t *params) {
     rgb_matrix_indicators_advanced_kb(min, max);
 }
 
-__attribute__((weak)) bool rgb_matrix_indicators_advanced_kb(uint8_t led_min, uint8_t led_max) {
+__attribute__((weak)) bool rgb_matrix_indicators_advanced_kb(led_index_t led_min, led_index_t led_max) {
     return rgb_matrix_indicators_advanced_user(led_min, led_max);
 }
 
-__attribute__((weak)) bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
+__attribute__((weak)) bool rgb_matrix_indicators_advanced_user(led_index_t led_min, led_index_t led_max) {
     return true;
 }
 
@@ -508,12 +508,12 @@ void rgb_matrix_init(void) {
 
 #ifdef RGB_MATRIX_KEYREACTIVE_ENABLED
     g_last_hit_tracker.count = 0;
-    for (uint8_t i = 0; i < LED_HITS_TO_REMEMBER; ++i) {
+    for (led_index_t i = 0; i < LED_HITS_TO_REMEMBER; ++i) {
         g_last_hit_tracker.tick[i] = UINT16_MAX;
     }
 
     last_hit_buffer.count = 0;
-    for (uint8_t i = 0; i < LED_HITS_TO_REMEMBER; ++i) {
+    for (led_index_t i = 0; i < LED_HITS_TO_REMEMBER; ++i) {
         last_hit_buffer.tick[i] = UINT16_MAX;
     }
 #endif // RGB_MATRIX_KEYREACTIVE_ENABLED

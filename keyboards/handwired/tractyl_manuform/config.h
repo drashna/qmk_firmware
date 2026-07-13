@@ -22,3 +22,4 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define POINTING_DEVICE_TASK_THROTTLE_MS 1
 
 #define SPLIT_TRANSACTION_IDS_KB RPC_ID_KB_CONFIG_SYNC
+#    define RGB_MATRIX_LED_COUNT 464
