@@ -28,7 +28,7 @@ static bool PIXEL_FLOW(effect_params_t* params) {
 
     RGB_MATRIX_USE_LIMITS(led_min, led_max);
     // Light LEDs based on state array
-    for (uint8_t i = led_min; i < led_max; ++i) {
+    for (led_index_t i = led_min; i < led_max; ++i) {
         RGB_MATRIX_TEST_LED_FLAGS();
         rgb_matrix_set_color(i, led[i].r, led[i].g, led[i].b);
     }
