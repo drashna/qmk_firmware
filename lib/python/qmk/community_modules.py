@@ -22,7 +22,8 @@ class ModuleAPI(AttrDict):
 
 @lru_cache(maxsize=1)
 def module_api_list():
-    module_definition_files = sorted(set(QMK_FIRMWARE.glob('data/constants/module_hooks/*.hjson')))
+    # Sort by numeric (major, minor, patch) so e.g. 1.10.0 is newer than 1.2.0, not a string sort.
+    module_definition_files = sorted(set(QMK_FIRMWARE.glob('data/constants/module_hooks/*.hjson')), key=lambda f: tuple(int(part) for part in f.stem.split('.')))
     module_definition_jsons = [json_load(f) for f in module_definition_files]
     module_definitions = merge_ordered_dicts(module_definition_jsons)
     latest_module_version = module_definition_files[-1].stem

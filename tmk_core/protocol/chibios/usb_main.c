@@ -631,6 +631,27 @@ void xap_task(void) {
 }
 #endif // XAP_ENABLE
 
+#ifdef COMMUNITY_MODULE_USB_HID_ENDPOINT_TABLE
+// Send/receive/drain plumbing for module-provided HID endpoints, mirroring the Raw HID code above.
+// `<name>_receive` is weak, so a module or user code can override it; the core main loop drains `<name>_task`.
+#    define _ENTRY(lower, UPPER, usage_page, usage_id, epsize, in_cap, out_cap)                 \
+        void lower##_send(uint8_t *data, uint8_t length) {                                     \
+            if (length != epsize) {                                                            \
+                return;                                                                        \
+            }                                                                                  \
+            send_report(USB_ENDPOINT_IN_##UPPER, data, epsize);                                \
+        }                                                                                      \
+        __attribute__((weak)) void lower##_receive(uint8_t *data, uint8_t length) {}           \
+        void lower##_task(void) {                                                              \
+            uint8_t buffer[epsize];                                                            \
+            while (receive_report(USB_ENDPOINT_OUT_##UPPER, buffer, sizeof(buffer))) {         \
+                lower##_receive(buffer, sizeof(buffer));                                       \
+            }                                                                                  \
+        }
+COMMUNITY_MODULE_USB_HID_ENDPOINT_TABLE(_ENTRY)
+#    undef _ENTRY
+#endif
+
 #ifdef MIDI_ENABLE
 
 void send_midi_packet(MIDI_EventPacket_t *event) {
