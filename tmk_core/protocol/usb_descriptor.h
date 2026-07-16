@@ -52,6 +52,14 @@
 #    endif
 #endif
 
+// Community-module-provided USB HID endpoints. When a module declares a `usb.hid_endpoints` block,
+// the rules generator sets COMMUNITY_MODULES_HAVE_USB_HID_ENDPOINTS and generates this header with
+// the COMMUNITY_MODULE_USB_HID_ENDPOINT_TABLE X-macro, which the core USB code expands at each weave
+// site below.
+#if defined(COMMUNITY_MODULES_HAVE_USB_HID_ENDPOINTS)
+#    include "community_modules_usb.h"
+#endif
+
 /*
  * USB descriptor structure
  */
@@ -159,6 +167,16 @@ typedef struct {
     USB_Descriptor_Endpoint_t  Xap_INEndpoint;
     USB_Descriptor_Endpoint_t  Xap_OUTEndpoint;
 #endif
+#ifdef COMMUNITY_MODULE_USB_HID_ENDPOINT_TABLE
+    // Community module HID interfaces (interface + HID + IN/OUT endpoints), appended last.
+#    define _ENTRY(lower, UPPER, usage_page, usage_id, epsize, in_cap, out_cap) \
+        USB_Descriptor_Interface_t UPPER##_Interface;                          \
+        USB_HID_Descriptor_HID_t   UPPER##_HID;                                \
+        USB_Descriptor_Endpoint_t  UPPER##_INEndpoint;                         \
+        USB_Descriptor_Endpoint_t  UPPER##_OUTEndpoint;
+    COMMUNITY_MODULE_USB_HID_ENDPOINT_TABLE(_ENTRY)
+#    undef _ENTRY
+#endif
 } USB_Descriptor_Configuration_t;
 
 /*
@@ -215,6 +233,13 @@ enum usb_interfaces {
 
 #ifdef XAP_ENABLE
     XAP_INTERFACE,
+#endif
+// Community module HID interfaces append last, so they preserve the fixed interface numbers
+// (notably Raw HID at interface 1) that host-side tooling depends on.
+#ifdef COMMUNITY_MODULE_USB_HID_ENDPOINT_TABLE
+#    define _ENTRY(lower, UPPER, usage_page, usage_id, epsize, in_cap, out_cap) UPPER##_INTERFACE,
+    COMMUNITY_MODULE_USB_HID_ENDPOINT_TABLE(_ENTRY)
+#    undef _ENTRY
 #endif
     TOTAL_INTERFACES
 };
@@ -305,6 +330,15 @@ enum usb_endpoints {
     XAP_OUT_EPNUM = NEXT_EPNUM,
 #    endif
 #endif
+// Community module HID endpoints get distinct IN and OUT endpoint numbers (no shared-EP
+// optimization). NEXT_EPNUM continues across the rows, and the MAX_ENDPOINTS check below counts them.
+#ifdef COMMUNITY_MODULE_USB_HID_ENDPOINT_TABLE
+#    define _ENTRY(lower, UPPER, usage_page, usage_id, epsize, in_cap, out_cap) \
+        UPPER##_IN_EPNUM  = NEXT_EPNUM,                                         \
+        UPPER##_OUT_EPNUM = NEXT_EPNUM,
+    COMMUNITY_MODULE_USB_HID_ENDPOINT_TABLE(_ENTRY)
+#    undef _ENTRY
+#endif
 };
 
 #ifdef PROTOCOL_LUFA
@@ -316,7 +350,7 @@ enum usb_endpoints {
 #endif
 
 #if (NEXT_EPNUM - 1) > MAX_ENDPOINTS
-#    error There are not enough available endpoints to support all functions. Please disable one or more of the following: Mouse Keys, Extra Keys, Console, NKRO, MIDI, Serial, Steno, XAP
+#    error There are not enough available endpoints to support all functions. Please disable one or more of the following: Mouse Keys, Extra Keys, Console, NKRO, MIDI, Serial, Steno, XAP, Community Module USB HID Endpoints
 #endif
 
 // Endpoint sizes must be a multiple of 4: the ChibiOS block queue stores a size_t
