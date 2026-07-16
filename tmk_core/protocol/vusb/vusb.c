@@ -33,6 +33,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "usb_descriptor_common.h"
 #include "usb_device_state.h"
 
+#if defined(COMMUNITY_MODULES_HAVE_USB_HID_ENDPOINTS)
+#    error "Community module USB HID endpoints are not supported on the V-USB stack: it exposes only the usbSetInterrupt / usbSetInterrupt3 / usbSetInterrupt4 interrupt IN endpoints, all already used by core features. Supported stacks: ChibiOS, LUFA."
+#endif
+
 #ifdef RAW_ENABLE
 #    include "raw_hid.h"
 #endif
