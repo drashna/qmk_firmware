@@ -16,6 +16,14 @@
 
 #include "keyboard.h"
 
+// A module may contribute USB HID endpoints. When one does, this generated header provides the
+// COMMUNITY_MODULE_USB_HID_ENDPOINT_TABLE that the loop below uses to drain each module OUT
+// endpoint, so the author need not pump it. Stacks that cannot host these endpoints (V-USB) reject
+// the build centrally, so this needs no per-stack guard.
+#if defined(COMMUNITY_MODULES_HAVE_USB_HID_ENDPOINTS)
+#    include "community_modules_usb.h"
+#endif
+
 void platform_setup(void);
 
 void protocol_setup(void);
@@ -53,6 +61,13 @@ int main(void) {
 #ifdef RAW_ENABLE
         void raw_hid_task(void);
         raw_hid_task();
+#endif
+
+#ifdef COMMUNITY_MODULE_USB_HID_ENDPOINT_TABLE
+        // Drain each community-module-provided HID OUT endpoint.
+#    define _ENTRY(lower, UPPER, usage_page, usage_id, epsize, in_cap, out_cap) lower##_task();
+        COMMUNITY_MODULE_USB_HID_ENDPOINT_TABLE(_ENTRY)
+#    undef _ENTRY
 #endif
 
 #ifdef PLOVER_HID_ENABLE

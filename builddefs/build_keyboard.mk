@@ -212,6 +212,11 @@ $(INTERMEDIATE_OUTPUT)/src/community_modules_introspection.h: $(KEYMAP_JSON) $(D
 	$(eval CMD=$(QMK_BIN) generate-community-modules-introspection-h -kb $(KEYBOARD) --quiet --output $(INTERMEDIATE_OUTPUT)/src/community_modules_introspection.h $(KEYMAP_JSON))
 	@$(BUILD_CMD)
 
+$(INTERMEDIATE_OUTPUT)/src/community_modules_usb.h: $(KEYMAP_JSON) $(DD_CONFIG_FILES)
+	@$(SILENT) || printf "$(MSG_GENERATING) $@" | $(AWK_CMD)
+	$(eval CMD=$(QMK_BIN) generate-community-modules-usb-h -kb $(KEYBOARD) --quiet --output $(INTERMEDIATE_OUTPUT)/src/community_modules_usb.h $(KEYMAP_JSON))
+	@$(BUILD_CMD)
+
 $(INTERMEDIATE_OUTPUT)/src/led_matrix_community_modules.inc: $(KEYMAP_JSON) $(DD_CONFIG_FILES)
 	@$(SILENT) || printf "$(MSG_GENERATING) $@" | $(AWK_CMD)
 	$(eval CMD=$(QMK_BIN) generate-led-matrix-community-modules-inc -kb $(KEYBOARD) --quiet --output $(INTERMEDIATE_OUTPUT)/src/led_matrix_community_modules.inc $(KEYMAP_JSON))
@@ -230,7 +235,16 @@ $(INTERMEDIATE_OUTPUT)/src/split_transaction_id_community_modules.inc: $(KEYMAP_
 COMMUNITY_POST_CONFIG_H = $(INTERMEDIATE_OUTPUT)/src/community_post_config.h
 SRC += $(INTERMEDIATE_OUTPUT)/src/community_modules.c
 
-generated-files: $(INTERMEDIATE_OUTPUT)/src/community_post_config.h $(INTERMEDIATE_OUTPUT)/src/community_modules.h $(INTERMEDIATE_OUTPUT)/src/community_modules.c $(INTERMEDIATE_OUTPUT)/src/community_modules_introspection.c $(INTERMEDIATE_OUTPUT)/src/community_modules_introspection.h $(INTERMEDIATE_OUTPUT)/src/led_matrix_community_modules.inc $(INTERMEDIATE_OUTPUT)/src/rgb_matrix_community_modules.inc $(INTERMEDIATE_OUTPUT)/src/split_transaction_id_community_modules.inc
+generated-files: \
+	$(INTERMEDIATE_OUTPUT)/src/community_post_config.h \
+	$(INTERMEDIATE_OUTPUT)/src/community_modules.h \
+	$(INTERMEDIATE_OUTPUT)/src/community_modules.c \
+	$(INTERMEDIATE_OUTPUT)/src/community_modules_introspection.c \
+	$(INTERMEDIATE_OUTPUT)/src/community_modules_introspection.h \
+	$(INTERMEDIATE_OUTPUT)/src/community_modules_usb.h \
+	$(INTERMEDIATE_OUTPUT)/src/led_matrix_community_modules.inc \
+	$(INTERMEDIATE_OUTPUT)/src/rgb_matrix_community_modules.inc \
+	$(INTERMEDIATE_OUTPUT)/src/split_transaction_id_community_modules.inc
 
 endif
 
