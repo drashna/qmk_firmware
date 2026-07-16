@@ -165,6 +165,10 @@ def _generate_modules_rules_from_list(modules):
                 lines.append('')
                 lines.append(f'# Module: {module_json["module_name"]}')
                 lines.extend(_generate_features_rules(module_json['features']))
+
+        if _usb_hid_endpoints(module_jsons):
+            lines.append('')
+            lines.append('OPT_DEFS += -DCOMMUNITY_MODULES_HAVE_USB_HID_ENDPOINTS=TRUE')
     return lines
 
 
@@ -579,6 +583,138 @@ def generate_split_transaction_id_community_modules_inc(cli):
             f'#ifdef SPLIT_TRANSACTION_IDS_MODULE_{Path(module).name.upper()}',
             f'    SPLIT_TRANSACTION_IDS_MODULE_{Path(module).name.upper()},',
             '#endif',
+        ])
+
+    dump_lines(cli.args.output, lines, cli.args.quiet, remove_repeated_newlines=True)
+
+
+def _usb_hid_endpoints(module_jsons):
+    """Return every USB HID endpoint declared by a module, in deterministic order.
+
+    The order is deterministic (module load order, then declaration order), which keeps the interface
+    numbers, endpoint numbers and the parallel endpoint arrays woven into the core coherent. Endpoint
+    names must be unique across all modules (they become C identifiers); a collision raises here.
+    """
+    endpoints = []
+    seen = {}
+    for module_json in module_jsons:
+        usb = module_json.get('usb', None)
+        if not usb:
+            continue
+        module_slug = Path(module_json['module']).name
+        for endpoint in usb.get('hid_endpoints', []):
+            name = endpoint['name']
+            if name in seen:
+                raise ValueError(f"Duplicate USB HID endpoint name '{name}' declared by community modules '{seen[name]}' and '{module_slug}'; endpoint names must be unique across all modules in a build.")
+            seen[name] = module_slug
+            endpoints.append(endpoint)
+    return endpoints
+
+
+@cli.argument('-o', '--output', arg_only=True, type=qmk.path.normpath, help='File to write to')
+@cli.argument('-q', '--quiet', arg_only=True, action='store_true', help="Quiet mode, only output error messages")
+@cli.argument('-kb', '--keyboard', arg_only=True, type=keyboard_folder, completer=keyboard_completer, help='Keyboard to generate community_modules_usb.h for.')
+@cli.argument('filename', nargs='?', type=qmk.path.FileType('r'), arg_only=True, completer=FilesCompleter('.json'), help='Configurator JSON file')
+@cli.subcommand('Creates a community_modules_usb.h from a keymap.json file.')
+def generate_community_modules_usb_h(cli):
+    """Creates a community_modules_usb.h from a keymap.json file.
+
+    Community modules cannot inject enum members, struct fields or array slots into the core USB
+    descriptor/endpoint aggregates directly. Instead it emits a single X-macro table,
+    ``COMMUNITY_MODULE_USB_HID_ENDPOINT_TABLE``, that the core USB code (descriptor, endpoints
+    and main) expands at each weave site with a site-specific ``_ENTRY`` definition.
+
+    Each ``_ENTRY`` row is ``(lower_name, UPPER_NAME, usage_page, usage_id, epsize, in_capacity,
+    out_capacity)``. The ChibiOS and LUFA stacks consume the table (they share the core descriptor
+    layer); the body is guarded with ``COMMUNITY_MODULES_HAVE_USB_HID_ENDPOINTS``. V-USB cannot host
+    these endpoints and rejects the build via its own guard on the same define.
+    """
+    if cli.args.output and cli.args.output.name == '-':
+        cli.args.output = None
+
+    modules = get_modules(cli.args.keyboard, cli.args.filename)
+    module_jsons = load_module_jsons(modules)
+    endpoints = _usb_hid_endpoints(module_jsons)
+
+    lines = [
+        GPL2_HEADER_C_LIKE,
+        GENERATED_HEADER_C_LIKE,
+        '#pragma once',
+    ]
+
+    if endpoints:
+        # The body is keyed off COMMUNITY_MODULES_HAVE_USB_HID_ENDPOINTS (set by the rules generator
+        # whenever any module declares endpoints) rather than the USB stack. Stack restriction happens
+        # naturally: only the ChibiOS and LUFA stacks compile the weave sites that expand the table,
+        # and V-USB rejects the build via its own guard on the same define.
+        lines.extend([
+            '',
+            '#if defined(COMMUNITY_MODULES_HAVE_USB_HID_ENDPOINTS)',
+            '',
+            '#include <stdint.h>',
+            '',
+            '#include "compiler_support.h"',
+            '',
+        ])
+
+        # Validate each declaration at compile time so it holds even when schema validation is
+        # skipped: a vendor-defined report descriptor requires a vendor-defined usage page
+        # (0xFF00-0xFFFF); the usage id is emitted as an 8-bit HID item, so it must fit in one byte;
+        # and the report size feeds an 8-bit HID_RI_REPORT_COUNT and the endpoint packet size.
+        for endpoint in endpoints:
+            name = endpoint['name']
+            report_size = endpoint.get('report_size', 32)
+            lines.append(f'STATIC_ASSERT(({endpoint["usage_page"]} & 0xFF00) == 0xFF00, "{name}: usb.hid_endpoints usage_page must be vendor-defined (0xFF00-0xFFFF)");')
+            lines.append(f'STATIC_ASSERT(({endpoint["usage_id"]}) <= 0xFF, "{name}: usb.hid_endpoints usage_id must fit in one byte (0x00-0xFF)");')
+            lines.append(f'STATIC_ASSERT(1 <= ({report_size}) && ({report_size}) <= 64, "{name}: usb.hid_endpoints report_size must be between 1 and 64");')
+        lines.append('')
+
+        # Endpoint size is a plain #define, since a macro expansion cannot emit one; the core weave
+        # sites reference it by name. The ChibiOS-only ring-buffer capacities follow
+        # the same overridable-default convention as the core endpoints (e.g. RAW_IN_CAPACITY), so
+        # they can be tuned from a keymap's config.h if needed.
+        for endpoint in endpoints:
+            upper = endpoint['name'].upper()
+            lines.extend([
+                f"#define {upper}_EPSIZE {endpoint.get('report_size', 32)}",
+                f'#ifndef {upper}_IN_CAPACITY',
+                f'#    define {upper}_IN_CAPACITY USB_DEFAULT_BUFFER_CAPACITY',
+                '#endif',
+                f'#ifndef {upper}_OUT_CAPACITY',
+                f'#    define {upper}_OUT_CAPACITY USB_DEFAULT_BUFFER_CAPACITY',
+                '#endif',
+            ])
+        lines.append('')
+
+        # The X-macro table itself. One row per declared endpoint, in deterministic order.
+        entries = []
+        for endpoint in endpoints:
+            name = endpoint['name']
+            upper = name.upper()
+            entries.append(f"    _ENTRY({name}, {upper}, {endpoint['usage_page']}, {endpoint['usage_id']}, {upper}_EPSIZE, {upper}_IN_CAPACITY, {upper}_OUT_CAPACITY)")
+        lines.append('#define COMMUNITY_MODULE_USB_HID_ENDPOINT_TABLE(_ENTRY) \\')
+        lines.append(' \\\n'.join(entries))
+        lines.append('')
+
+        # Feature-facing prototypes. The table generates their definitions into the USB stack code
+        # (usb_main.c on ChibiOS, lufa.c on LUFA).
+        lines.append('#ifdef __cplusplus')
+        lines.append('extern "C" {')
+        lines.append('#endif')
+        for endpoint in endpoints:
+            name = endpoint['name']
+            lines.extend([
+                f'void {name}_send(uint8_t *data, uint8_t length);',
+                f'void {name}_receive(uint8_t *data, uint8_t length);',
+                f'void {name}_task(void);',
+            ])
+        lines.append('#ifdef __cplusplus')
+        lines.append('}')
+        lines.append('#endif')
+
+        lines.extend([
+            '',
+            '#endif  // defined(COMMUNITY_MODULES_HAVE_USB_HID_ENDPOINTS)',
         ])
 
     dump_lines(cli.args.output, lines, cli.args.quiet, remove_repeated_newlines=True)
