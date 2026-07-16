@@ -112,6 +112,13 @@ usb_endpoint_in_t usb_endpoints_in[USB_ENDPOINT_IN_COUNT] = {
 #    endif
     [USB_ENDPOINT_IN_CDC_SIGNALING] = QMK_USB_ENDPOINT_IN(USB_EP_MODE_TYPE_INTR, CDC_NOTIFICATION_EPSIZE, CDC_NOTIFICATION_EPNUM, CDC_SIGNALING_DUMMY_CAPACITY, NULL, NULL),
 #endif
+
+#ifdef COMMUNITY_MODULE_USB_HID_ENDPOINT_TABLE
+#    define _ENTRY(lower, UPPER, usage_page, usage_id, epsize, in_cap, out_cap) \
+        [USB_ENDPOINT_IN_##UPPER] = QMK_USB_ENDPOINT_IN(USB_EP_MODE_TYPE_INTR, epsize, UPPER##_IN_EPNUM, in_cap, NULL, QMK_USB_REPORT_STORAGE_DEFAULT(epsize)),
+    COMMUNITY_MODULE_USB_HID_ENDPOINT_TABLE(_ENTRY)
+#    undef _ENTRY
+#endif
 };
 
 usb_endpoint_in_lut_t usb_endpoint_interface_lut[TOTAL_INTERFACES] = {
@@ -159,6 +166,12 @@ usb_endpoint_in_lut_t usb_endpoint_interface_lut[TOTAL_INTERFACES] = {
 #if defined(DIGITIZER_ENABLE) && !defined(DIGITIZER_SHARED_EP)
     [DIGITIZER_INTERFACE] = USB_ENDPOINT_IN_DIGITIZER,
 #endif
+
+#ifdef COMMUNITY_MODULE_USB_HID_ENDPOINT_TABLE
+#    define _ENTRY(lower, UPPER, usage_page, usage_id, epsize, in_cap, out_cap) [UPPER##_INTERFACE] = USB_ENDPOINT_IN_##UPPER,
+    COMMUNITY_MODULE_USB_HID_ENDPOINT_TABLE(_ENTRY)
+#    undef _ENTRY
+#endif
 };
 
 usb_endpoint_out_t usb_endpoints_out[USB_ENDPOINT_OUT_COUNT] = {
@@ -176,5 +189,12 @@ usb_endpoint_out_t usb_endpoints_out[USB_ENDPOINT_OUT_COUNT] = {
 
 #if defined(VIRTSER_ENABLE)
     [USB_ENDPOINT_OUT_CDC_DATA] = QMK_USB_ENDPOINT_OUT(USB_EP_MODE_TYPE_BULK, CDC_EPSIZE, CDC_OUT_EPNUM, CDC_OUT_CAPACITY),
+#endif
+
+#ifdef COMMUNITY_MODULE_USB_HID_ENDPOINT_TABLE
+#    define _ENTRY(lower, UPPER, usage_page, usage_id, epsize, in_cap, out_cap) \
+        [USB_ENDPOINT_OUT_##UPPER] = QMK_USB_ENDPOINT_OUT(USB_EP_MODE_TYPE_INTR, epsize, UPPER##_OUT_EPNUM, out_cap),
+    COMMUNITY_MODULE_USB_HID_ENDPOINT_TABLE(_ENTRY)
+#    undef _ENTRY
 #endif
 };
