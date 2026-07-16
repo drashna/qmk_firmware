@@ -156,6 +156,49 @@ When configured, the following APIs are available:
 | `eeconfig_read_<module>_datablock_field`   | `eeconfig_read_hello_world_datablock_field`   | `1.1.3`     |
 | `eeconfig_update_<module>_datablock_field` | `eeconfig_update_hello_world_datablock_field` | `1.1.3`     |
 
+#### USB HID Endpoints
+
+A module may add its own vendor-defined HID interface -- structurally a clone of [Raw HID](rawhid), on its own usage page and usage id -- by declaring a `usb.hid_endpoints` array in `qmk_module.json`. The build then includes the interface, its IN/OUT endpoints and report descriptor into the core USB descriptor and endpoint tables; no core changes are required by the module author.
+
+```json
+{
+    "module_name": "Custom HID",
+    "maintainer": "QMK Maintainers",
+    "usb": {
+        "hid_endpoints": [
+            {
+                "name": "custom_hid",
+                "usage_page": "0xFF54",
+                "usage_id": "0x63",
+                "report_size": 32
+            }
+        ]
+    }
+}
+```
+
+| Field         | Required | Description                                                                                                                                                        |
+|---------------|----------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `name`        | yes      | Lower-case C identifier; used to derive the generated symbols below.                                                                                               |
+| `usage_page`  | yes      | Vendor-defined usage page; must be in the range `0xFF00`-`0xFFFF`, e.g. `"0xFF54"`. Should differ from other HID interfaces on the device (Raw HID uses `0xFF60`). |
+| `usage_id`    | yes      | Usage id within the page; a single byte, `0x00`-`0xFF`, e.g. `"0x63"`.                                                                                             |
+| `report_size` | no       | Endpoint / report size in bytes (default `32`).                                                                                                                    |
+
+For each declared endpoint, the following APIs are generated (using `name` above):
+
+| API Format       | Example (`custom_hid`) | Description                                                                                 | API Version |
+|------------------|------------------------|---------------------------------------------------------------------------------------------|-------------|
+| `<name>_send`    | `custom_hid_send`      | Send a `report_size`-byte report to the host on the IN endpoint.                            | `1.2.0`     |
+| `<name>_receive` | `custom_hid_receive`   | Weak callback invoked with each report received from the host; implement it in your module (or user code). | `1.2.0`     |
+
+Each endpoint claims a distinct IN and OUT endpoint number (two physical endpoints), with no shared-endpoint optimisation, so on endpoint-constrained MCUs it may exhaust the available endpoints -- the "not enough available endpoints" build error lists Community Module USB HID Endpoints among the features to disable.
+
+::: warning
+**V-USB** is not supported; it exposes at most three interrupt IN endpoints (all used by core features) and cannot host an additional HID interface; declaring `usb.hid_endpoints` for a V-USB target fails the build with an error.
+:::
+
+The `qmk/custom_hid` module bundled with QMK is a complete, minimal example.
+
 ### Compatible APIs
 
 Community Modules may provide specializations for the following APIs:

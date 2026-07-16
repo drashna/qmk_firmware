@@ -13,6 +13,26 @@
             "format": "uri"
         },
         "keycodes": {"$ref": "./definitions.jsonschema#/keycode_decl_array"},
-        "features": {"$ref": "./keyboard.jsonschema#/definitions/features_config"}
+        "features": {"$ref": "./keyboard.jsonschema#/definitions/features_config"},
+        "usb": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "hid_endpoints": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": ["name", "usage_page", "usage_id"],
+                        "properties": {
+                            "name": {"$ref": "./definitions.jsonschema#/snake_case", "description": "Used verbatim as a C identifier for the generated symbols; must be a valid lower-case identifier and unique across all modules in a build."},
+                            "usage_page": {"type": "string", "pattern": "^0x[0-9A-Fa-f]{1,4}$", "description": "Must be a vendor-defined usage page (0xFF00-0xFFFF); enforced at compile time via STATIC_ASSERT."},
+                            "usage_id": {"type": "string", "pattern": "^0x[0-9A-Fa-f]{1,2}$", "description": "Single-byte usage id (0x00-0xFF), emitted as an 8-bit HID usage item."},
+                            "report_size": {"type": "integer", "minimum": 1, "maximum": 64}
+                        }
+                    }
+                }
+            }
+        }
     }
 }
