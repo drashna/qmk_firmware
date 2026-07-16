@@ -578,6 +578,32 @@ const USB_Descriptor_HIDReport_Datatype_t PROGMEM XapReport[] = {
     HID_RI_END_COLLECTION(0),
 };
 #endif //  XAP_ENABLE
+#ifdef COMMUNITY_MODULE_USB_HID_ENDPOINT_TABLE
+// One vendor-defined HID report descriptor per community-module endpoint. Mirrors the Raw HID
+// report shape (a to-host input array and a from-host output array), parameterized on the
+// module's own usage page / usage id / report size.
+#    define _ENTRY(lower, UPPER, usage_page, usage_id, epsize, in_cap, out_cap)                          \
+        const USB_Descriptor_HIDReport_Datatype_t PROGMEM UPPER##Report[] = {                            \
+            HID_RI_USAGE_PAGE(16, usage_page),                                                           \
+            HID_RI_USAGE(8, usage_id),                                                                   \
+            HID_RI_COLLECTION(8, 0x01),                                                                  \
+                HID_RI_USAGE(8, 0x62),                                                                   \
+                HID_RI_LOGICAL_MINIMUM(8, 0x00),                                                         \
+                HID_RI_LOGICAL_MAXIMUM(16, 0x00FF),                                                      \
+                HID_RI_REPORT_COUNT(8, epsize),                                                          \
+                HID_RI_REPORT_SIZE(8, 0x08),                                                             \
+                HID_RI_INPUT(8, HID_IOF_DATA | HID_IOF_VARIABLE | HID_IOF_ABSOLUTE),                     \
+                HID_RI_USAGE(8, 0x63),                                                                   \
+                HID_RI_LOGICAL_MINIMUM(8, 0x00),                                                         \
+                HID_RI_LOGICAL_MAXIMUM(16, 0x00FF),                                                      \
+                HID_RI_REPORT_COUNT(8, epsize),                                                          \
+                HID_RI_REPORT_SIZE(8, 0x08),                                                             \
+                HID_RI_OUTPUT(8, HID_IOF_DATA | HID_IOF_VARIABLE | HID_IOF_ABSOLUTE | HID_IOF_NON_VOLATILE), \
+            HID_RI_END_COLLECTION(0),                                                                    \
+        };
+COMMUNITY_MODULE_USB_HID_ENDPOINT_TABLE(_ENTRY)
+#    undef _ENTRY
+#endif
 
 /*
  * Device descriptor
@@ -1277,6 +1303,33 @@ const USB_Descriptor_Configuration_t PROGMEM ConfigurationDescriptor = {
         .PollingIntervalMS      = 0x01
     },
 #endif
+#ifdef COMMUNITY_MODULE_USB_HID_ENDPOINT_TABLE
+    // Community module HID interface descriptors (non-boot vendor HID, IN + OUT interrupt EPs).
+#    define _ENTRY(lower, UPPER, usage_page, usage_id, epsize, in_cap, out_cap)               \
+        .UPPER##_Interface = {                                                                \
+            .Header = {.Size = sizeof(USB_Descriptor_Interface_t), .Type = DTYPE_Interface},  \
+            .InterfaceNumber = UPPER##_INTERFACE, .AlternateSetting = 0x00,                   \
+            .TotalEndpoints = 2, .Class = HID_CSCP_HIDClass,                                  \
+            .SubClass = HID_CSCP_NonBootSubclass, .Protocol = HID_CSCP_NonBootProtocol,       \
+            .InterfaceStrIndex = NO_DESCRIPTOR},                                              \
+        .UPPER##_HID = {                                                                      \
+            .Header = {.Size = sizeof(USB_HID_Descriptor_HID_t), .Type = HID_DTYPE_HID},      \
+            .HIDSpec = VERSION_BCD(1, 1, 1), .CountryCode = 0x00,                             \
+            .TotalReportDescriptors = 1, .HIDReportType = HID_DTYPE_Report,                   \
+            .HIDReportLength = sizeof(UPPER##Report)},                                        \
+        .UPPER##_INEndpoint = {                                                               \
+            .Header = {.Size = sizeof(USB_Descriptor_Endpoint_t), .Type = DTYPE_Endpoint},    \
+            .EndpointAddress = (ENDPOINT_DIR_IN | UPPER##_IN_EPNUM),                          \
+            .Attributes = (EP_TYPE_INTERRUPT | ENDPOINT_ATTR_NO_SYNC | ENDPOINT_USAGE_DATA),  \
+            .EndpointSize = epsize, .PollingIntervalMS = 0x01},                               \
+        .UPPER##_OUTEndpoint = {                                                              \
+            .Header = {.Size = sizeof(USB_Descriptor_Endpoint_t), .Type = DTYPE_Endpoint},    \
+            .EndpointAddress = (ENDPOINT_DIR_OUT | UPPER##_OUT_EPNUM),                        \
+            .Attributes = (EP_TYPE_INTERRUPT | ENDPOINT_ATTR_NO_SYNC | ENDPOINT_USAGE_DATA),  \
+            .EndpointSize = epsize, .PollingIntervalMS = 0x01},
+    COMMUNITY_MODULE_USB_HID_ENDPOINT_TABLE(_ENTRY)
+#    undef _ENTRY
+#endif
 };
 
 /*
@@ -1498,6 +1551,15 @@ uint16_t get_usb_descriptor(const uint16_t wValue, const uint16_t wIndex, const 
 
                     break;
 #endif
+#ifdef COMMUNITY_MODULE_USB_HID_ENDPOINT_TABLE
+#    define _ENTRY(lower, UPPER, usage_page, usage_id, epsize, in_cap, out_cap) \
+        case UPPER##_INTERFACE:                                                 \
+            Address = &ConfigurationDescriptor.UPPER##_HID;                     \
+            Size    = sizeof(USB_HID_Descriptor_HID_t);                         \
+            break;
+                COMMUNITY_MODULE_USB_HID_ENDPOINT_TABLE(_ENTRY)
+#    undef _ENTRY
+#endif
             }
 
             break;
@@ -1569,6 +1631,15 @@ uint16_t get_usb_descriptor(const uint16_t wValue, const uint16_t wIndex, const 
                     Size    = sizeof(XapReport);
 
                     break;
+#endif
+#ifdef COMMUNITY_MODULE_USB_HID_ENDPOINT_TABLE
+#    define _ENTRY(lower, UPPER, usage_page, usage_id, epsize, in_cap, out_cap) \
+        case UPPER##_INTERFACE:                                                 \
+            Address = &UPPER##Report;                                          \
+            Size    = sizeof(UPPER##Report);                                    \
+            break;
+                COMMUNITY_MODULE_USB_HID_ENDPOINT_TABLE(_ENTRY)
+#    undef _ENTRY
 #endif
             }
 
