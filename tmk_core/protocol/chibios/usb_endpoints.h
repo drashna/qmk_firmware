@@ -118,6 +118,12 @@ typedef enum {
     USB_ENDPOINT_IN_CDC_DATA,
     USB_ENDPOINT_IN_CDC_SIGNALING,
 #endif
+
+#ifdef COMMUNITY_MODULE_USB_HID_ENDPOINT_TABLE
+#    define _ENTRY(lower, UPPER, usage_page, usage_id, epsize, in_cap, out_cap) USB_ENDPOINT_IN_##UPPER,
+    COMMUNITY_MODULE_USB_HID_ENDPOINT_TABLE(_ENTRY)
+#    undef _ENTRY
+#endif
     USB_ENDPOINT_IN_COUNT,
 /* All non shared endpoints have to be consequtive numbers starting from 0, so
  * that they can be used as array indices. The shared endpoints all point to
@@ -155,6 +161,12 @@ typedef enum {
 #endif
 #if defined(VIRTSER_ENABLE)
     USB_ENDPOINT_OUT_CDC_DATA,
+#endif
+
+#ifdef COMMUNITY_MODULE_USB_HID_ENDPOINT_TABLE
+#    define _ENTRY(lower, UPPER, usage_page, usage_id, epsize, in_cap, out_cap) USB_ENDPOINT_OUT_##UPPER,
+    COMMUNITY_MODULE_USB_HID_ENDPOINT_TABLE(_ENTRY)
+#    undef _ENTRY
 #endif
     USB_ENDPOINT_OUT_COUNT,
 } usb_endpoint_out_lut_t;

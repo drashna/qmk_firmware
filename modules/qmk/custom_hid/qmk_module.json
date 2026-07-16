@@ -1,0 +1,15 @@
+{
+    "module_name": "Custom HID",
+    "maintainer": "QMK Maintainers",
+    "license": "GPL-2.0-or-later",
+    "usb": {
+        "hid_endpoints": [
+            {
+                "name": "custom_hid",
+                "usage_page": "0xFF54",
+                "usage_id": "0x63",
+                "report_size": 32
+            }
+        ]
+    }
+}
