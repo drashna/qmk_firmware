@@ -58,6 +58,11 @@ ifeq ($(strip $(EXTRAKEY_ENABLE)), yes)
     SHARED_EP_ENABLE = yes
 endif
 
+ifeq ($(strip $(XINPUT_ENABLE)), yes)
+    OPT_DEFS += -DXINPUT_ENABLE
+    SHARED_EP_ENABLE = yes
+endif
+
 ifeq ($(strip $(PROGRAMMABLE_BUTTON_ENABLE)), yes)
     OPT_DEFS += -DPROGRAMMABLE_BUTTON_ENABLE
     SHARED_EP_ENABLE = yes
