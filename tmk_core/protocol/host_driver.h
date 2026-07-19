@@ -33,12 +33,17 @@ typedef struct {
 #endif
     void (*send_mouse)(report_mouse_t *);
     void (*send_extra)(report_extra_t *);
+#ifdef JOYSTICK_ENABLE
+   void (*send_joystick)(report_joystick_t *);
+#endif
+#ifdef XINPUT_ENABLE
+   void (*send_xinput)(report_xinput_t *);
+#endif
 #ifdef RAW_ENABLE
     void (*send_raw_hid)(uint8_t *, uint8_t);
 #endif
 } host_driver_t;
 
-void send_joystick(report_joystick_t *report);
 void send_digitizer(report_digitizer_t *report);
 void send_digitizer_stylus(report_digitizer_stylus_t *report);
 void send_programmable_button(report_programmable_button_t *report);
