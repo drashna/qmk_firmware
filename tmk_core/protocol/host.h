@@ -52,7 +52,12 @@ void host_consumer_send(uint16_t usage);
 void host_programmable_button_send(uint32_t data);
 void host_plover_hid_send(report_plover_hid_t *report);
 void host_raw_hid_send(uint8_t *data, uint8_t length);
-
+#ifdef JOYSTICK_ENABLE
+void host_joystick_send(joystick_t *joystick);
+#endif
+#ifdef XINPUT_ENABLE
+void host_xinput_send(report_xinput_t *xinput);
+#endif
 uint16_t host_last_system_usage(void);
 uint16_t host_last_consumer_usage(void);
 

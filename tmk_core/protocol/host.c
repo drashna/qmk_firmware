@@ -321,11 +321,11 @@ void host_joystick_send(joystick_t *joystick) {
 #    endif
     };
 
-    send_joystick(&report);
+    //send_joystick(&report);
+    memcpy(report.buttons, joystick->buttons, (JOYSTICK_BUTTON_COUNT - 1) / 8 + 1);
+    (*driver->send_joystick)(&report);
 }
 #endif
-
-__attribute__((weak)) void send_joystick(report_joystick_t *report) {}
 
 #ifdef DIGITIZER_ENABLE
 void host_digitizer_send(report_digitizer_t *report) {
@@ -378,3 +378,25 @@ uint16_t host_last_system_usage(void) {
 uint16_t host_last_consumer_usage(void) {
     return last_consumer_usage;
 }
+
+#ifdef XINPUT_ENABLE
+void host_xinput_send(report_xinput_t *xinput) {
+    if (!driver) return;
+
+    static report_xinput_t report = {
+        .report_type = 0,
+        .len = 0x14,
+        .buttons = 0,
+        .left_trigger = 0,
+        .right_trigger = 0,
+        .x = 0,
+        .y = 0,
+        .rx = 0,
+        .ry = 0,
+        .reserved = {0}
+    };
+
+    memcpy(&report.buttons, &xinput->buttons, 12);
+    (*driver->send_xinput)(&report);
+}
+#endif
