@@ -73,6 +73,14 @@
 
 #define CDC_SIGNALING_DUMMY_CAPACITY 1
 
+#if !defined(XINPUT_IN_CAPACITY)
+#    define XINPUT_IN_CAPACITY USB_DEFAULT_BUFFER_CAPACITY
+#endif
+
+#if !defined(XINPUT_OUT_CAPACITY)
+#    define XINPUT_OUT_CAPACITY USB_DEFAULT_BUFFER_CAPACITY
+#endif
+
 typedef enum {
 #if defined(SHARED_EP_ENABLE)
     USB_ENDPOINT_IN_SHARED,
@@ -119,6 +127,10 @@ typedef enum {
     USB_ENDPOINT_IN_CDC_SIGNALING,
 #endif
 
+#if defined(XINPUT_ENABLE)
+    USB_ENDPOINT_IN_XINPUT,
+#endif
+
 #ifdef COMMUNITY_MODULE_USB_HID_ENDPOINT_TABLE
 #    define _ENTRY(lower, UPPER, usage_page, usage_id, epsize, in_cap, out_cap) USB_ENDPOINT_IN_##UPPER,
     COMMUNITY_MODULE_USB_HID_ENDPOINT_TABLE(_ENTRY)
@@ -162,7 +174,9 @@ typedef enum {
 #if defined(VIRTSER_ENABLE)
     USB_ENDPOINT_OUT_CDC_DATA,
 #endif
-
+#if defined(XINPUT_ENABLE)
+    USB_ENDPOINT_OUT_XINPUT,
+#endif
 #ifdef COMMUNITY_MODULE_USB_HID_ENDPOINT_TABLE
 #    define _ENTRY(lower, UPPER, usage_page, usage_id, epsize, in_cap, out_cap) USB_ENDPOINT_OUT_##UPPER,
     COMMUNITY_MODULE_USB_HID_ENDPOINT_TABLE(_ENTRY)
