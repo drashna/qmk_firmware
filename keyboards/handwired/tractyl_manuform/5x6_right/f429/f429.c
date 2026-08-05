@@ -21,12 +21,12 @@ bool check_user_button_state(void) {
     return false;
 }
 
-void early_hardware_init_post(void) {
-    // D-  white
-    palSetLineMode(B14, PAL_MODE_ALTERNATE(12) | PAL_STM32_OTYPE_PUSHPULL | PAL_STM32_OSPEED_HIGHEST | PAL_STM32_PUPDR_FLOATING);
-    // D+  blue
-    palSetLineMode(B15, PAL_MODE_ALTERNATE(12) | PAL_STM32_OTYPE_PUSHPULL | PAL_STM32_OSPEED_HIGHEST | PAL_STM32_PUPDR_FLOATING);
-}
+// void early_hardware_init_post(void) {
+//     // D-  white
+//     palSetLineMode(B14, PAL_MODE_ALTERNATE(12) | PAL_STM32_OTYPE_PUSHPULL | PAL_STM32_OSPEED_HIGHEST | PAL_STM32_PUPDR_FLOATING);
+//     // D+  blue
+//     palSetLineMode(B15, PAL_MODE_ALTERNATE(12) | PAL_STM32_OTYPE_PUSHPULL | PAL_STM32_OSPEED_HIGHEST | PAL_STM32_PUPDR_FLOATING);
+// }
 
 #if HAL_USE_FSMC == TRUE
 #    if HAL_USE_SDRAM == TRUE
@@ -115,43 +115,6 @@ void early_hardware_init_post(void) {
 
 #        include "hal.h"
 
-/*
- * SDRAM driver configuration structure.
- */
-static const SDRAMConfig sdram_cfg = {
-    // clang-format off
-    .sdcr = (uint32_t)(FMC_ColumnBits_Number_9b |
-                       FMC_RowBits_Number_13b |
-                       FMC_SDMemory_Width_16b |
-                       FMC_InternalBank_Number_4 |
-                       FMC_CAS_Latency_3 |
-                       FMC_Write_Protection_Disable |
-                       FMC_SDClock_Period_2 |
-                       FMC_Read_Burst_Disable |
-                       FMC_ReadPipe_Delay_1),
-    // clang-format on
-    .sdtr = (uint32_t)((2 - 1) |     // TMRD: 2 cycles (tMRD >= 2 tCK)
-                       ((7) << 4) |  // TXSR: 8 cycles (95.2ns >= tXSR=72ns @ 84MHz/11.905ns)
-                       ((4) << 8) |  // TRAS: 5 cycles (59.5ns >= tRAS=42ns @ 84MHz)
-                       ((7) << 12) | // TRC:  8 cycles (95.2ns >= tRC=60ns @ 84MHz)
-                       ((2) << 16) | // TWR:  3 cycles (>= 2 tCK)
-                       ((2) << 20) | // TRP:  3 cycles (35.7ns >= tRP=15ns @ 84MHz)
-                       ((2) << 24)), // TRCD: 3 cycles (35.7ns >= tRCD=15ns @ 84MHz)
-                                     // clang-format off
-    .sdcmr = (uint32_t)(((4 - 1) << 5) |
-                      ((FMC_SDCMR_MRD_BURST_LENGTH_2 |
-                        FMC_SDCMR_MRD_BURST_TYPE_SEQUENTIAL |
-                        FMC_SDCMR_MRD_CAS_LATENCY_3 |
-                        FMC_SDCMR_MRD_OPERATING_MODE_STANDARD |
-                        FMC_SDCMR_MRD_WRITEBURST_MODE_SINGLE) << 9)),
-                                     // clang-format on
-    /* STM32_SYSCLK = 168MHz, FMC_SDClock_Period_2 -> SDCLK = 84MHz
-       W9825G6KH has 8192 rows (8K refresh cycles / 64ms)
-       64ms / 8192 = 7.8125us
-       7.8125us * 84MHz = 656.25 - 20 = 636 */
-    .sdrtr = (uint32_t)(636 << 1),
-};
-
 /* SDRAM size, in bytes.*/
 #        define W9825G6KH_6_SIZE (32 * 1024 * 1024)
 
@@ -209,9 +172,6 @@ static void sdram_bulk_erase(void) {
 #        define FMC_SDRAM_NBL0_PIN E0
 #        define FMC_SDRAM_NBL1_PIN E1
 
-const pin_t fmc_sdram_pin_array[] = {
-    FMC_SDRAM_D0_PIN, FMC_SDRAM_D1_PIN, FMC_SDRAM_D2_PIN, FMC_SDRAM_D3_PIN, FMC_SDRAM_D4_PIN, FMC_SDRAM_D5_PIN, FMC_SDRAM_D6_PIN, FMC_SDRAM_D7_PIN, FMC_SDRAM_D8_PIN, FMC_SDRAM_D9_PIN, FMC_SDRAM_D10_PIN, FMC_SDRAM_D11_PIN, FMC_SDRAM_D12_PIN, FMC_SDRAM_D13_PIN, FMC_SDRAM_D14_PIN, FMC_SDRAM_D15_PIN, FMC_SDRAM_A0_PIN, FMC_SDRAM_A1_PIN, FMC_SDRAM_A2_PIN, FMC_SDRAM_A3_PIN, FMC_SDRAM_A4_PIN, FMC_SDRAM_A5_PIN, FMC_SDRAM_A6_PIN, FMC_SDRAM_A7_PIN, FMC_SDRAM_A8_PIN, FMC_SDRAM_A9_PIN, FMC_SDRAM_A10_PIN, FMC_SDRAM_A11_PIN, FMC_SDRAM_A12_PIN, FMC_SDRAM_BA0_PIN, FMC_SDRAM_BA1_PIN, FMC_SDRAM_SDNRAS_PIN, FMC_SDRAM_SDCLK_PIN, FMC_SDRAM_SDNCAS_PIN, FMC_SDRAM_SDNWE_PIN, FMC_SDRAM_SDNE1_PIN, FMC_SDRAM_SDCKE1_PIN, FMC_SDRAM_NBL0_PIN, FMC_SDRAM_NBL1_PIN,
-};
 #    endif // HAL_USE_SDRAM == TRUE
 
 #    if HAL_USE_NAND == TRUE
@@ -247,11 +207,6 @@ const pin_t fmc_sdram_pin_array[] = {
 #        define NAND_ROW_WRITE_CYCLES 3 /* 3 row address cycles (24 bits) */
 #        define NAND_COL_WRITE_CYCLES 2 /* 2 column address cycles (16 bits) */
 
-/*
- * NAND driver configuration structure.
- */
-static const NANDConfig nand_cfg = {.dies = NAND_DIES_COUNT, .loguns = NAND_LOGUNS_COUNT, .planes = NAND_PLANES_COUNT, .blocks = NAND_BLOCKS_COUNT, .page_data_size = NAND_PAGE_DATA_SIZE, .page_spare_size = NAND_PAGE_SPARE_SIZE, .pages_per_block = NAND_PAGES_PER_BLOCK, .rowcycles = NAND_ROW_WRITE_CYCLES, .colcycles = NAND_COL_WRITE_CYCLES, .pmem = ((FSMCNAND_TIME_HIZ << 24) | (FSMCNAND_TIME_HOLD << 16) | (FSMCNAND_TIME_WAIT << 8) | FSMCNAND_TIME_SET)};
-
 /* NAND data pins (shared with SDRAM) */
 #        define FMC_NAND_D0_PIN D14
 #        define FMC_NAND_D1_PIN D15
@@ -278,44 +233,104 @@ static const NANDConfig nand_cfg = {.dies = NAND_DIES_COUNT, .loguns = NAND_LOGU
 #        define FMC_NAND_CLE_PIN D11   /* Command Latch Enable */
 #        define FMC_NAND_ALE_PIN D12   /* Address Latch Enable */
 
-const pin_t fmc_nand_pin_array[] = {
-    FMC_NAND_D0_PIN, FMC_NAND_D1_PIN, FMC_NAND_D2_PIN, FMC_NAND_D3_PIN, FMC_NAND_D4_PIN, FMC_NAND_D5_PIN, FMC_NAND_D6_PIN, FMC_NAND_D7_PIN, FMC_NAND_D8_PIN, FMC_NAND_D9_PIN, FMC_NAND_D10_PIN, FMC_NAND_D11_PIN, FMC_NAND_D12_PIN, FMC_NAND_D13_PIN, FMC_NAND_D14_PIN, FMC_NAND_D15_PIN, FMC_NAND_NCE_PIN, FMC_NAND_NRE_PIN, FMC_NAND_NWE_PIN, FMC_NAND_NWAIT_PIN, FMC_NAND_CLE_PIN, FMC_NAND_ALE_PIN,
-};
 #    endif // HAL_USE_NAND == TRUE
 
 void board_init(void) {
-
 // init FSMC pins first, since the FSMC peripherals share pins. Make sure all of the pins are initialized before starting any of the peripherals.
-#if HAL_USE_SDRAM == TRUE
-    for (uint8_t i = 0; i < ARRAY_SIZE(fmc_sdram_pin_array); i++) {
-        palSetLineMode(fmc_sdram_pin_array[i], (PAL_MODE_ALTERNATE(12) | PAL_STM32_OTYPE_PUSHPULL | PAL_STM32_OSPEED_HIGHEST | PAL_STM32_PUPDR_FLOATING));
-    }
+#    if HAL_USE_SDRAM == TRUE
+    // const pin_t fmc_sdram_pin_array[] = {
+    //     FMC_SDRAM_D0_PIN, FMC_SDRAM_D1_PIN, FMC_SDRAM_D2_PIN, FMC_SDRAM_D3_PIN, FMC_SDRAM_D4_PIN, FMC_SDRAM_D5_PIN, FMC_SDRAM_D6_PIN, FMC_SDRAM_D7_PIN, FMC_SDRAM_D8_PIN, FMC_SDRAM_D9_PIN, FMC_SDRAM_D10_PIN, FMC_SDRAM_D11_PIN, FMC_SDRAM_D12_PIN, FMC_SDRAM_D13_PIN, FMC_SDRAM_D14_PIN, FMC_SDRAM_D15_PIN, FMC_SDRAM_A0_PIN, FMC_SDRAM_A1_PIN, FMC_SDRAM_A2_PIN, FMC_SDRAM_A3_PIN, FMC_SDRAM_A4_PIN, FMC_SDRAM_A5_PIN, FMC_SDRAM_A6_PIN, FMC_SDRAM_A7_PIN, FMC_SDRAM_A8_PIN, FMC_SDRAM_A9_PIN, FMC_SDRAM_A10_PIN, FMC_SDRAM_A11_PIN, FMC_SDRAM_A12_PIN, FMC_SDRAM_BA0_PIN, FMC_SDRAM_BA1_PIN, FMC_SDRAM_SDNRAS_PIN, FMC_SDRAM_SDCLK_PIN, FMC_SDRAM_SDNCAS_PIN, FMC_SDRAM_SDNWE_PIN, FMC_SDRAM_SDNE1_PIN, FMC_SDRAM_SDCKE1_PIN, FMC_SDRAM_NBL0_PIN, FMC_SDRAM_NBL1_PIN,
+    // };
+
+    // for (uint8_t i = 0; i < ARRAY_SIZE(fmc_sdram_pin_array) - 4; i++) {
+    //      palSetLineMode(fmc_sdram_pin_array[i], (PAL_MODE_ALTERNATE(12) | PAL_STM32_OTYPE_PUSHPULL | PAL_STM32_OSPEED_HIGHEST | PAL_STM32_PUPDR_FLOATING));
+    // }
+
     xprintf("SDRAM Init: Pins\n");
-#endif // HAL_USE_SDRAM == TRUE
-#if HAL_USE_NAND == TRUE
-    for (uint8_t i = 0; i < ARRAY_SIZE(fmc_nand_pin_array); i++) {
-        palSetLineMode(fmc_nand_pin_array[i], (PAL_MODE_ALTERNATE(12) | PAL_STM32_OTYPE_OPENDRAIN | PAL_STM32_OSPEED_HIGHEST | PAL_STM32_PUPDR_FLOATING));
-    }
+#    endif // HAL_USE_SDRAM == TRUE
+#    if HAL_USE_NAND == TRUE
+    // const pin_t fmc_nand_pin_array[] = {
+    //     FMC_NAND_D0_PIN, FMC_NAND_D1_PIN, FMC_NAND_D2_PIN, FMC_NAND_D3_PIN, FMC_NAND_D4_PIN, FMC_NAND_D5_PIN, FMC_NAND_D6_PIN, FMC_NAND_D7_PIN, FMC_NAND_D8_PIN, FMC_NAND_D9_PIN, FMC_NAND_D10_PIN, FMC_NAND_D11_PIN, FMC_NAND_D12_PIN, FMC_NAND_D13_PIN, FMC_NAND_D14_PIN, FMC_NAND_D15_PIN, FMC_NAND_NCE_PIN, FMC_NAND_NRE_PIN, FMC_NAND_NWE_PIN, FMC_NAND_NWAIT_PIN, FMC_NAND_CLE_PIN, FMC_NAND_ALE_PIN,
+    // };
+    // for (uint8_t i = 0; i < ARRAY_SIZE(fmc_nand_pin_array); i++) {
+    //     palSetLineMode(fmc_nand_pin_array[i], (PAL_MODE_ALTERNATE(12) | PAL_STM32_OTYPE_OPENDRAIN | PAL_STM32_OSPEED_HIGHEST | PAL_STM32_PUPDR_FLOATING));
+    // }
     xprintf("NAND Init: Pins\n");
-#endif // HAL_USE_NAND == TRUE
+#    endif // HAL_USE_NAND == TRUE
 
-// now that pins are initialized, we can start the peripherals
+    // now that pins are initialized, we can start the peripherals
 
-#if HAL_USE_SDRAM == TRUE
+#    if HAL_USE_SDRAM == TRUE
+
+    /*
+     * SDRAM driver configuration structure.
+     */
+    const SDRAMConfig sdram_cfg = {
+        // clang-format off
+        .sdcr = (uint32_t)(FMC_ColumnBits_Number_9b |
+                        FMC_RowBits_Number_13b |
+                        FMC_SDMemory_Width_16b |
+                        FMC_InternalBank_Number_4 |
+                        FMC_CAS_Latency_3 |
+                        FMC_Write_Protection_Disable |
+                        FMC_SDClock_Period_2 |
+                        FMC_Read_Burst_Disable |
+                        FMC_ReadPipe_Delay_1),
+        // clang-format on
+        .sdtr = (uint32_t)((2 - 1) |     // TMRD: 2 cycles (tMRD >= 2 tCK)
+                           ((7) << 4) |  // TXSR: 8 cycles (95.2ns >= tXSR=72ns @ 84MHz/11.905ns)
+                           ((4) << 8) |  // TRAS: 5 cycles (59.5ns >= tRAS=42ns @ 84MHz)
+                           ((7) << 12) | // TRC:  8 cycles (95.2ns >= tRC=60ns @ 84MHz)
+                           ((2) << 16) | // TWR:  3 cycles (>= 2 tCK)
+                           ((2) << 20) | // TRP:  3 cycles (35.7ns >= tRP=15ns @ 84MHz)
+                           ((2) << 24)), // TRCD: 3 cycles (35.7ns >= tRCD=15ns @ 84MHz)
+                                         // clang-format off
+        .sdcmr = (uint32_t)(((4 - 1) << 5) |
+                        ((FMC_SDCMR_MRD_BURST_LENGTH_2 |
+                            FMC_SDCMR_MRD_BURST_TYPE_SEQUENTIAL |
+                            FMC_SDCMR_MRD_CAS_LATENCY_3 |
+                            FMC_SDCMR_MRD_OPERATING_MODE_STANDARD |
+                            FMC_SDCMR_MRD_WRITEBURST_MODE_SINGLE) << 9)),
+                                         // clang-format on
+        /* STM32_SYSCLK = 168MHz, FMC_SDClock_Period_2 -> SDCLK = 84MHz
+        W9825G6KH has 8192 rows (8K refresh cycles / 64ms)
+        64ms / 8192 = 7.8125us
+        7.8125us * 84MHz = 656.25 - 20 = 636 */
+        .sdrtr = (uint32_t)(636 << 1),
+        // clang-format on
+    };
+
     sdramInit();
     sdramStart(&SDRAMD1, &sdram_cfg);
     xprintf("SDRAM Init: Device\n");
     xprintf("SDRAM Init: Full Erase Start\n");
     sdram_bulk_erase();
     xprintf("SDRAM Init: Full Erase Finish\n");
-#endif // HAL_USE_SDRAM == TRUE
+#    endif // HAL_USE_SDRAM == TRUE
 
-#if HAL_USE_NAND == TRUE
+#    if HAL_USE_NAND == TRUE
+
+    /*
+     * NAND driver configuration structure.
+     */
+    const NANDConfig nand_cfg = {
+        .dies            = NAND_DIES_COUNT,
+        .loguns          = NAND_LOGUNS_COUNT,
+        .planes          = NAND_PLANES_COUNT,
+        .blocks          = NAND_BLOCKS_COUNT,
+        .page_data_size  = NAND_PAGE_DATA_SIZE,
+        .page_spare_size = NAND_PAGE_SPARE_SIZE,
+        .pages_per_block = NAND_PAGES_PER_BLOCK,
+        .rowcycles       = NAND_ROW_WRITE_CYCLES,
+        .colcycles       = NAND_COL_WRITE_CYCLES,
+        .pmem            = ((FSMCNAND_TIME_HIZ << 24) | (FSMCNAND_TIME_HOLD << 16) | (FSMCNAND_TIME_WAIT << 8) | FSMCNAND_TIME_SET),
+    };
+
     nandInit();
     nandStart(&NANDD1, &nand_cfg, NULL);
     xprintf("NAND Init: Device\n");
     // we need a lot more here before nand is working. Including keeping track of bad blocks (or reading at each startup. )
-#endif // HAL_USE_NAND == TRUE
+#    endif // HAL_USE_NAND == TRUE
 }
 
 #endif
