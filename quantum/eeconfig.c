@@ -43,15 +43,9 @@
 #    include "community_modules.h"
 #endif
 
-#ifdef VIA_ENABLE
-bool via_eeprom_is_valid(void);
-void via_eeprom_set_valid(bool valid);
-void eeconfig_init_via(void);
-#else
 bool dynamic_keymap_is_valid(void);
 void dynamic_keymap_reset(void);
 void dynamic_keymap_macro_reset(void);
-#endif // VIA_ENABLE
 
 #ifndef NKRO_DEFAULT_ON
 #    define NKRO_DEFAULT_ON false
@@ -159,12 +153,8 @@ void eeconfig_init_quantum(void) {
     eeconfig_init_modules_datablock();
 #endif // COMMUNITY_MODULES_ENABLE
 
-#if defined(VIA_ENABLE)
-    // Invalidate VIA eeprom config, and then reset.
-    // Just in case if power is lost mid init, this makes sure that it gets
-    // properly re-initialized.
-    eeconfig_init_via();
-#elif defined(DYNAMIC_KEYMAP_ENABLE)
+#if defined(DYNAMIC_KEYMAP_ENABLE)
+    void dynamic_keymap_reset(void);
     dynamic_keymap_reset();
     dynamic_keymap_macro_reset();
 #endif
@@ -195,11 +185,7 @@ void eeconfig_disable(void) {
 
 bool eeconfig_is_enabled(void) {
     bool is_eeprom_enabled = nvm_eeconfig_is_enabled();
-#if defined(VIA_ENABLE)
-    if (is_eeprom_enabled) {
-        is_eeprom_enabled = via_eeprom_is_valid();
-    }
-#elif defined(DYNAMIC_KEYMAP_ENABLE)
+#if defined(DYNAMIC_KEYMAP_ENABLE)
     if (is_eeprom_enabled) {
         is_eeprom_enabled = dynamic_keymap_is_valid();
     }
@@ -209,11 +195,7 @@ bool eeconfig_is_enabled(void) {
 
 bool eeconfig_is_disabled(void) {
     bool is_eeprom_disabled = nvm_eeconfig_is_disabled();
-#if defined(VIA_ENABLE)
-    if (!is_eeprom_disabled) {
-        is_eeprom_disabled = !via_eeprom_is_valid();
-    }
-#elif defined(DYNAMIC_KEYMAP_ENABLE)
+#if defined(DYNAMIC_KEYMAP_ENABLE)
     if (!is_eeprom_disabled) {
         is_eeprom_disabled = !dynamic_keymap_is_valid();
     }
