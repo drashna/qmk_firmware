@@ -697,16 +697,6 @@ ifeq ($(strip $(LED_TABLES)), yes)
     SRC += $(QUANTUM_DIR)/led_tables.c
 endif
 
-ifeq ($(strip $(VIA_ENABLE)), yes)
-    DYNAMIC_KEYMAP_ENABLE := yes
-    RAW_ENABLE := yes
-    BOOTMAGIC_ENABLE := yes
-    TRI_LAYER_ENABLE := yes
-    ifeq ($(strip $(VIA_INSECURE)), yes)
-        OPT_DEFS += -DVIA_INSECURE
-    endif
-endif
-
 ifeq ($(strip $(XAP_ENABLE)), yes)
     ifeq ($(strip $(VIA_ENABLE)), yes)
         $(error 'XAP_ENABLE = $(XAP_ENABLE)' deprecates 'VIA_ENABLE = $(VIA_ENABLE)'. Please set 'VIA_ENABLE = no')
