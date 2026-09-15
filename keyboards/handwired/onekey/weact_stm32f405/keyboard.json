@@ -1,0 +1,9 @@
+{
+    "keyboard_name": "Onekey WeAct STM32F405",
+    "processor": "STM32F405",
+    "bootloader": "tinyuf2",
+    "matrix_pins": {
+        "cols": ["A1"],
+        "rows": ["A2"]
+    }
+}
