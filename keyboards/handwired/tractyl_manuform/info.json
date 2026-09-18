@@ -2,6 +2,12 @@
     "manufacturer": "QMK Community",
     "maintainer": "Drashna Jael're",
     "usb": {
+        "extended_attributes": {
+            "form_factor": "full_size",
+            "key_travel": "full",
+            "layout": "0x56",
+            "locale": "en-US"
+        },
         "vid": "0x44DD",
         "shared_endpoint": {
             "keyboard": true,
