@@ -243,7 +243,7 @@ void touch_encoder_update_slave(slave_touch_status_t slave_state) {
     }
 }
 
-void touch_encoder_update(int8_t transaction_id) {
+void touch_encoder_update(split_transaction_id_t transaction_id) {
 #if TOUCH_UPDATE_INTERVAL > 0
     if (!timer_expired(timer_read(), touch_update_timer)) return;
     touch_update_timer = timer_read() + TOUCH_UPDATE_INTERVAL;

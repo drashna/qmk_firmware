@@ -11,6 +11,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include "transaction_id_define.h"
 
 #ifndef TOUCH_TERM
 #    define TOUCH_TERM 350
@@ -31,7 +32,7 @@
 #endif
 
 void touch_encoder_init(void);
-void touch_encoder_update(int8_t transaction_id);
+void touch_encoder_update(split_transaction_id_t transaction_id);
 
 void touch_encoder_calibrate(void);
 bool touch_encoder_is_calibrating(void);

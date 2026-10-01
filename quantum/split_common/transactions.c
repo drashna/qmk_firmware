@@ -141,7 +141,7 @@ static bool transaction_handler_master(matrix_row_t master_matrix[], matrix_row_
         split_shared_memory_unlock();                         \
     } while (0)
 
-inline static bool read_if_checksum_mismatch(int8_t trans_id_checksum, int8_t trans_id_retrieve, uint32_t *last_update, void *destination, const void *equiv_shmem, size_t length) {
+inline static bool read_if_checksum_mismatch(split_transaction_id_t trans_id_checksum, split_transaction_id_t trans_id_retrieve, uint32_t *last_update, void *destination, const void *equiv_shmem, size_t length) {
     uint8_t curr_checksum;
     bool    okay = transport_read(trans_id_checksum, &curr_checksum, sizeof(curr_checksum));
     if (okay && (timer_elapsed32(*last_update) >= FORCED_SYNC_THROTTLE_MS || curr_checksum != crc8(equiv_shmem, length))) {
@@ -156,7 +156,7 @@ inline static bool read_if_checksum_mismatch(int8_t trans_id_checksum, int8_t tr
     return okay;
 }
 
-inline static bool send_if_condition(int8_t trans_id, uint32_t *last_update, bool condition, void *source, size_t length) {
+inline static bool send_if_condition(split_transaction_id_t trans_id, uint32_t *last_update, bool condition, void *source, size_t length) {
     bool okay = true;
     if (timer_elapsed32(*last_update) >= FORCED_SYNC_THROTTLE_MS || condition) {
         okay &= transport_write(trans_id, source, length);
@@ -167,7 +167,7 @@ inline static bool send_if_condition(int8_t trans_id, uint32_t *last_update, boo
     return okay;
 }
 
-inline static bool send_if_data_mismatch(int8_t trans_id, uint32_t *last_update, void *source, const void *equiv_shmem, size_t length) {
+inline static bool send_if_data_mismatch(split_transaction_id_t trans_id, uint32_t *last_update, void *source, const void *equiv_shmem, size_t length) {
     // Just run a memcmp to compare the source and equivalent shmem location
     return send_if_condition(trans_id, last_update, (memcmp(source, equiv_shmem, length) != 0), source, length);
 }
@@ -998,9 +998,9 @@ void transactions_slave(matrix_row_t master_matrix[], matrix_row_t slave_matrix[
 
 #if defined(SPLIT_TRANSACTION_RPC)
 
-void transaction_register_rpc(int8_t transaction_id, slave_callback_t callback) {
+void transaction_register_rpc(split_transaction_id_t transaction_id, slave_callback_t callback) {
     // Prevent invoking RPC on QMK core sync data
-    if (transaction_id <= GET_RPC_RESP_DATA) return;
+    if (transaction_id <= GET_RPC_RESP_DATA || transaction_id >= NUM_TOTAL_TRANSACTIONS) return;
 
     // Set the callback
     split_transaction_table[transaction_id].slave_callback          = callback;
@@ -1008,19 +1008,19 @@ void transaction_register_rpc(int8_t transaction_id, slave_callback_t callback) 
     split_transaction_table[transaction_id].target2initiator_offset = offsetof(split_shared_memory_t, rpc_s2m_buffer);
 }
 
-bool transaction_rpc_exec(int8_t transaction_id, uint8_t initiator2target_buffer_size, const void *initiator2target_buffer, uint8_t target2initiator_buffer_size, void *target2initiator_buffer) {
+bool transaction_rpc_exec(split_transaction_id_t transaction_id, uint8_t initiator2target_buffer_size, const void *initiator2target_buffer, uint8_t target2initiator_buffer_size, void *target2initiator_buffer) {
     // Prevent transaction attempts while transport is disconnected
     if (!is_transport_connected()) {
         return false;
     }
     // Prevent invoking RPC on QMK core sync data
-    if (transaction_id <= GET_RPC_RESP_DATA) return false;
+    if (transaction_id <= GET_RPC_RESP_DATA || transaction_id >= NUM_TOTAL_TRANSACTIONS) return false;
     // Prevent sizing issues
     if (initiator2target_buffer_size > RPC_M2S_BUFFER_SIZE) return false;
     if (target2initiator_buffer_size > RPC_S2M_BUFFER_SIZE) return false;
 
     // Prepare the metadata block
-    rpc_sync_info_t info = {.payload = {.transaction_id = transaction_id, .m2s_length = initiator2target_buffer_size, .s2m_length = target2initiator_buffer_size}};
+    rpc_sync_info_t info = {.payload = {.transaction_id = (split_transaction_wire_id_t)transaction_id, .m2s_length = initiator2target_buffer_size, .s2m_length = target2initiator_buffer_size}};
     info.checksum        = crc8(&info.payload, sizeof(info.payload));
 
     // Make sure the local side knows that we're not sending the full block of data
@@ -1038,7 +1038,8 @@ bool transaction_rpc_exec(int8_t transaction_id, uint8_t initiator2target_buffer
     if (!transport_write(PUT_RPC_REQ_DATA, initiator2target_buffer, initiator2target_buffer_size)) {
         return false;
     }
-    if (!transport_write(EXECUTE_RPC, &transaction_id, sizeof(transaction_id))) {
+    split_transaction_wire_id_t wire_transaction_id = (split_transaction_wire_id_t)transaction_id;
+    if (!transport_write(EXECUTE_RPC, &wire_transaction_id, sizeof(wire_transaction_id))) {
         return false;
     }
     if (!transport_read(GET_RPC_RESP_DATA, target2initiator_buffer, target2initiator_buffer_size)) {
@@ -1064,7 +1065,7 @@ void slave_rpc_exec_callback(uint8_t initiator2target_buffer_size, const void *i
         return;
     }
 
-    int8_t transaction_id = split_shmem->rpc_info.payload.transaction_id;
+    split_transaction_id_t transaction_id = split_shmem->rpc_info.payload.transaction_id;
     if (transaction_id < NUM_TOTAL_TRANSACTIONS) {
         split_transaction_desc_t *trans = &split_transaction_table[transaction_id];
         if (trans->slave_callback) {

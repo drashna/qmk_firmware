@@ -6,6 +6,10 @@
 #include "gpio.h"
 #include "wait.h"
 #include "synchronization_util.h"
+#include "transaction_id_define.h"
+#if defined(SPLIT_WIDE_TRANSACTION_IDS)
+#    include "split_txn_header.h"
+#endif
 
 #include <hal.h>
 
@@ -162,10 +166,28 @@ void interrupt_handler(void *arg) {
     serial_delay_blip();
 
     uint8_t checksum_computed = 0;
-    int     sstd_index        = 0;
 
-    sstd_index = serial_read_byte();
+#if defined(SPLIT_WIDE_TRANSACTION_IDS)
+    uint8_t header_bytes[2];
+    header_bytes[0] = serial_read_byte();
     sync_send();
+    header_bytes[1] = serial_read_byte();
+    sync_send();
+
+    split_transaction_id_t sstd_index;
+    if (!split_txn_header_decode(header_bytes, &sstd_index)) {
+        chSysUnlockFromISR();
+        return;
+    }
+#else
+    split_transaction_id_t sstd_index = serial_read_byte();
+    sync_send();
+
+    if (sstd_index >= NUM_TOTAL_TRANSACTIONS) {
+        chSysUnlockFromISR();
+        return;
+    }
+#endif
 
     split_transaction_desc_t *trans = &split_transaction_table[sstd_index];
     for (int i = 0; i < trans->initiator2target_buffer_size; ++i) {
@@ -208,8 +230,8 @@ void interrupt_handler(void *arg) {
     chSysUnlockFromISR();
 }
 
-static inline bool initiate_transaction(uint8_t sstd_index) {
-    if (sstd_index > NUM_TOTAL_TRANSACTIONS) return false;
+static inline bool initiate_transaction(split_transaction_id_t sstd_index) {
+    if (sstd_index >= NUM_TOTAL_TRANSACTIONS) return false;
 
     split_shared_memory_lock_autounlock();
 
@@ -242,8 +264,17 @@ static inline bool initiate_transaction(uint8_t sstd_index) {
     // if the slave is present synchronize with it
     uint8_t checksum = 0;
     // send data to the slave
+#if defined(SPLIT_WIDE_TRANSACTION_IDS)
+    uint8_t header_bytes[2];
+    split_txn_header_encode(sstd_index, header_bytes);
+    serial_write_byte(header_bytes[0]); // first chunk is transaction id, high byte
+    sync_recv();
+    serial_write_byte(header_bytes[1]); // transaction id, low byte
+    sync_recv();
+#else
     serial_write_byte(sstd_index); // first chunk is transaction id
     sync_recv();
+#endif
 
     for (int i = 0; i < trans->initiator2target_buffer_size; ++i) {
         serial_write_byte(split_trans_initiator2target_buffer(trans)[i]);
@@ -289,9 +320,9 @@ static inline bool initiate_transaction(uint8_t sstd_index) {
 /////////
 //  start transaction by initiator
 //
-// bool  soft_serial_transaction(int sstd_index)
+// bool  soft_serial_transaction(split_transaction_id_t sstd_index)
 //
 // this code is very time dependent, so we need to disable interrupts
-bool soft_serial_transaction(int sstd_index) {
-    return initiate_transaction((uint8_t)sstd_index);
+bool soft_serial_transaction(split_transaction_id_t sstd_index) {
+    return initiate_transaction(sstd_index);
 }

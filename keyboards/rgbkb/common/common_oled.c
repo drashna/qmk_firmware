@@ -90,7 +90,7 @@ void rgb_menu_action(bool clockwise) {
     rgb_menu_changed = true;
 }
 
-void rgb_menu_update(int8_t transaction_id) {
+void rgb_menu_update(split_transaction_id_t transaction_id) {
     if (!is_keyboard_master()) return;
     if (!rgb_menu_changed) return;
     rgb_menu_changed = false;

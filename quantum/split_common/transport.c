@@ -48,19 +48,19 @@ void transport_slave_init(void) {
     i2c_slave_init(SLAVE_I2C_ADDRESS);
 }
 
-i2c_status_t transport_trigger_callback(int8_t id) {
+i2c_status_t transport_trigger_callback(split_transaction_id_t id) {
     // If there's no callback, indicate that we were successful
     if (!split_transaction_table[id].slave_callback) {
         return I2C_STATUS_SUCCESS;
     }
 
     // Kick off the "callback executor", now that data has been written to the slave
-    split_shmem->transaction_id     = id;
+    split_shmem->transaction_id     = (split_transaction_wire_id_t)id;
     split_transaction_desc_t *trans = &split_transaction_table[I2C_EXECUTE_CALLBACK];
     return i2c_write_register(SLAVE_I2C_ADDRESS, trans->initiator2target_offset, split_trans_initiator2target_buffer(trans), trans->initiator2target_buffer_size, SLAVE_I2C_TIMEOUT);
 }
 
-bool transport_execute_transaction(int8_t id, const void *initiator2target_buf, uint16_t initiator2target_length, void *target2initiator_buf, uint16_t target2initiator_length) {
+bool transport_execute_transaction(split_transaction_id_t id, const void *initiator2target_buf, uint16_t initiator2target_length, void *target2initiator_buf, uint16_t target2initiator_length) {
     i2c_status_t              status;
     split_transaction_desc_t *trans = &split_transaction_table[id];
     if (initiator2target_length > 0) {
@@ -101,7 +101,7 @@ void transport_slave_init(void) {
     soft_serial_target_init();
 }
 
-bool transport_execute_transaction(int8_t id, const void *initiator2target_buf, uint16_t initiator2target_length, void *target2initiator_buf, uint16_t target2initiator_length) {
+bool transport_execute_transaction(split_transaction_id_t id, const void *initiator2target_buf, uint16_t initiator2target_length, void *target2initiator_buf, uint16_t target2initiator_length) {
     split_transaction_desc_t *trans = &split_transaction_table[id];
     if (initiator2target_length > 0) {
         size_t len = trans->initiator2target_buffer_size < initiator2target_length ? trans->initiator2target_buffer_size : initiator2target_length;

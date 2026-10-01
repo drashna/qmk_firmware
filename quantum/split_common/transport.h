@@ -39,7 +39,7 @@ void transport_slave_init(void);
 bool transport_master(matrix_row_t master_matrix[], matrix_row_t slave_matrix[]);
 void transport_slave(matrix_row_t master_matrix[], matrix_row_t slave_matrix[]);
 
-bool transport_execute_transaction(int8_t id, const void *initiator2target_buf, uint16_t initiator2target_length, void *target2initiator_buf, uint16_t target2initiator_length);
+bool transport_execute_transaction(split_transaction_id_t id, const void *initiator2target_buf, uint16_t initiator2target_length, void *target2initiator_buf, uint16_t target2initiator_length);
 
 #ifdef ENCODER_ENABLE
 #    include "encoder.h"
@@ -137,11 +137,16 @@ typedef struct _split_slave_activity_sync_t {
 typedef struct _rpc_sync_info_t {
     uint8_t checksum;
     struct {
-        int8_t  transaction_id;
-        uint8_t m2s_length;
-        uint8_t s2m_length;
+        split_transaction_wire_id_t transaction_id;
+        uint8_t                     m2s_length;
+        uint8_t                     s2m_length;
     } payload;
 } rpc_sync_info_t;
+#    if defined(SPLIT_WIDE_TRANSACTION_IDS)
+STATIC_ASSERT(sizeof(((rpc_sync_info_t *)0)->payload) == 4, "Unexpected padding in rpc_sync_info_t payload");
+#    else
+STATIC_ASSERT(sizeof(((rpc_sync_info_t *)0)->payload) == 3, "Unexpected padding in rpc_sync_info_t payload");
+#    endif
 #endif // defined(SPLIT_TRANSACTION_RPC)
 
 #if defined(OS_DETECTION_ENABLE) && defined(SPLIT_DETECTED_OS_ENABLE)
@@ -150,7 +155,7 @@ typedef struct _rpc_sync_info_t {
 
 typedef struct _split_shared_memory_t {
 #ifdef USE_I2C
-    int8_t transaction_id;
+    split_transaction_wire_id_t transaction_id;
 #endif // USE_I2C
 
     split_slave_matrix_sync_t smatrix;

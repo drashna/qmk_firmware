@@ -26,7 +26,7 @@ void soft_serial_initiator_init(void);
 // target is interrupt accept side
 void soft_serial_target_init(void);
 
-bool soft_serial_transaction(int sstd_index);
+bool soft_serial_transaction(split_transaction_id_t sstd_index);
 
 #ifdef SERIAL_DEBUG
 #    include <debug.h>

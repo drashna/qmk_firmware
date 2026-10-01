@@ -385,9 +385,9 @@ It is recommended that any data sync between halves happens during the master si
 If only one-way data transfer is needed, helper methods are provided:
 
 ```c
-bool transaction_rpc_exec(int8_t transaction_id, uint8_t initiator2target_buffer_size, const void *initiator2target_buffer, uint8_t target2initiator_buffer_size, void *target2initiator_buffer);
-bool transaction_rpc_send(int8_t transaction_id, uint8_t initiator2target_buffer_size, const void *initiator2target_buffer);
-bool transaction_rpc_recv(int8_t transaction_id, uint8_t target2initiator_buffer_size, void *target2initiator_buffer);
+bool transaction_rpc_exec(split_transaction_id_t transaction_id, uint8_t initiator2target_buffer_size, const void *initiator2target_buffer, uint8_t target2initiator_buffer_size, void *target2initiator_buffer);
+bool transaction_rpc_send(split_transaction_id_t transaction_id, uint8_t initiator2target_buffer_size, const void *initiator2target_buffer);
+bool transaction_rpc_recv(split_transaction_id_t transaction_id, uint8_t target2initiator_buffer_size, void *target2initiator_buffer);
 ```
 
 By default, the inbound and outbound data is limited to a maximum of 32 bytes each. The sizes can be altered if required:
@@ -398,6 +398,20 @@ By default, the inbound and outbound data is limited to a maximum of 32 bytes ea
 // Slave to master:
 #define RPC_S2M_BUFFER_SIZE 48
 ```
+
+#### Increasing the number of transaction IDs {#increasing-transaction-ids}
+
+By default, a maximum of 32 transaction IDs are supported in total (QMK core's own sync data plus any keyboard- and user-level IDs registered above). If this is insufficient -- for example a keyboard or userspace registers a large number of RPC handlers -- `SPLIT_WIDE_TRANSACTION_IDS` can be defined to raise the ceiling to 1024:
+
+```c
+#define SPLIT_WIDE_TRANSACTION_IDS
+```
+
+Enabling this flag widens the transaction ID on the wire (and in shared memory, for `SPLIT_TRANSPORT = i2c` boards), at the cost of one extra byte per transaction and per RPC invocation. Keep in mind:
+
+* **Both halves must be flashed with the same `SPLIT_WIDE_TRANSACTION_IDS` state.** This is not negotiated at runtime -- if one half is built with the flag and the other isn't, the two sides will disagree about the wire format and transactions will fail (silently hang, or be rejected, depending on the backend).
+* If `NUM_TOTAL_TRANSACTIONS` (the total count of transaction IDs in use) exceeds the active ceiling, the build fails with a `STATIC_ASSERT` naming `SPLIT_WIDE_TRANSACTION_IDS` -- either reduce the number of registered transaction IDs, or define the flag.
+* On I2C-based split boards (`SPLIT_TRANSPORT = i2c`), enabling the flag grows the shared memory block by one byte. If this pushes the I2C register count to 256 or more, the build will separately fail the `I2C_SLAVE_REG_COUNT < 256` assertion in [`i2c_slave.h`](https://github.com/qmk/qmk_firmware/blob/master/platforms/avr/drivers/i2c_slave.h) -- in that case `I2C_SLAVE_REG_COUNT` should be defined explicitly to fit, or the number of synced items reduced.
 
 ### Hardware Configuration Options
 

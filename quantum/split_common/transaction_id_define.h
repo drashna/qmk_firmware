@@ -132,5 +132,22 @@ enum serial_transaction_id {
     NUM_TOTAL_TRANSACTIONS
 };
 
+// Public-facing transaction ID type -- always wide enough for the full transaction ID range, regardless of
+// whether SPLIT_WIDE_TRANSACTION_IDS is defined.
+typedef uint16_t split_transaction_id_t;
+
+#if defined(SPLIT_WIDE_TRANSACTION_IDS)
+// Transaction ID type as carried over the wire / shared memory. Widened to uint16_t when
+// SPLIT_WIDE_TRANSACTION_IDS is defined, to allow for up to 1024 transaction IDs.
+typedef uint16_t split_transaction_wire_id_t;
+
+// Ensure we only use 10 bits for transaction id on the wire
+STATIC_ASSERT(NUM_TOTAL_TRANSACTIONS <= (1 << 10), "Max number of usable transactions exceeded -- reduce the number of registered transaction IDs");
+#else
+// Transaction ID type as carried over the wire / shared memory. Matches the original 8-bit signed
+// representation when SPLIT_WIDE_TRANSACTION_IDS is not defined, to preserve wire/shmem compatibility.
+typedef int8_t split_transaction_wire_id_t;
+
 // Ensure we only use 5 bits for transaction
-STATIC_ASSERT(NUM_TOTAL_TRANSACTIONS <= (1 << 5), "Max number of usable transactions exceeded");
+STATIC_ASSERT(NUM_TOTAL_TRANSACTIONS <= (1 << 5), "Max number of usable transactions exceeded -- define SPLIT_WIDE_TRANSACTION_IDS to support up to 1024 transaction IDs");
+#endif

@@ -18,6 +18,10 @@
 #include <stdbool.h>
 #include "gpio.h"
 #include "serial.h"
+#include "transaction_id_define.h"
+#if defined(SPLIT_WIDE_TRANSACTION_IDS)
+#    include "split_txn_header.h"
+#endif
 
 #ifdef SOFT_SERIAL_PIN
 
@@ -396,15 +400,26 @@ static inline uint8_t nibble_bits_count(uint8_t bits) {
 // interrupt handle to be used by the target device
 ISR(SERIAL_PIN_INTERRUPT) {
     // recive transaction table index
-    uint8_t tid, bits;
     uint8_t pecount = 0;
     sync_recv();
+#    if defined(SPLIT_WIDE_TRANSACTION_IDS)
+    uint8_t header_bytes[2];
+    header_bytes[0] = serial_read_chunk(&pecount, 8);
+    header_bytes[1] = serial_read_chunk(&pecount, 8);
+    split_transaction_id_t tid;
+    if (pecount > 0 || !split_txn_header_decode(header_bytes, &tid)) {
+        return;
+    }
+#    else
+    uint8_t                bits;
+    split_transaction_id_t tid;
     bits = serial_read_chunk(&pecount, 8);
     tid  = bits >> 3;
     bits = (bits & 7) != (nibble_bits_count(tid) & 7);
-    if (bits || pecount > 0 || tid > NUM_TOTAL_TRANSACTIONS) {
+    if (bits || pecount > 0 || tid >= NUM_TOTAL_TRANSACTIONS) {
         return;
     }
+#    endif
     serial_delay_half1();
 
     serial_high(); // response step1 low->high
@@ -434,11 +449,11 @@ ISR(SERIAL_PIN_INTERRUPT) {
 /////////
 //  start transaction by initiator
 //
-// bool  soft_serial_transaction(int sstd_index)
+// bool  soft_serial_transaction(split_transaction_id_t sstd_index)
 //
 // this code is very time dependent, so we need to disable interrupts
-bool soft_serial_transaction(int sstd_index) {
-    if (sstd_index > NUM_TOTAL_TRANSACTIONS) return false;
+bool soft_serial_transaction(split_transaction_id_t sstd_index) {
+    if (sstd_index >= NUM_TOTAL_TRANSACTIONS) return false;
     split_transaction_desc_t *trans = &split_transaction_table[sstd_index];
 
     cli();
@@ -449,10 +464,17 @@ bool soft_serial_transaction(int sstd_index) {
     _delay_us(SLAVE_INT_WIDTH_US);
 
     // send transaction table index
-    int tid = (sstd_index << 3) | (7 & nibble_bits_count(sstd_index));
     sync_send();
     _delay_sub_us(TID_SEND_ADJUST);
+#    if defined(SPLIT_WIDE_TRANSACTION_IDS)
+    uint8_t header_bytes[2];
+    split_txn_header_encode(sstd_index, header_bytes);
+    serial_write_chunk(header_bytes[0], 8);
+    serial_write_chunk(header_bytes[1], 8);
+#    else
+    int tid = (sstd_index << 3) | (7 & nibble_bits_count(sstd_index));
     serial_write_chunk(tid, 8);
+#    endif
     serial_delay_half1();
 
     // wait for the target response (step1 low->high)
