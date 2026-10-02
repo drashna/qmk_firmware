@@ -81,11 +81,17 @@ ISR(TWI_vect) {
                 buffer_address++;
 
 #if defined(USE_I2C) && defined(SPLIT_COMMON_TRANSACTIONS)
-                // If we're intending to execute a transaction callback, do so, as we've just received the transaction ID
-                if (is_callback_executor) {
-                    split_transaction_desc_t *trans = &split_transaction_table[split_shmem->transaction_id];
-                    if (trans->slave_callback) {
-                        trans->slave_callback(trans->initiator2target_buffer_size, split_trans_initiator2target_buffer(trans), trans->target2initiator_buffer_size, split_trans_target2initiator_buffer(trans));
+                // If we're intending to execute a transaction callback, do so, but only once the *whole*
+                // transaction ID has been received -- it may be more than one byte wide
+                // (SPLIT_WIDE_TRANSACTION_IDS), and the callback must not run on a partially written ID.
+                if (is_callback_executor && buffer_address == (uint8_t)(split_transaction_table[I2C_EXECUTE_CALLBACK].initiator2target_offset + sizeof(split_shmem->transaction_id))) {
+                    split_transaction_id_t transaction_id = (split_transaction_id_t)split_shmem->transaction_id;
+                    // Never index the transaction table with an out-of-range (or negative) ID
+                    if (transaction_id < NUM_TOTAL_TRANSACTIONS) {
+                        split_transaction_desc_t *trans = &split_transaction_table[transaction_id];
+                        if (trans->slave_callback) {
+                            trans->slave_callback(trans->initiator2target_buffer_size, split_trans_initiator2target_buffer(trans), trans->target2initiator_buffer_size, split_trans_target2initiator_buffer(trans));
+                        }
                     }
                 }
 #endif // defined(USE_I2C) && defined(SPLIT_COMMON_TRANSACTIONS)
