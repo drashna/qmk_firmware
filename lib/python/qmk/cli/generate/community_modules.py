@@ -53,6 +53,19 @@ def _render_keycodes(module_jsons):
     lines.append('    LAST_COMMUNITY_MODULE_KEY')
     lines.append('};')
     lines.append('STATIC_ASSERT((int)LAST_COMMUNITY_MODULE_KEY <= (int)(QK_COMMUNITY_MODULE_MAX+1), "Too many community module keycodes");')
+
+    keycode_names = []
+    for module_json in module_jsons:
+        for keycode in module_json.get('keycodes', []):
+            keycode_names.extend(keycode.get('aliases', []))
+            keycode_names.append(keycode['key'])
+
+    if keycode_names:
+        lines.append('')
+        lines.append('#define COMMUNITY_MODULE_KEYCODE_STRING_NAMES(_ENTRY) \\')
+        lines.extend(f'    _ENTRY({name}) \\' for name in keycode_names[:-1])
+        lines.append(f'    _ENTRY({keycode_names[-1]})')
+
     return lines
 
 
