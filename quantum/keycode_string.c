@@ -21,6 +21,16 @@
 #include "quantum_keycodes.h"
 #include "util.h"
 
+#ifdef COMMUNITY_MODULES_ENABLE
+#    include "community_modules.h"
+#    ifdef COMMUNITY_MODULE_KEYCODE_STRING_NAMES
+#        define COMMUNITY_MODULE_KEYCODE_STRING_ENTRY(kc) { (kc), #kc },
+static const keycode_string_name_t community_module_names[] = {
+    COMMUNITY_MODULE_KEYCODE_STRING_NAMES(COMMUNITY_MODULE_KEYCODE_STRING_ENTRY)
+};
+#    endif
+#endif
+
 typedef int_fast8_t index_t;
 
 // clang-format off
@@ -299,6 +309,13 @@ static void append_keycode(uint16_t keycode) {
         append(keycode_name);
         return;
     }
+#ifdef COMMUNITY_MODULE_KEYCODE_STRING_NAMES
+    keycode_name = search_table(community_module_names, ARRAY_SIZE(community_module_names), keycode);
+    if (keycode_name) {
+        append(keycode_name);
+        return;
+    }
+#endif
     keycode_name = search_common_names(keycode);
     if (keycode_name) {
         append(keycode_name);
