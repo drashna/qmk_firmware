@@ -85,6 +85,10 @@ KEYCODE_STRING_NAMES_USER(
 ```
 
 Similarly, `KEYCODE_STRING_NAMES_KB` may be defined to add names at the keyboard level.
+p
+Keycodes declared by enabled [community modules](/features/community_modules) are recognized
+automatically and formatted using their declared names. When a keycode has an alias, the alias name
+is used in preference to the canonical name.
 
 # Tracing Variables {#tracing-variables}
 

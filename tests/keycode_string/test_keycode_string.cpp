@@ -85,6 +85,9 @@ TEST_F(KeycodeStringTest, get_keycode_string) {
              // User range keycodes.
              {QK_USER_2, "QK_USER_2"},
              {QK_USER_31, "QK_USER_31"},
+             // Community module keycodes.
+             {COMMUNITY_MODULE_HELLO, "CM_HELO"},
+             {CM_HELO, "CM_HELO"},
              // Modified keycodes.
              {KC_COLN, "S(KC_SCLN)"},
              {C(KC_PGUP), "C(KC_PGUP)"},
