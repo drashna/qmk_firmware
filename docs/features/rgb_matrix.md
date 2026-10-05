@@ -460,7 +460,7 @@ RGB_MATRIX_EFFECT(my_cool_effect2)
 // e.g: A simple effect, self-contained within a single method
 static bool my_cool_effect(effect_params_t* params) {
   RGB_MATRIX_USE_LIMITS(led_min, led_max);
-  for (uint8_t i = led_min; i < led_max; i++) {
+  for (led_index_t i = led_min; i < led_max; i++) {
     rgb_matrix_set_color(i, 0xff, 0xff, 0x00);
   }
   return rgb_matrix_check_finished_leds(led_max);
@@ -474,7 +474,7 @@ static void my_cool_effect2_complex_init(effect_params_t* params) {
 }
 static bool my_cool_effect2_complex_run(effect_params_t* params) {
   RGB_MATRIX_USE_LIMITS(led_min, led_max);
-  for (uint8_t i = led_min; i < led_max; i++) {
+  for (led_index_t i = led_min; i < led_max; i++) {
     rgb_matrix_set_color(i, 0xff, some_global_state++, 0xff);
   }
   return rgb_matrix_check_finished_leds(led_max);
@@ -655,7 +655,7 @@ bool rgb_matrix_indicators_kb(void) {
 In addition, there are the advanced indicator functions.  These are aimed at those with heavily customized displays, where rendering every LED per cycle is expensive.  Such as some of the "drashna" layouts.  This includes a special macro to help make this easier to use: `RGB_MATRIX_INDICATOR_SET_COLOR(i, r, g, b)`.
 
 ```c
-bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
+bool rgb_matrix_indicators_advanced_user(led_index_t led_min, led_index_t led_max) {
     RGB_MATRIX_INDICATOR_SET_COLOR(index, red, green, blue);
     return false;
 }
@@ -665,9 +665,9 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
 
 Caps Lock indicator on alphanumeric flagged keys:
 ```c
-bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
+bool rgb_matrix_indicators_advanced_user(led_index_t led_min, led_index_t led_max) {
     if (host_keyboard_led_state().caps_lock) {
-        for (uint8_t i = led_min; i < led_max; i++) {
+        for (led_index_t i = led_min; i < led_max; i++) {
             if (g_led_config.flags[i] & LED_FLAG_KEYLIGHT) {
                 rgb_matrix_set_color(i, RGB_RED);
             }
@@ -679,8 +679,8 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
 
 Layer indicator on all keys:
 ```c
-bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
-    for (uint8_t i = led_min; i < led_max; i++) {
+bool rgb_matrix_indicators_advanced_user(led_index_t led_min, led_index_t led_max) {
+    for (led_index_t i = led_min; i < led_max; i++) {
         switch(get_highest_layer(layer_state|default_layer_state)) {
             case 2:
                 rgb_matrix_set_color(i, RGB_BLUE);
@@ -698,13 +698,13 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
 
 Layer indicator only on keys with configured keycodes:
 ```c
-bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
+bool rgb_matrix_indicators_advanced_user(led_index_t led_min, led_index_t led_max) {
     if (get_highest_layer(layer_state) > 0) {
         uint8_t layer = get_highest_layer(layer_state);
 
         for (uint8_t row = 0; row < MATRIX_ROWS; ++row) {
             for (uint8_t col = 0; col < MATRIX_COLS; ++col) {
-                uint8_t index = g_led_config.matrix_co[row][col];
+                led_index_t index = g_led_config.matrix_co[row][col];
 
                 if (index >= led_min && index < led_max && index != NO_LED &&
                 keymap_key_to_keycode(layer, (keypos_t){col,row}) > KC_TRNS) {
@@ -726,7 +726,7 @@ Split keyboards will require layer state data syncing with `#define SPLIT_LAYER_
 This example sets the modifiers to be a specific color based on the layer state.  You can use a switch case here, instead, if you would like.  This uses HSV and then converts to RGB, because this allows the brightness to be limited (important when using the WS2812 driver).
 
 ```c
-bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
+bool rgb_matrix_indicators_advanced_user(led_index_t led_min, led_index_t led_max) {
     hsv_t hsv = {0, 255, 255};
 
     if (get_highest_layer(layer_state|default_layer_state) == 2) {
@@ -740,7 +740,7 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
     }
     rgb_t rgb = hsv_to_rgb(hsv);
 
-    for (uint8_t i = led_min; i < led_max; i++) {
+    for (led_index_t i = led_min; i < led_max; i++) {
         if (HAS_FLAGS(g_led_config.flags[i], 0x01)) { // 0x01 == LED_FLAG_MODIFIER
             rgb_matrix_set_color(i, rgb.r, rgb.g, rgb.b);
         }
@@ -752,7 +752,7 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
 If you want to indicate a Host LED status (caps lock, num lock, etc), you can use something like this to light up the caps lock key:
 
 ```c
-bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
+bool rgb_matrix_indicators_advanced_user(led_index_t led_min, led_index_t led_max) {
     if (host_keyboard_led_state().caps_lock) {
         RGB_MATRIX_INDICATOR_SET_COLOR(5, 255, 255, 255); // assuming caps lock is at led #5
     } else {
@@ -824,7 +824,7 @@ Get the current enabled state of RGB Matrix.
 
 ---
 
-### `void rgb_matrix_set_color(uint8_t index, uint8_t r, uint8_t g, uint8_t b)` {#api-rgb-matrix-set-color}
+### `void rgb_matrix_set_color(int index, uint8_t r, uint8_t g, uint8_t b)` {#api-rgb-matrix-set-color}
 
 Set the color of a single LED.
 
@@ -832,7 +832,7 @@ This function can only be run from within an effect or indicator callback, other
 
 #### Arguments {#api-rgb-matrix-set-color-arguments}
 
- - `uint8_t index`  
+ - `int index`  
    The LED index, from 0 to `RGB_MATRIX_LED_COUNT - 1`.
  - `uint8_t r`  
    The red value to set.
@@ -1206,15 +1206,15 @@ Keymap-level callback, invoked after current animation frame is rendered but bef
 
 ---
 
-### `bool rgb_matrix_indicators_advanced_kb(uint8_t led_min, uint8_t led_max)` {#api-rgb-matrix-indicators-advanced-kb}
+### `bool rgb_matrix_indicators_advanced_kb(led_index_t led_min, led_index_t led_max)` {#api-rgb-matrix-indicators-advanced-kb}
 
 Keyboard-level callback, invoked after current animation frame is rendered but before it is flushed to the LEDs.
 
 ### Arguments {#api-rgb-matrix-indicators-advanced-kb-arguments}
 
- - `uint8_t led_min`  
+ - `led_index_t led_min`  
    The index of the first LED in this batch.
- - `uint8_t led_max`  
+ - `led_index_t led_max`  
    The index of the last LED in this batch.
 
 #### Return Value {#api-rgb-matrix-indicators-advanced-kb-return}
@@ -1223,15 +1223,15 @@ Currently unused.
 
 ---
 
-### `bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max)` {#api-rgb-matrix-indicators-advanced-user}
+### `bool rgb_matrix_indicators_advanced_user(led_index_t led_min, led_index_t led_max)` {#api-rgb-matrix-indicators-advanced-user}
 
 Keymap-level callback, invoked after current animation frame is rendered but before it is flushed to the LEDs.
 
 ### Arguments {#api-rgb-matrix-indicators-advanced-user-arguments}
 
- - `uint8_t led_min`  
+ - `led_index_t led_min`  
    The index of the first LED in this batch.
- - `uint8_t led_max`  
+ - `led_index_t led_max`  
    The index of the last LED in this batch.
 
 #### Return Value {#api-rgb-matrix-indicators-advanced-user-return}
