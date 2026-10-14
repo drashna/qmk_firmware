@@ -63,7 +63,7 @@ uint8_t get_oneshot_locked_mods(void) {
  * Same as \ref get_oneshot_locked_mods but returns \ref mod_t for convenience.
  */
 mod_t get_oneshot_locked_mod_state(void) {
-    return (mod_t)get_oneshot_locked_mods();
+    return (mod_t){.raw = get_oneshot_locked_mods()};
 }
 void add_oneshot_locked_mods(uint8_t mods) {
     if ((oneshot_locked_mods & mods) != mods) {
@@ -453,7 +453,7 @@ uint8_t get_mods(void) {
  * Same as \ref get_mods but returns \ref mod_t for convenience.
  */
 mod_t get_mod_state(void) {
-    return (mod_t)get_mods();
+    return (mod_t){.raw = get_mods()};
 }
 /** \brief add mods
  *
@@ -496,7 +496,7 @@ uint8_t get_weak_mods(void) {
  * Same as \ref get_weak_mods but returns \ref mod_t for convenience.
  */
 mod_t get_weak_mod_state(void) {
-    return (mod_t)get_weak_mods();
+    return (mod_t){.raw = get_weak_mods()};
 }
 /** \brief add weak mods
  *
@@ -565,7 +565,7 @@ uint8_t get_oneshot_mods(void) {
  * Same as \ref get_oneshot_mods but returns \ref mod_t for convenience.
  */
 mod_t get_oneshot_mod_state(void) {
-    return (mod_t)get_oneshot_mods();
+    return (mod_t){.raw = get_oneshot_mods()};
 }
 
 void add_oneshot_mods(uint8_t mods) {
