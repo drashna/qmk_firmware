@@ -308,12 +308,32 @@ static uint8_t get_mods_for_report(void) {
     return mods;
 }
 
+#ifdef NKRO_BOOT_COMPAT_ENABLE
+static void send_keyboard_nkro_report(void) {
+    report_keyboard_nkro_t        report;
+    static report_keyboard_nkro_t last_report;
+
+    /* Some keymaps read keyboard_report->mods directly. */
+    keyboard_report->mods = nkro_report->mods = get_mods_for_report();
+
+    report.mods     = keyboard_report->mods;
+    report.reserved = 0;
+    memcpy(report.keys, keyboard_report->keys, sizeof(report.keys));
+    memcpy(report.bits, nkro_report->bits, sizeof(report.bits));
+
+    /* Only send the report if there are changes to propagate to the host. */
+    if (memcmp(&report, &last_report, sizeof(report)) != 0) {
+        memcpy(&last_report, &report, sizeof(report));
+        host_keyboard_nkro_send(&report);
+    }
+}
+#else
 void send_6kro_report(void) {
     keyboard_report->mods = get_mods_for_report();
 
-#ifdef PROTOCOL_VUSB
+#    ifdef PROTOCOL_VUSB
     host_keyboard_send(keyboard_report);
-#else
+#    else
     static report_keyboard_t last_report;
 
 #    ifdef PROGRESSIVE_KEYBOARD_REPORTS
@@ -357,10 +377,10 @@ void send_6kro_report(void) {
         memcpy(&last_report, keyboard_report, sizeof(report_keyboard_t));
         host_keyboard_send(keyboard_report);
     }
-#endif
+#    endif
 }
 
-#ifdef NKRO_ENABLE
+#    ifdef NKRO_ENABLE
 void send_nkro_report(void) {
     nkro_report->mods = get_mods_for_report();
 
@@ -403,6 +423,7 @@ void send_nkro_report(void) {
         host_nkro_send(nkro_report);
     }
 }
+#    endif
 #endif
 
 /** \brief Send keyboard report
@@ -410,13 +431,17 @@ void send_nkro_report(void) {
  * FIXME: needs doc
  */
 void send_keyboard_report(void) {
-#ifdef NKRO_ENABLE
+#ifdef NKRO_BOOT_COMPAT_ENABLE
+    send_keyboard_nkro_report();
+#else
+#    ifdef NKRO_ENABLE
     if (host_can_send_nkro() && keymap_config.nkro) {
         send_nkro_report();
         return;
     }
-#endif
+#    endif
     send_6kro_report();
+#endif
 }
 
 /**
