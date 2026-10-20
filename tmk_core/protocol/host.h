@@ -54,6 +54,9 @@ void host_joystick_send(joystick_t *joystick);
 #ifdef XINPUT_ENABLE
 void host_xinput_send(report_xinput_t *xinput);
 #endif
+#ifdef NKRO_BOOT_COMPAT_ENABLE
+void host_keyboard_nkro_send(report_keyboard_nkro_t *report);
+#endif
 
 uint16_t host_last_system_usage(void);
 uint16_t host_last_consumer_usage(void);

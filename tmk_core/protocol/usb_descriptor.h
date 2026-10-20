@@ -386,7 +386,11 @@ enum usb_endpoints {
 #    error There are not enough available endpoints to support all functions. Please disable one or more of the following: Mouse Keys, Extra Keys, Console, NKRO, MIDI, Serial, Steno, XAP, Community Module USB HID Endpoints
 #endif
 
-#define KEYBOARD_EPSIZE 8
+#ifdef NKRO_BOOT_COMPAT_ENABLE
+#    define KEYBOARD_EPSIZE 38
+#else
+#    define KEYBOARD_EPSIZE 8
+#endif
 #define SHARED_EPSIZE 32
 #if defined(DIGITIZER_ENABLE) && defined(DIGITIZER_SHARED_EP)
 #    define SHARED_EPSIZE 64
